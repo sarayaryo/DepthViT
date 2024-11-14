@@ -56,7 +56,7 @@ class ImageDepthDataset(Dataset):
         """
         self.image_paths = image_paths
         self.depth_paths = depth_paths
-        self.labels = labels
+        self.labels = [torch.tensor(label, dtype=torch.long) for label in labels]
         self.transform = transform
 
 
@@ -88,5 +88,5 @@ class ImageDepthDataset(Dataset):
         return {
             'image': image,
             'depth': depth,
-            'label': torch.tensor(label, dtype=torch.long)
+            'label': label
         }

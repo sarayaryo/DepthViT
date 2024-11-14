@@ -1,4 +1,5 @@
 import torch
+import time
 from torch import nn, optim
 import os
 from pathlib import Path
@@ -13,12 +14,23 @@ from data import ImageDepthDataset
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
+def check_device_availability(device):
+    if device == "cuda":
+        if torch.cuda.is_available():
+            print(f"CUDA is available! Using {torch.cuda.get_device_name(0)}")
+        else:
+            print("CUDA is not available. Falling back to CPU.")
+            return "cpu" 
+    else:
+        print("Using CPU.")
+    return device
+
 config = {
     "patch_size": 4,  # Input image size: 32x32 -> 8x8 patches
-    "hidden_size": 48,
+    "hidden_size": 24,   # changed 48->24
     "num_hidden_layers": 4,
     "num_attention_heads": 4,
-    "intermediate_size": 4 * 48, # 4 * hidden_size
+    "intermediate_size": 4 * 24, # 4 * hidden_size
     "hidden_dropout_prob": 0.0,
     "attention_probs_dropout_prob": 0.0,
     "initializer_range": 0.02,
@@ -191,6 +203,7 @@ def parse_args():
 
 def main():
     args = parse_args()
+    device = check_device_availability(args.device)
     # Training parameters
     batch_size = args.batch_size
     epochs = args.epochs
@@ -202,7 +215,8 @@ def main():
     # trainloader, testloader, _ = prepare_data(batch_size=batch_size)
 
     # Newデータセット
-    dataset_path = r'Imagedata\desk_1\rgbd-scenes\desk\desk_1'
+    # dataset_path = r'Imagedata\desk_1\rgbd-scenes\desk\desk_1'
+    dataset_path = r'C:\DepthViT\rgbd-dataset'
 
     transform1 = transforms.Compose([
         transforms.Resize((256,256)),
@@ -223,7 +237,8 @@ def main():
             filename = os.path.splitext(os.path.basename(image_file))[0]
             
             # クラスラベルを抽出 ('apple_1' の部分)
-            classlabel = '_'.join(filename.split('_')[:2])
+            classlabel = filename.split('_')[0]  # 'apple_1' の 'apple' 部分だけを取り出す
+            #classlabel = '_'.join(filename.split('_')[:2])
             labels.append(classlabel)
             # 取得したクラスラベルとファイル名の確認 (必要に応じて処理を追加)
         print(f"File: {image_file}, ClassLabel: {classlabel}")
@@ -232,7 +247,8 @@ def main():
         return encoded_labels
     
     # 画像ファイルのパスを取得 (RGBおよび深度画像)
-    image_files = glob.glob(os.path.join(dataset_path, "*.png"))
+    image_files = glob.glob(os.path.join(dataset_path, '**', "*.png"), recursive=True)
+    print(f"Total image files: {len(image_files)}")
     image_paths = []
     depth_paths = []
 
@@ -244,7 +260,16 @@ def main():
         else :  
             image_paths.append(file_path)
     
-    ##データ数制限
+    min_length = min(len(image_paths), len(depth_paths))
+
+    #なんかデータ数合わないので調整
+    print(min_length)
+    image_paths = image_paths[:min_length]
+    depth_paths = depth_paths[:min_length]
+    print(f"Adjusted Total RGB image paths: {len(image_paths)}")
+    print(f"Adjusted Total depth image paths: {len(depth_paths)}")
+
+    # ##データ数制限
     image_paths = image_paths[:10]
     depth_paths = depth_paths[:10]
 
@@ -256,8 +281,8 @@ def main():
     train_dataset = ImageDepthDataset(image_train, depth_train, getlabels(image_train), transform=transform1)
     test_dataset = ImageDepthDataset(image_test, depth_test, getlabels(image_test), transform=transform1)
 
-    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=2)
-    test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False, num_workers=2)
+    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=0) ##changed num_workers 2 ->0
+    test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False, num_workers=0)
 
     ViT_methods = {
         0: ViTForClassfication,
@@ -276,4 +301,8 @@ def main():
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     main()
+    end_time = time.time()  # 終了時刻を記録
+    execution_time = end_time - start_time  # 実行時間を計算
+    print(f"Time: {execution_time:.4f} seconds")
