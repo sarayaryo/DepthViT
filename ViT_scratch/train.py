@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 
 from utils import save_experiment, save_checkpoint
 from data import prepare_data
-from vit import ViTForClassfication, ViTForClassfication_method2
+from vit import ViTForClassfication, DepthViT
 from torchvision import datasets, transforms
 from data import ImageDepthDataset
 from torch.utils.data import DataLoader
@@ -49,7 +49,8 @@ assert config["intermediate_size"] == 4 * config["hidden_size"]
 assert config["image_size"] % config["patch_size"] == 0
 
 
-class Method0:
+# Image only ViT
+class SimpleViT:
     def __init__(self, model, images, depth, labels, loss_fn) -> None:
         self.model = model
         self.loss_fn = loss_fn
@@ -62,7 +63,8 @@ class Method0:
         return self.loss_fn(self.model(self.images)[0], self.labels)
 
 
-class Method1:
+# Early Fusion
+class EarlyFusionDepthViT:
     def __init__(self, model, images, depth, labels, loss_fn) -> None:
         self.model = model
         self.loss_fn = loss_fn
@@ -74,11 +76,12 @@ class Method1:
         image_depth = torch.cat((self.images, self.depth), dim=1)
         # print(image_depth[0].shape)
         loss = self.loss_fn(self.model(image_depth)[0], self.labels)
-        ###エラー未解決
+        # エラー未解決
         return loss
 
 
-class Method2:
+# Late Fusion
+class LateFusionDepthViT:
     def __init__(self, model, images, depth, labels, loss_fn) -> None:
         self.model = model
         self.loss_fn = loss_fn
@@ -87,7 +90,9 @@ class Method2:
         self.labels = labels
 
     def calculate_loss(self):
-        loss = self.loss_fn(self.model(self.images, self.depth)[0], self.labels)
+        print("[test] here: loss = self.loss_fn(")
+        preds = self.model(self.images, self.depth)[0]
+        loss = self.loss_fn(preds, self.labels)
         # loss2 = self.loss_fn(self.model(self.depth, Isdepth=True)[0], self.labels)
 
         return loss
@@ -104,7 +109,7 @@ class Trainer:
         self.loss_fn = loss_fn
         self.exp_name = exp_name
         self.device = device
-        loss_methods = {0: Method0, 1: Method1, 2: Method2}
+        loss_methods = {0: SimpleViT, 1: EarlyFusionDepthViT, 2: LateFusionDepthViT}
         self.loss_method = loss_methods.get(method)
 
     def train(self, trainloader, testloader, epochs, save_model_every_n_epochs=0):
@@ -147,17 +152,20 @@ class Trainer:
             # batch = [ [sub_t.to(self.device) for sub_t in t] for t in batch.values()]
             batch = [t.to(self.device) for t in batch.values()]
             images, depth, labels = batch
-            # print(f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}")
+            print(
+                f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}"
+            )
 
             # Zero the gradients
             self.optimizer.zero_grad()
             # Calculate the loss
 
-            method_instance = self.loss_method(
-                self.model, images, depth, labels, self.loss_fn
-            )
-            loss = method_instance.calculate_loss()
-
+            # NOTE: LateFusionDepthViT
+            print("[test] here: preds = self.model(")
+            preds = self.model(images, depth)[0]
+            print(f"[test] preds: {preds}")
+            loss = self.loss_fn(preds, labels)
+            print(f"[test] loss: {loss}")
             # loss = self.loss_fn(self.model(images)[0], labels)
 
             # Backpropagate the loss
@@ -243,10 +251,10 @@ def main():
     # train_list = glob.glob(os.path.join(train_dataset_dir,'**','*.png'), recursive=True)
     # test_list = glob.glob(os.path.join(test_dataset_dir, '**','*.jpg'), recursive=True)
 
-    def getlabels(list):
+    def getlabels(image_files):
         le = LabelEncoder()
         labels = []
-        for image_file in list:
+        for image_file in image_files:
             # ファイル名の拡張子を除く部分を取得 (例: 'apple_1_1_1_crop')
             filename = os.path.splitext(os.path.basename(image_file))[0]
 
@@ -257,9 +265,10 @@ def main():
             # classlabel = '_'.join(filename.split('_')[:2])
             labels.append(classlabel)
             # 取得したクラスラベルとファイル名の確認 (必要に応じて処理を追加)
-        print(f"File: {image_file}, ClassLabel: {classlabel}")
-        # print(f"label amount::::{len(labels)}")
+            print(f"File: {image_file}, ClassLabel: {classlabel}")
         encoded_labels = le.fit_transform(labels)
+        print(f"encoded_labels: {encoded_labels}")
+        # print(f"label amount::::{len(labels)}")
         return encoded_labels
 
     # 画像ファイルのパスを取得 (RGBおよび深度画像)
@@ -275,14 +284,14 @@ def main():
         filename = os.path.basename(file_path)
         if "depth" in filename:
             depth_paths.append(file_path)
-        else:
+        elif "maskcrop" not in filename:
             image_paths.append(file_path)
 
     min_length = min(len(image_paths), len(depth_paths))
     print(f"Total RGB image paths: {len(image_paths)}")
     print(f"Total depth image paths: {len(depth_paths)}")
-    # なんかデータ数合わないので調整
-    
+
+    # image_paths と depth_paths で、順番が正しいかどうかは保証されない
     image_paths = image_paths[:min_length]
     depth_paths = depth_paths[:min_length]
     print(f"Adjusted Total RGB image paths: {len(image_paths)}")
@@ -295,6 +304,10 @@ def main():
     image_train, image_test, depth_train, depth_test = train_test_split(
         image_paths, depth_paths, test_size=0.2, random_state=0
     )
+    # print("[test] image_train: ", image_train)
+    # print("[test] image_test: ", image_test)
+    # print("[test] depth_train: ", depth_train)
+    # print("[test] depth_test: ", depth_test)
 
     # ラベル取得
     train_dataset = ImageDepthDataset(
@@ -304,18 +317,21 @@ def main():
         image_test, depth_test, getlabels(image_test), transform=transform1
     )
 
+    print("[test] here: train_loader = DataLoader(")
     train_loader = DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=0
     )  # changed num_workers 2 -> 0
+    print("[test] here: test_loader = DataLoader(")
     test_loader = DataLoader(
         test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=0
     )
 
     ViT_methods = {
         0: ViTForClassfication,
-        1: Method1,  # 未定義
-        2: ViTForClassfication_method2,
+        # 1: Method1,  # 未定義
+        2: DepthViT,
     }
+    print("[test] here: model_class = ViT_methods.get(method, ViTForClassfication)")
     model_class = ViT_methods.get(method, ViTForClassfication)
     model = model_class(config)
 
@@ -324,6 +340,7 @@ def main():
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-2)
     loss_fn = nn.CrossEntropyLoss()
     trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device)
+    print("[test] here: trainer.train(")
     trainer.train(
         train_loader,
         test_loader,
