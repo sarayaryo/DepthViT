@@ -279,9 +279,10 @@ def main():
             image_paths.append(file_path)
 
     min_length = min(len(image_paths), len(depth_paths))
-
+    print(f"Total RGB image paths: {len(image_paths)}")
+    print(f"Total depth image paths: {len(depth_paths)}")
     # なんかデータ数合わないので調整
-    print(min_length)
+    
     image_paths = image_paths[:min_length]
     depth_paths = depth_paths[:min_length]
     print(f"Adjusted Total RGB image paths: {len(image_paths)}")
