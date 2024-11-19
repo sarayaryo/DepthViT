@@ -1,6 +1,12 @@
 import math
 import torch
 from torch import nn
+import torch
+
+def print_memory_status(label=""):
+    allocated = torch.cuda.memory_allocated() / (1024 ** 3)  # GB
+    reserved = torch.cuda.memory_reserved() / (1024 ** 3)  # GB
+    print(f"[{label}] Allocated: {allocated:.2f} GB, Reserved: {reserved:.2f} GB")
 
 
 class NewGELUActivation(nn.Module):
@@ -256,8 +262,11 @@ class FasterMultiHeadAttention(nn.Module):
         ).transpose(1, 2)
         # Calculate the attention scores
         # softmax(Q*K.T/sqrt(head_size))*V
+        print_memory_status("line 264")
         attention_scores = torch.matmul(query, key.transpose(-1, -2))
+        print_memory_status("line 265")
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
+        print_memory_status("line 266")
         attention_probs = nn.functional.softmax(attention_scores, dim=-1)
         attention_probs = self.attn_dropout(attention_probs)
         # Calculate the attention output
@@ -351,7 +360,7 @@ class Encoder(nn.Module):
         # Calculate the transformer block's output for each block
         all_attentions = []
         for block in self.blocks:
-            print("[test] here: x, attention_probs = block(")
+            print("[test] here: x, attention_probs(")
             x, attention_probs = block(x, output_attentions=output_attentions)
             print(f"[test] x: {x.shape}")
             if output_attentions:
@@ -454,7 +463,7 @@ class DepthViT(nn.Module):
             (embedding_output_image, embedding_output_depth), dim=1
         )
         print(f"[test] emd_fusion: {embedding_output_fusion.shape}")
-
+        print_memory_status("l465")
         # Calculate the encoder's output
         encoder_output, all_attentions = self.encoder(
             embedding_output_fusion, output_attentions=output_attentions
