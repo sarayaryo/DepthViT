@@ -90,7 +90,7 @@ class LateFusionDepthViT:
         self.labels = labels
 
     def calculate_loss(self):
-        print("[test] here: loss = self.loss_fn(")
+        #print("[test] here: loss = self.loss_fn")
         preds = self.model(self.images, self.depth)[0]
         loss = self.loss_fn(preds, self.labels)
         # loss2 = self.loss_fn(self.model(self.depth, Isdepth=True)[0], self.labels)
@@ -120,6 +120,7 @@ class Trainer:
         train_losses, test_losses, accuracies = [], [], []
         # Train the model
         for i in range(epochs):
+            print(f"train epoch: {i}")
             train_loss = self.train_epoch(trainloader)
             accuracy, test_loss = self.evaluate(testloader)
             train_losses.append(train_loss)
@@ -161,11 +162,17 @@ class Trainer:
             # Calculate the loss
 
             # NOTE: LateFusionDepthViT
+
             print("[test] here: preds = self.model(")
+
             preds = self.model(images, depth)[0]
+
             print(f"[test] preds: {preds}")
+
             loss = self.loss_fn(preds, labels)
+
             print(f"[test] loss: {loss}")
+
             # loss = self.loss_fn(self.model(images)[0], labels)
 
             # Backpropagate the loss
@@ -292,10 +299,10 @@ def main():
     print(f"Total depth image paths: {len(depth_paths)}")
 
     # image_paths と depth_paths で、順番が正しいかどうかは保証されない
-    image_paths = image_paths[:min_length]
-    depth_paths = depth_paths[:min_length]
-    print(f"Adjusted Total RGB image paths: {len(image_paths)}")
-    print(f"Adjusted Total depth image paths: {len(depth_paths)}")
+    # image_paths = image_paths[:min_length]
+    # depth_paths = depth_paths[:min_length]
+    # print(f"Adjusted Total RGB image paths: {len(image_paths)}")
+    # print(f"Adjusted Total depth image paths: {len(depth_paths)}")
 
     # データ数制限
     image_paths = image_paths[: args.max_data_size]
@@ -308,7 +315,7 @@ def main():
     # print("[test] image_test: ", image_test)
     # print("[test] depth_train: ", depth_train)
     # print("[test] depth_test: ", depth_test)
-
+    
     # ラベル取得
     train_dataset = ImageDepthDataset(
         image_train, depth_train, getlabels(image_train), transform=transform1
@@ -317,13 +324,13 @@ def main():
         image_test, depth_test, getlabels(image_test), transform=transform1
     )
 
-    print("[test] here: train_loader = DataLoader(")
+
     train_loader = DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=0
-    )  # changed num_workers 2 -> 0
-    print("[test] here: test_loader = DataLoader(")
+        train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=1
+    )  # changed num_workers 2 -> 1
+
     test_loader = DataLoader(
-        test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=0
+        test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=1
     )
 
     ViT_methods = {
@@ -331,7 +338,7 @@ def main():
         # 1: Method1,  # 未定義
         2: DepthViT,
     }
-    print("[test] here: model_class = ViT_methods.get(method, ViTForClassfication)")
+
     model_class = ViT_methods.get(method, ViTForClassfication)
     model = model_class(config)
 
@@ -340,7 +347,7 @@ def main():
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-2)
     loss_fn = nn.CrossEntropyLoss()
     trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device)
-    print("[test] here: trainer.train(")
+
     trainer.train(
         train_loader,
         test_loader,
