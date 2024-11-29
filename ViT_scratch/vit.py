@@ -262,12 +262,13 @@ class FasterMultiHeadAttention(nn.Module):
         ).transpose(1, 2)
         # Calculate the attention scores
         # softmax(Q*K.T/sqrt(head_size))*V
-        print_memory_status("line 264")
+
         attention_scores = torch.matmul(query, key.transpose(-1, -2))
-        print_memory_status("line 265")
+
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
-        print_memory_status("line 266")
+
         attention_probs = nn.functional.softmax(attention_scores, dim=-1)
+
         attention_probs = self.attn_dropout(attention_probs)
         # Calculate the attention output
         attention_output = torch.matmul(attention_probs, value)
@@ -360,9 +361,9 @@ class Encoder(nn.Module):
         # Calculate the transformer block's output for each block
         all_attentions = []
         for block in self.blocks:
-            print("[test] here: x, attention_probs(")
+
             x, attention_probs = block(x, output_attentions=output_attentions)
-            print(f"[test] x: {x.shape}")
+
             if output_attentions:
                 all_attentions.append(attention_probs)
         # Return the encoder's output and the attention probabilities (optional)
@@ -454,24 +455,24 @@ class DepthViT(nn.Module):
 
     def forward(self, img, dpt, output_attentions=False, Isdepth=False):
         # Calculate the embedding output
-        print("[test] here: embedding_output_image = self.embedding")
+
         embedding_output_image = self.embedding(img, Isdepth=Isdepth)
-        print(f"[test] emd_image: {embedding_output_image.shape}")
+        # print(f"[test] emd_image: {embedding_output_image.shape}")
         embedding_output_depth = self.embedding(dpt, Isdepth=True)
-        print(f"[test] emd_depth: {embedding_output_depth.shape}")
+        # print(f"[test] emd_depth: {embedding_output_depth.shape}")
         embedding_output_fusion = torch.cat(
             (embedding_output_image, embedding_output_depth), dim=1
         )
-        print(f"[test] emd_fusion: {embedding_output_fusion.shape}")
-        print_memory_status("l465")
+        # print(f"[test] emd_fusion: {embedding_output_fusion.shape}")
+
         # Calculate the encoder's output
         encoder_output, all_attentions = self.encoder(
             embedding_output_fusion, output_attentions=output_attentions
         )
-        print(f"[test] encoder_output: {encoder_output.shape}")
+        # print(f"[test] encoder_output: {encoder_output.shape}")
         # Calculate the logits, take the [CLS] token's output as features for classification
         logits = self.classifier(encoder_output[:, 0, :])
-        print(f"[test] logits: {logits.shape}")
+
         # Return the logits and the attention probabilities (optional)
         if not output_attentions:
             return (logits, None)
