@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 import time
 from torch import nn, optim
 import os
@@ -28,7 +29,7 @@ def check_device_availability(device):
 
 
 config = {
-    "patch_size": 4,  # Input image size: 32x32 -> 8x8 patches
+    "patch_size": 32,  # Input image size: 32x32 -> 8x8 patches
     "hidden_size": 24,  # changed 48->24
     "num_hidden_layers": 4,
     "num_attention_heads": 4,
@@ -59,7 +60,7 @@ class SimpleViT:
         self.labels = labels
 
     def calculate_loss(self):
-        print(self.images.shape)
+        # print(self.images.shape)
         return self.loss_fn(self.model(self.images)[0], self.labels)
 
 
@@ -153,27 +154,22 @@ class Trainer:
             # batch = [ [sub_t.to(self.device) for sub_t in t] for t in batch.values()]
             batch = [t.to(self.device) for t in batch.values()]
             images, depth, labels = batch
-            print(
-                f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}"
-            )
+            # print(
+            #     f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}"
+            # )
 
             # Zero the gradients
             self.optimizer.zero_grad()
             # Calculate the loss
 
             # NOTE: LateFusionDepthViT
-
-            print("[test] here: preds = self.model(")
-
-            preds = self.model(images, depth)[0]
-
-            print(f"[test] preds: {preds}")
-
-            loss = self.loss_fn(preds, labels)
-
-            print(f"[test] loss: {loss}")
-
-            # loss = self.loss_fn(self.model(images)[0], labels)
+            if self.method == 2:
+                preds = self.model(images, depth)[0]
+                loss = self.loss_fn(preds, labels)
+            elif self.method == 0:
+                loss = self.loss_fn(self.model(images)[0], labels)
+            else:
+                raise ValueError(f"Unknown loss method: {self.loss_method}")
 
             # Backpropagate the loss
             loss.backward()
@@ -225,6 +221,7 @@ def parse_args():
     parser.add_argument("--save_model_every", type=int, default=0)
     parser.add_argument("--method", type=int, default=0)
     parser.add_argument("--dataset", type=str, default="rod_sample")
+    parser.add_argument("--num_labels", type=int, default=10)
 
     args = parser.parse_args()
     if args.device is None:
@@ -239,6 +236,7 @@ def main():
     # Training parameters
     epochs = args.epochs
     lr = args.lr
+    num_labels = args.num_labels
     device = args.device
     save_model_every_n_epochs = args.save_model_every
     method = args.method
@@ -272,11 +270,12 @@ def main():
             # classlabel = '_'.join(filename.split('_')[:2])
             labels.append(classlabel)
             # 取得したクラスラベルとファイル名の確認 (必要に応じて処理を追加)
-            print(f"File: {image_file}, ClassLabel: {classlabel}")
+            # print(f"File: {image_file}, ClassLabel: {classlabel}")
         encoded_labels = le.fit_transform(labels)
-        print(f"encoded_labels: {encoded_labels}")
+        # print(f"encoded_labels: {encoded_labels}")
         # print(f"label amount::::{len(labels)}")
         return encoded_labels
+    
 
     # 画像ファイルのパスを取得 (RGBおよび深度画像)
     image_files = glob.glob(
@@ -294,9 +293,8 @@ def main():
         elif "maskcrop" not in filename:
             image_paths.append(file_path)
 
-    min_length = min(len(image_paths), len(depth_paths))
-    print(f"Total RGB image paths: {len(image_paths)}")
-    print(f"Total depth image paths: {len(depth_paths)}")
+    # min_length = min(len(image_paths), len(depth_paths))
+
 
     # image_paths と depth_paths で、順番が正しいかどうかは保証されない
     # image_paths = image_paths[:min_length]
@@ -308,13 +306,12 @@ def main():
     image_paths = image_paths[: args.max_data_size]
     depth_paths = depth_paths[: args.max_data_size]
 
+    print(f"Total RGB image paths: {len(image_paths)}")
+    print(f"Total depth image paths: {len(depth_paths)}")
+
     image_train, image_test, depth_train, depth_test = train_test_split(
         image_paths, depth_paths, test_size=0.2, random_state=0
     )
-    # print("[test] image_train: ", image_train)
-    # print("[test] image_test: ", image_test)
-    # print("[test] depth_train: ", depth_train)
-    # print("[test] depth_test: ", depth_test)
     
     # ラベル取得
     train_dataset = ImageDepthDataset(
@@ -324,6 +321,8 @@ def main():
         image_test, depth_test, getlabels(image_test), transform=transform1
     )
 
+    unique_labels = np.unique(getlabels(image_train + image_test))
+    num_labels = len(unique_labels)
 
     train_loader = DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=1
@@ -340,6 +339,8 @@ def main():
     }
 
     model_class = ViT_methods.get(method, ViTForClassfication)
+
+    config["num_classes"] = num_labels
     model = model_class(config)
 
     # Create the model, optimizer, loss function and trainer
