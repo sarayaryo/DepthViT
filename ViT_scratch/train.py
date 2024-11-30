@@ -9,7 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 
 from utils import save_experiment, save_checkpoint
 from data import prepare_data
-from vit import ViTForClassfication, DepthViT
+from vit import ViTForClassfication, EarlyFusion, LateFusion
 from torchvision import datasets, transforms
 from data import ImageDepthDataset
 from torch.utils.data import DataLoader
@@ -51,7 +51,7 @@ assert config["image_size"] % config["patch_size"] == 0
 
 
 # Image only ViT
-class SimpleViT:
+class SimpleViT_loss:
     def __init__(self, model, images, depth, labels, loss_fn) -> None:
         self.model = model
         self.loss_fn = loss_fn
@@ -63,26 +63,8 @@ class SimpleViT:
         # print(self.images.shape)
         return self.loss_fn(self.model(self.images)[0], self.labels)
 
-
-# Early Fusion
-class EarlyFusionDepthViT:
-    def __init__(self, model, images, depth, labels, loss_fn) -> None:
-        self.model = model
-        self.loss_fn = loss_fn
-        self.images = images
-        self.depth = depth
-        self.labels = labels
-
-    def calculate_loss(self):
-        image_depth = torch.cat((self.images, self.depth), dim=1)
-        # print(image_depth[0].shape)
-        loss = self.loss_fn(self.model(image_depth)[0], self.labels)
-        # エラー未解決
-        return loss
-
-
-# Late Fusion
-class LateFusionDepthViT:
+# EarlyFusion
+class Early_loss:
     def __init__(self, model, images, depth, labels, loss_fn) -> None:
         self.model = model
         self.loss_fn = loss_fn
@@ -95,8 +77,25 @@ class LateFusionDepthViT:
         preds = self.model(self.images, self.depth)[0]
         loss = self.loss_fn(preds, self.labels)
         # loss2 = self.loss_fn(self.model(self.depth, Isdepth=True)[0], self.labels)
+        return loss
+    
+# LateFusion
+class Late_loss:
+    def __init__(self, model, images, depth, labels, loss_fn) -> None:
+        self.model = model
+        self.loss_fn = loss_fn
+        self.images = images
+        self.depth = depth
+        self.labels = labels
+
+    def calculate_loss(self):
+        # Get predictions from the model
+        preds = self.model(self.images, self.depth)[0]  # logits
+        # Compute loss
+        loss = self.loss_fn(preds, self.labels)
 
         return loss
+
 
 
 class Trainer:
@@ -107,11 +106,12 @@ class Trainer:
     def __init__(self, model, optimizer, loss_fn, method, exp_name, device):
         self.model = model.to(device)
         self.optimizer = optimizer
+        self.method = method
         self.loss_fn = loss_fn
         self.exp_name = exp_name
         self.device = device
-        loss_methods = {0: SimpleViT, 1: EarlyFusionDepthViT, 2: LateFusionDepthViT}
-        self.loss_method = loss_methods.get(method)
+        fusion_methods = {0: SimpleViT_loss, 1: Early_loss, 2: Late_loss}
+        self.fusion_method = fusion_methods.get(method)
 
     def train(self, trainloader, testloader, epochs, save_model_every_n_epochs=0):
         """
@@ -161,15 +161,18 @@ class Trainer:
             # Zero the gradients
             self.optimizer.zero_grad()
             # Calculate the loss
-
-            # NOTE: LateFusionDepthViT
+            # NOTE: LateFusion
             if self.method == 2:
+                preds = self.model(images, depth)[0]
+                loss = self.loss_fn(preds, labels)               
+            elif self.method == 1:
                 preds = self.model(images, depth)[0]
                 loss = self.loss_fn(preds, labels)
             elif self.method == 0:
-                loss = self.loss_fn(self.model(images)[0], labels)
+                preds = self.model(images)[0]
+                loss = self.loss_fn(preds, labels)
             else:
-                raise ValueError(f"Unknown loss method: {self.loss_method}")
+                raise ValueError(f"Unknown loss method: {self.fusion_method}")
 
             # Backpropagate the loss
             loss.backward()
@@ -190,10 +193,15 @@ class Trainer:
                 images, depth, labels = batch
 
                 # Get predictions
-                logits, _ = self.model(images, depth)
-
+                if self.method == 2:
+                    logits, _ = self.model(images, depth)
+                elif self.method == 1:
+                    logits, _ = self.model(images, depth)
+                elif self.method == 0: 
+                    logits, _ = self.model(images)
+                print(f"logits:{logits.shape}")
                 # Calculate the loss
-                method_instance = self.loss_method(
+                method_instance = self.fusion_method(
                     self.model, images, depth, labels, self.loss_fn
                 )
                 loss = method_instance.calculate_loss()
@@ -334,8 +342,8 @@ def main():
 
     ViT_methods = {
         0: ViTForClassfication,
-        # 1: Method1,  # 未定義
-        2: DepthViT,
+        1: EarlyFusion, 
+        2: LateFusion,
     }
 
     model_class = ViT_methods.get(method, ViTForClassfication)
