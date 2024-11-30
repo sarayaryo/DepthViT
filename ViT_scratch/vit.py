@@ -328,6 +328,7 @@ class Block(nn.Module):
 
     def forward(self, x, output_attentions=False):
         # Self-attention
+        # print(f"Block.forward: input output_attentions={output_attentions}, type={type(output_attentions)}")
         attention_output, attention_probs = self.attention(
             self.layernorm_1(x), output_attentions=output_attentions
         )
@@ -360,6 +361,7 @@ class Encoder(nn.Module):
     def forward(self, x, output_attentions=False):
         # Calculate the transformer block's output for each block
         all_attentions = []
+        # print(f"Encoder start: output_attentions={output_attentions}, type={type(output_attentions)}")
         for block in self.blocks:
 
             x, attention_probs = block(x, output_attentions=output_attentions)
@@ -367,6 +369,7 @@ class Encoder(nn.Module):
             if output_attentions:
                 all_attentions.append(attention_probs)
         # Return the encoder's output and the attention probabilities (optional)
+        
         if not output_attentions:
             return (x, None)
         else:
@@ -401,9 +404,11 @@ class ViTForClassfication(nn.Module):
         encoder_output, all_attentions = self.encoder(
             embedding_output_image, output_attentions=output_attentions
         )
+        
         # Calculate the logits, take the [CLS] token's output as features for classification
         logits = self.classifier(encoder_output[:, 0, :])
         # Return the logits and the attention probabilities (optional)
+
         if not output_attentions:
             return (logits, None)
         else:
@@ -433,7 +438,7 @@ class ViTForClassfication(nn.Module):
             ).to(module.cls_token.dtype)
 
 
-class DepthViT(nn.Module):
+class EarlyFusion(nn.Module):
     """
     The ViT model for classification.
     """
@@ -455,7 +460,6 @@ class DepthViT(nn.Module):
 
     def forward(self, img, dpt, output_attentions=False, Isdepth=False):
         # Calculate the embedding output
-
         embedding_output_image = self.embedding(img, Isdepth=Isdepth)
         # print(f"[test] emd_image: {embedding_output_image.shape}")
         embedding_output_depth = self.embedding(dpt, Isdepth=True)
@@ -478,6 +482,78 @@ class DepthViT(nn.Module):
             return (logits, None)
         else:
             return (logits, all_attentions)
+
+    def _init_weights(self, module):
+        if isinstance(module, (nn.Linear, nn.Conv2d)):
+            torch.nn.init.normal_(
+                module.weight, mean=0.0, std=self.config["initializer_range"]
+            )
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+        elif isinstance(module, nn.LayerNorm):
+            module.bias.data.zero_()
+            module.weight.data.fill_(1.0)
+        elif isinstance(module, Embeddings):
+            module.position_embeddings.data = nn.init.trunc_normal_(
+                module.position_embeddings.data.to(torch.float32),
+                mean=0.0,
+                std=self.config["initializer_range"],
+            ).to(module.position_embeddings.dtype)
+
+            module.cls_token.data = nn.init.trunc_normal_(
+                module.cls_token.data.to(torch.float32),
+                mean=0.0,
+                std=self.config["initializer_range"],
+            ).to(module.cls_token.dtype)
+
+class LateFusion(nn.Module):
+    """
+    The ViT model for classification using Late Fusion.
+    """
+
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        self.image_size = config["image_size"]
+        self.hidden_size = config["hidden_size"]
+        self.num_classes = config["num_classes"]
+        # Create the embedding module
+        self.embedding = Embeddings(config)
+        
+        # Create the transformer encoder module (shared for simplicity)
+        self.encoder_rgb = Encoder(config)
+        self.encoder_depth = Encoder(config)
+
+        # Create a linear layer to project the encoder's output to the number of classes
+        self.classifier = nn.Linear(self.hidden_size, self.num_classes)
+        # Initialize the weights
+        self.apply(self._init_weights)
+
+    def forward(self, img, dpt, output_attentions=False):
+        # Calculate the embedding output for RGB
+        embedding_output_rgb = self.embedding(img, Isdepth=False)
+        # Calculate the embedding output for Depth
+        embedding_output_depth = self.embedding(dpt, Isdepth=True)
+        
+        # Pass through separate encoders
+        encoder_output_rgb, all_attentions_rgb = self.encoder_rgb(
+            embedding_output_rgb, output_attentions=output_attentions
+        )
+        encoder_output_depth, all_attentions_depth = self.encoder_depth(
+            embedding_output_depth, output_attentions=output_attentions
+        )
+        
+        # Fusion (simple addition here, but can be concatenation or weighted sum)
+        fusion_output = encoder_output_rgb + encoder_output_depth
+        
+        # Classification using [CLS] token
+        logits = self.classifier(fusion_output[:, 0, :])
+
+        # Return logits and attention probabilities (optional)
+        if not output_attentions:
+            return (logits, None)
+        else:
+            return (logits, (all_attentions_rgb, all_attentions_depth))
 
     def _init_weights(self, module):
         if isinstance(module, (nn.Linear, nn.Conv2d)):
