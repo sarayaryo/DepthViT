@@ -199,7 +199,7 @@ class Trainer:
                     logits, _ = self.model(images, depth)
                 elif self.method == 0: 
                     logits, _ = self.model(images)
-                print(f"logits:{logits.shape}")
+                # print(f"logits:{logits.shape}")
                 # Calculate the loss
                 method_instance = self.fusion_method(
                     self.model, images, depth, labels, self.loss_fn
@@ -230,6 +230,8 @@ def parse_args():
     parser.add_argument("--method", type=int, default=0)
     parser.add_argument("--dataset", type=str, default="rod_sample")
     parser.add_argument("--num_labels", type=int, default=10)
+    parser.add_argument("--weight_decay", type=float, default=0.02, help="Weight decay for optimizer")
+
 
     args = parser.parse_args()
     if args.device is None:
@@ -353,7 +355,7 @@ def main():
 
     # Create the model, optimizer, loss function and trainer
     # model = ViTForClassfication(config)
-    optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-2)
+    optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay = args.weight_decay)
     loss_fn = nn.CrossEntropyLoss()
     trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device)
 
