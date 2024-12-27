@@ -529,7 +529,7 @@ class LateFusion(nn.Module):
         # Initialize the weights
         self.apply(self._init_weights)
 
-    def forward(self, img, dpt, output_attentions=False):
+    def forward(self, img, dpt, attentions_choice=False):
         # Calculate the embedding output for RGB
         embedding_output_rgb = self.embedding(img, Isdepth=False)
         # Calculate the embedding output for Depth
@@ -537,10 +537,10 @@ class LateFusion(nn.Module):
         
         # Pass through separate encoders
         encoder_output_rgb, all_attentions_rgb = self.encoder_rgb(
-            embedding_output_rgb, output_attentions=output_attentions
+            embedding_output_rgb, output_attentions=attentions_choice
         )
         encoder_output_depth, all_attentions_depth = self.encoder_depth(
-            embedding_output_depth, output_attentions=output_attentions
+            embedding_output_depth, output_attentions=attentions_choice
         )
         
         # Fusion (simple addition here, but can be concatenation or weighted sum)
@@ -550,10 +550,10 @@ class LateFusion(nn.Module):
         logits = self.classifier(fusion_output[:, 0, :])
 
         # Return logits and attention probabilities (optional)
-        if not output_attentions:
+        if not attentions_choice:
             return (logits, None)
         else:
-            return (logits, (all_attentions_rgb, all_attentions_depth))
+            return (logits, all_attentions_rgb, all_attentions_depth)
 
     def _init_weights(self, module):
         if isinstance(module, (nn.Linear, nn.Conv2d)):

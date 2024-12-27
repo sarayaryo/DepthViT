@@ -191,14 +191,16 @@ class Trainer:
                 # Move the batch to the device
                 batch = [t.to(self.device) for t in batch.values()]
                 images, depth, labels = batch
-
+                # print(f"images:{images}")
+                # print(f"depth:{depth}")
+                # print(f"labels:{labels}")
                 # Get predictions
                 if self.method == 2:
-                    logits, _ = self.model(images, depth)
+                    logits, attentions = self.model(images, depth, attentions_choice=True)
                 elif self.method == 1:
-                    logits, _ = self.model(images, depth)
+                    logits, attentions = self.model(images, depth, attentions_choice=True)
                 elif self.method == 0: 
-                    logits, _ = self.model(images)
+                    logits, attentions = self.model(images, attentions_choice=True)
                 # print(f"logits:{logits.shape}")
                 # Calculate the loss
                 method_instance = self.fusion_method(
@@ -231,6 +233,7 @@ def parse_args():
     parser.add_argument("--dataset", type=str, default="rod_sample")
     parser.add_argument("--num_labels", type=int, default=10)
     parser.add_argument("--weight_decay", type=float, default=0.02, help="Weight decay for optimizer")
+    parser.add_argument("--attentionmap", type=bool, default=False, help="Visualize Attentionmap")
 
 
     args = parser.parse_args()
