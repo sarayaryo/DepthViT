@@ -5,6 +5,7 @@ from torch import nn, optim
 import os
 from pathlib import Path
 import glob
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 
 from utils import save_experiment, save_checkpoint
@@ -96,13 +97,24 @@ class Late_loss:
 
         return loss
 
+def visualize_attention(attention_maps, layer_idx=0, head_idx=0, save_path=None):
+    for batch_idx, attention_map in enumerate(attention_maps):
+        attention = attention_map[layer_idx][head_idx].detach().cpu().numpy()
 
+        plt.figure(figsize=(8, 6))
+        plt.title(f"Attention Map (Batch {batch_idx}, Layer {layer_idx}, Head {head_idx})")
+        plt.imshow(attention[0], cmap="viridis")
+        plt.colorbar()
+        
+        if save_path:
+            plt.savefig(f"{save_path}_batch{batch_idx}_layer{layer_idx}_head{head_idx}.png")
+        else:
+            plt.show()
 
 class Trainer:
     """
     The simple trainer.
     """
-
     def __init__(self, model, optimizer, loss_fn, method, exp_name, device):
         self.model = model.to(device)
         self.optimizer = optimizer
@@ -112,6 +124,7 @@ class Trainer:
         self.device = device
         fusion_methods = {0: SimpleViT_loss, 1: Early_loss, 2: Late_loss}
         self.fusion_method = fusion_methods.get(method)
+        self.num_layers = model.config["num_hidden_layers"]
 
     def train(self, trainloader, testloader, epochs, save_model_every_n_epochs=0):
         """
@@ -123,7 +136,7 @@ class Trainer:
         for i in range(epochs):
             print(f"train epoch: {i}")
             train_loss = self.train_epoch(trainloader)
-            accuracy, test_loss = self.evaluate(testloader)
+            accuracy, test_loss, attention_img, attention_dpt = self.evaluate(testloader)
             train_losses.append(train_loss)
             test_losses.append(test_loss)
             accuracies.append(accuracy)
@@ -137,6 +150,13 @@ class Trainer:
             ):
                 print("\tSave checkpoint at epoch", i + 1)
                 save_checkpoint(self.exp_name, self.model, i + 1)
+
+        # visualize_attention
+        layer_idx = self.num_layers - 1
+        head_idx = 0
+        # print(f"attn img shape:{attention_img[0]}")
+        visualize_attention(attention_img, layer_idx=0, head_idx=0, save_path=None)
+
         # Save the experiment
         save_experiment(
             self.exp_name, config, self.model, train_losses, test_losses, accuracies
@@ -186,6 +206,9 @@ class Trainer:
         self.model.eval()
         total_loss = 0
         correct = 0
+        all_attention_maps_img = []  
+        all_attention_maps_dpt = []  
+
         with torch.no_grad():
             for batch in testloader:
                 # Move the batch to the device
@@ -195,13 +218,16 @@ class Trainer:
                 # print(f"depth:{depth}")
                 # print(f"labels:{labels}")
                 # Get predictions
-                if self.method == 2:
-                    logits, attentions = self.model(images, depth, attentions_choice=True)
-                elif self.method == 1:
-                    logits, attentions = self.model(images, depth, attentions_choice=True)
+                if self.method in [1,2]:
+                    logits, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
+                    all_attention_maps_img.append(attention_img)
+                    all_attention_maps_dpt.append(attention_dpt)
+
                 elif self.method == 0: 
                     logits, attentions = self.model(images, attentions_choice=True)
+                    all_attention_maps_img.append(attention_img)
                 # print(f"logits:{logits.shape}")
+
                 # Calculate the loss
                 method_instance = self.fusion_method(
                     self.model, images, depth, labels, self.loss_fn
@@ -215,7 +241,7 @@ class Trainer:
                 correct += torch.sum(predictions == labels).item()
         accuracy = correct / len(testloader.dataset)
         avg_loss = total_loss / len(testloader.dataset)
-        return accuracy, avg_loss
+        return accuracy, avg_loss, all_attention_maps_img, all_attention_maps_dpt
 
 
 def parse_args():
@@ -307,7 +333,6 @@ def main():
             image_paths.append(file_path)
 
     # min_length = min(len(image_paths), len(depth_paths))
-
 
     # image_paths と depth_paths で、順番が正しいかどうかは保証されない
     # image_paths = image_paths[:min_length]

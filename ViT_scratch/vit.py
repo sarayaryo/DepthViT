@@ -524,6 +524,9 @@ class LateFusion(nn.Module):
         self.encoder_rgb = Encoder(config)
         self.encoder_depth = Encoder(config)
 
+        ### ----- use common Encoder ------
+        # self.encoder_rgb_depth = Encoder(config)
+
         # Create a linear layer to project the encoder's output to the number of classes
         self.classifier = nn.Linear(self.hidden_size, self.num_classes)
         # Initialize the weights
