@@ -98,7 +98,12 @@ class Late_loss:
         return loss
 
 def visualize_attention(attention_maps, layer_idx=0, head_idx=0, save_path=None):
+    print(f"attnmap:{attention_maps.shape}")
+    ### ---attnmap:(1, 4, 2, 4, 65, 65)
+    
     for batch_idx, attention_map in enumerate(attention_maps):
+        print(f"attnmap:{attention_map.shape}")
+
         attention = attention_map[layer_idx][head_idx].detach().cpu().numpy()
 
         plt.figure(figsize=(8, 6))
@@ -155,7 +160,9 @@ class Trainer:
         layer_idx = self.num_layers - 1
         head_idx = 0
         # print(f"attn img shape:{attention_img[0]}")
-        visualize_attention(attention_img, layer_idx=0, head_idx=0, save_path=None)
+
+        ## ---- sample
+        visualize_attention(attention_img, layer_idx, head_idx, save_path=None)
 
         # Save the experiment
         save_experiment(
@@ -241,6 +248,7 @@ class Trainer:
                 correct += torch.sum(predictions == labels).item()
         accuracy = correct / len(testloader.dataset)
         avg_loss = total_loss / len(testloader.dataset)
+        all_attention_maps_img = np.array(all_attention_maps_img)
         return accuracy, avg_loss, all_attention_maps_img, all_attention_maps_dpt
 
 
