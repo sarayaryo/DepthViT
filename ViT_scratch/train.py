@@ -15,6 +15,19 @@ from torchvision import datasets, transforms
 from data import ImageDepthDataset
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+from PIL import Image
+
+def get_list_shape(data):
+    """
+    再帰的にリストの形状を取得する。
+    """
+    if isinstance(data, list):
+        if len(data) > 0:
+            return [len(data)] + get_list_shape(data[0])
+        else:
+            return [0]  # 空リストの場合
+    else:
+        return []  # リストでない場合
 
 
 def check_device_availability(device):
@@ -97,24 +110,56 @@ class Late_loss:
 
         return loss
 
-def visualize_attention(attention_maps, layer_idx=0, head_idx=0, save_path=None):
-    print(f"attnmap:{attention_maps.shape}")
+def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None):
+    print(get_list_shape(attention_data))
     ### ---attnmap:(1, 4, 2, 4, 65, 65)
-    
-    for batch_idx, attention_map in enumerate(attention_maps):
-        print(f"attnmap:{attention_map.shape}")
 
-        attention = attention_map[layer_idx][head_idx].detach().cpu().numpy()
+    for idx, entry in enumerate(attention_data):
+        image = entry["image"] 
+        attention_img = entry["attention_img"] 
+        attention_dpt = entry["attention_dpt"] 
+        label = entry["label"]
+        print(f"attention_img.shape:{attention_img.shape}")
+        layer_idx = attention_img.size(0)-1
+        attention = attention_img[layer_idx][head_idx].detach().cpu().numpy()  # Shape: (seq_len, seq_len)
+
+        # remove CLS
+        spatial_attention = attention[1:].reshape(int(np.sqrt(attention.shape[1] - 1)), -1)  # Exclude CLS token
+
+        # resize attentionmap
+        image_size = image.shape[-2:]  # (H, W)
+        spatial_attention_resized = np.array(Image.fromarray(spatial_attention).resize(image_size, resample=Image.BILINEAR))
 
         plt.figure(figsize=(8, 6))
-        plt.title(f"Attention Map (Batch {batch_idx}, Layer {layer_idx}, Head {head_idx})")
-        plt.imshow(attention[0], cmap="viridis")
+        plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
+        plt.imshow(spatial_attention_resized, cmap="jet", alpha=0.5)  
+        plt.title(f"RGB Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
         plt.colorbar()
-        
+
         if save_path:
-            plt.savefig(f"{save_path}_batch{batch_idx}_layer{layer_idx}_head{head_idx}.png")
+            plt.savefig(f"{save_path}_image{idx}_layer{layer_idx}_head{head_idx}.png")
         else:
             plt.show()
+
+        if attention_dpt is not None:
+            print(f"attention_dpt.shape:{attention_dpt.shape}")
+            layer_idx = attention_dpt.size(0)-1
+            attention = attention_dpt[layer_idx][head_idx].detach().cpu().numpy()
+            spatial_attention = attention[1:].reshape(int(np.sqrt(attention.shape[1] - 1)), -1)  # Exclude CLS token
+            spatial_attention_resized_dpt = np.array(
+                Image.fromarray(spatial_attention).resize(image_size, resample=Image.BILINEAR)
+            )
+
+            plt.figure(figsize=(8, 6))
+            plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8)
+            plt.imshow(spatial_attention_resized_dpt, cmap="jet", alpha=0.5)
+            plt.title(f"Depth Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
+            plt.colorbar()
+            if save_path:
+                plt.savefig(f"{save_path}_image{idx}_depth_layer{layer_idx}_head{head_idx}.png")
+            else:
+                plt.show()
+
 
 class Trainer:
     """
@@ -141,7 +186,7 @@ class Trainer:
         for i in range(epochs):
             print(f"train epoch: {i}")
             train_loss = self.train_epoch(trainloader)
-            accuracy, test_loss, attention_img, attention_dpt = self.evaluate(testloader)
+            accuracy, test_loss, attention_data = self.evaluate(testloader)
             train_losses.append(train_loss)
             test_losses.append(test_loss)
             accuracies.append(accuracy)
@@ -157,12 +202,13 @@ class Trainer:
                 save_checkpoint(self.exp_name, self.model, i + 1)
 
         # visualize_attention
-        layer_idx = self.num_layers - 1
+        layer_idx = 1
         head_idx = 0
         # print(f"attn img shape:{attention_img[0]}")
 
         ## ---- sample
-        visualize_attention(attention_img, layer_idx, head_idx, save_path=None)
+        save_path = r"C:/ViT/sample"
+        visualize_attention(attention_data, layer_idx, head_idx, save_path=save_path)
 
         # Save the experiment
         save_experiment(
@@ -213,8 +259,9 @@ class Trainer:
         self.model.eval()
         total_loss = 0
         correct = 0
-        all_attention_maps_img = []  
-        all_attention_maps_dpt = []  
+        # all_attention_maps_img = []
+        # all_attention_maps_dpt = [] 
+        attention_data = []
 
         with torch.no_grad():
             for batch in testloader:
@@ -227,13 +274,22 @@ class Trainer:
                 # Get predictions
                 if self.method in [1,2]:
                     logits, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
-                    all_attention_maps_img.append(attention_img)
-                    all_attention_maps_dpt.append(attention_dpt)
+                    # all_attention_maps_img.append(attention_img)
+                    # all_attention_maps_dpt.append(attention_dpt)
 
                 elif self.method == 0: 
-                    logits, attentions = self.model(images, attentions_choice=True)
-                    all_attention_maps_img.append(attention_img)
+                    logits, attention_img = self.model(images, attentions_choice=True)
+                    attention_dpt = None
+                    # all_attention_maps_img.append(attention_img)
                 # print(f"logits:{logits.shape}")
+                # print(f"imagesize: {images.size(0)}")
+                for i in range(images.size(0)):
+                    attention_data.append({
+                        "image": images[i].detach().cpu(),
+                        "label": labels[i].detach().cpu().item(),
+                        "attention_img": attention_img[i].detach().cpu(),
+                        "attention_dpt": attention_dpt[i].detach().cpu()
+                    })
 
                 # Calculate the loss
                 method_instance = self.fusion_method(
@@ -248,13 +304,9 @@ class Trainer:
                 correct += torch.sum(predictions == labels).item()
         accuracy = correct / len(testloader.dataset)
         avg_loss = total_loss / len(testloader.dataset)
-        print(type(all_attention_maps_img))
-        if isinstance(all_attention_maps_img, list):
-            for item in all_attention_maps_img:
-                print(type(item))
-
-        all_attention_maps_img = np.array([tensor.cpu().numpy() for tensor in all_attention_maps_img])
-        return accuracy, avg_loss, all_attention_maps_img, all_attention_maps_dpt
+        # print(type(all_attention_maps_img))
+        # all_attention_maps_img = np.array([tensor.cpu().numpy() for tensor in all_attention_maps_img])
+        return accuracy, avg_loss, attention_data
 
 
 def parse_args():

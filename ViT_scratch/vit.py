@@ -552,6 +552,7 @@ class LateFusion(nn.Module):
         # Classification using [CLS] token
         logits = self.classifier(fusion_output[:, 0, :])
 
+        # print(f"here:attention_rgb{type(all_attentions_rgb)}")
         # Return logits and attention probabilities (optional)
         if not attentions_choice:
             return (logits, None)
