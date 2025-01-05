@@ -248,7 +248,12 @@ class Trainer:
                 correct += torch.sum(predictions == labels).item()
         accuracy = correct / len(testloader.dataset)
         avg_loss = total_loss / len(testloader.dataset)
-        all_attention_maps_img = np.array(all_attention_maps_img)
+        print(type(all_attention_maps_img))
+        if isinstance(all_attention_maps_img, list):
+            for item in all_attention_maps_img:
+                print(type(item))
+
+        all_attention_maps_img = np.array([tensor.cpu().numpy() for tensor in all_attention_maps_img])
         return accuracy, avg_loss, all_attention_maps_img, all_attention_maps_dpt
 
 
