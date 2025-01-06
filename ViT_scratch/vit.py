@@ -3,11 +3,23 @@ import torch
 from torch import nn
 import torch
 
+
 def print_memory_status(label=""):
     allocated = torch.cuda.memory_allocated() / (1024 ** 3)  # GB
     reserved = torch.cuda.memory_reserved() / (1024 ** 3)  # GB
     print(f"[{label}] Allocated: {allocated:.2f} GB, Reserved: {reserved:.2f} GB")
 
+def get_list_shape(data):
+    """
+    再帰的にリストの形状を取得する。
+    """
+    if isinstance(data, list):
+        if len(data) > 0:
+            return [len(data)] + get_list_shape(data[0])
+        else:
+            return [0]  # 空リストの場合
+    else:
+        return []  # リストでない場合
 
 class NewGELUActivation(nn.Module):
     """
@@ -552,11 +564,13 @@ class LateFusion(nn.Module):
         # Classification using [CLS] token
         logits = self.classifier(fusion_output[:, 0, :])
 
-        # print(f"here:attention_rgb{type(all_attentions_rgb)}")
-        # Return logits and attention probabilities (optional)
+        # print(f"here:attention_rgb{type(all_attentions_rgb)}
+
         if not attentions_choice:
             return (logits, None)
         else:
+            # print(f"all_attentions_rgb shape: {get_list_shape(all_attentions_rgb)}")
+            # print(f"all_attentions_depth shape: {get_list_shape(all_attentions_depth)}")
             return (logits, all_attentions_rgb, all_attentions_depth)
 
     def _init_weights(self, module):

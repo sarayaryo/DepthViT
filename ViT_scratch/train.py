@@ -10,24 +10,12 @@ from sklearn.preprocessing import LabelEncoder
 
 from utils import save_experiment, save_checkpoint
 from data import prepare_data
-from vit import ViTForClassfication, EarlyFusion, LateFusion
+from vit import ViTForClassfication, EarlyFusion, LateFusion, get_list_shape
 from torchvision import datasets, transforms
 from data import ImageDepthDataset
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from PIL import Image
-
-def get_list_shape(data):
-    """
-    再帰的にリストの形状を取得する。
-    """
-    if isinstance(data, list):
-        if len(data) > 0:
-            return [len(data)] + get_list_shape(data[0])
-        else:
-            return [0]  # 空リストの場合
-    else:
-        return []  # リストでない場合
 
 
 def check_device_availability(device):
@@ -111,15 +99,17 @@ class Late_loss:
         return loss
 
 def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None):
-    print(get_list_shape(attention_data))
+    # print(get_list_shape(attention_data))
     ### ---attnmap:(1, 4, 2, 4, 65, 65)
+    print(save_path)
 
     for idx, entry in enumerate(attention_data):
         image = entry["image"] 
+        depth = entry["depth_image"]
         attention_img = entry["attention_img"] 
         attention_dpt = entry["attention_dpt"] 
         label = entry["label"]
-        print(f"attention_img.shape:{attention_img.shape}")
+        # print(f"attention_img.shape:{attention_img.shape}")
         layer_idx = attention_img.size(0)-1
         attention = attention_img[layer_idx][head_idx].detach().cpu().numpy()  # Shape: (seq_len, seq_len)
 
@@ -138,8 +128,10 @@ def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None)
 
         if save_path:
             plt.savefig(f"{save_path}_image{idx}_layer{layer_idx}_head{head_idx}.png")
+            plt.close()
         else:
             plt.show()
+            plt.close()
 
         if attention_dpt is not None:
             print(f"attention_dpt.shape:{attention_dpt.shape}")
@@ -151,14 +143,16 @@ def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None)
             )
 
             plt.figure(figsize=(8, 6))
-            plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8)
+            plt.imshow(depth.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8)
             plt.imshow(spatial_attention_resized_dpt, cmap="jet", alpha=0.5)
             plt.title(f"Depth Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
             plt.colorbar()
             if save_path:
                 plt.savefig(f"{save_path}_image{idx}_depth_layer{layer_idx}_head{head_idx}.png")
+                plt.close()
             else:
                 plt.show()
+                plt.close()
 
 
 class Trainer:
@@ -202,12 +196,12 @@ class Trainer:
                 save_checkpoint(self.exp_name, self.model, i + 1)
 
         # visualize_attention
-        layer_idx = 1
+        layer_idx = 2
         head_idx = 0
         # print(f"attn img shape:{attention_img[0]}")
 
         ## ---- sample
-        save_path = r"C:/ViT/sample"
+        save_path = r"C:\\DepthViT\\ViT_scratch\\sample"
         visualize_attention(attention_data, layer_idx, head_idx, save_path=save_path)
 
         # Save the experiment
@@ -282,10 +276,12 @@ class Trainer:
                     attention_dpt = None
                     # all_attention_maps_img.append(attention_img)
                 # print(f"logits:{logits.shape}")
+                # print(f"attention_img: {get_list_shape(attention_img)}")
                 # print(f"imagesize: {images.size(0)}")
                 for i in range(images.size(0)):
                     attention_data.append({
                         "image": images[i].detach().cpu(),
+                        "depth_image": depth[i].detach().cpu(),
                         "label": labels[i].detach().cpu().item(),
                         "attention_img": attention_img[i].detach().cpu(),
                         "attention_dpt": attention_dpt[i].detach().cpu()
@@ -305,7 +301,7 @@ class Trainer:
         accuracy = correct / len(testloader.dataset)
         avg_loss = total_loss / len(testloader.dataset)
         # print(type(all_attention_maps_img))
-        # all_attention_maps_img = np.array([tensor.cpu().numpy() for tensor in all_attention_maps_img])
+
         return accuracy, avg_loss, attention_data
 
 
