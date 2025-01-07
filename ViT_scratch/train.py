@@ -101,7 +101,7 @@ class Late_loss:
 def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None):
     # print(get_list_shape(attention_data))
     ### ---attnmap:(1, 4, 2, 4, 65, 65)
-    print(save_path)
+    # print(save_path)
 
     for idx, entry in enumerate(attention_data):
         image = entry["image"] 
@@ -121,7 +121,7 @@ def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None)
         spatial_attention_resized = np.array(Image.fromarray(spatial_attention).resize(image_size, resample=Image.BILINEAR))
 
         plt.figure(figsize=(8, 6))
-        plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
+        # plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
         plt.imshow(spatial_attention_resized, cmap="jet", alpha=0.5)  
         plt.title(f"RGB Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
         plt.colorbar()
@@ -143,7 +143,7 @@ def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None)
             )
 
             plt.figure(figsize=(8, 6))
-            plt.imshow(depth.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8)
+            # plt.imshow(depth.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8)
             plt.imshow(spatial_attention_resized_dpt, cmap="jet", alpha=0.5)
             plt.title(f"Depth Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
             plt.colorbar()
@@ -201,7 +201,7 @@ class Trainer:
         # print(f"attn img shape:{attention_img[0]}")
 
         ## ---- sample
-        save_path = r"C:\\DepthViT\\ViT_scratch\\sample"
+        save_path = r"../sample/"
         visualize_attention(attention_data, layer_idx, head_idx, save_path=save_path)
 
         # Save the experiment
@@ -221,9 +221,9 @@ class Trainer:
             # batch = [ [sub_t.to(self.device) for sub_t in t] for t in batch.values()]
             batch = [t.to(self.device) for t in batch.values()]
             images, depth, labels = batch
-            # print(
-            #     f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}"
-            # )
+            print(
+                f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}"
+            )
 
             # Zero the gradients
             self.optimizer.zero_grad()
