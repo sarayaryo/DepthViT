@@ -1,4 +1,5 @@
 import torch
+import random
 import numpy as np
 import time
 from torch import nn, optim
@@ -51,6 +52,7 @@ assert config["hidden_size"] % config["num_attention_heads"] == 0
 assert config["intermediate_size"] == 4 * config["hidden_size"]
 assert config["image_size"] % config["patch_size"] == 0
 
+label_mapping = {}
 
 # Image only ViT
 class SimpleViT_loss:
@@ -97,18 +99,26 @@ class Late_loss:
         loss = self.loss_fn(preds, self.labels)
 
         return loss
+    
+def decode_label(encoded_label, label_mapping):
+    return label_mapping.get(encoded_label, "Unknown")
 
 def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None):
+    global label_mapping
     # print(get_list_shape(attention_data))
     ### ---attnmap:(1, 4, 2, 4, 65, 65)
-    # print(save_path)
+    print(save_path)
+    print(label_mapping)
 
     for idx, entry in enumerate(attention_data):
+        if idx > 10:
+            break
         image = entry["image"] 
         depth = entry["depth_image"]
         attention_img = entry["attention_img"] 
         attention_dpt = entry["attention_dpt"] 
         label = entry["label"]
+        label = decode_label(label, label_mapping)
         # print(f"attention_img.shape:{attention_img.shape}")
         layer_idx = attention_img.size(0)-1
         attention = attention_img[layer_idx][head_idx].detach().cpu().numpy()  # Shape: (seq_len, seq_len)
@@ -118,10 +128,10 @@ def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None)
 
         # resize attentionmap
         image_size = image.shape[-2:]  # (H, W)
-        spatial_attention_resized = np.array(Image.fromarray(spatial_attention).resize(image_size, resample=Image.BILINEAR))
+        spatial_attention_resized = np.array(Image.fromarray(spatial_attention).resize(image_size, resample=Image.BICUBIC))
 
         plt.figure(figsize=(8, 6))
-        # plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
+        plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
         plt.imshow(spatial_attention_resized, cmap="jet", alpha=0.5)  
         plt.title(f"RGB Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
         plt.colorbar()
@@ -143,7 +153,7 @@ def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None)
             )
 
             plt.figure(figsize=(8, 6))
-            # plt.imshow(depth.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8)
+            plt.imshow(depth.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8)
             plt.imshow(spatial_attention_resized_dpt, cmap="jet", alpha=0.5)
             plt.title(f"Depth Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
             plt.colorbar()
@@ -201,7 +211,7 @@ class Trainer:
         # print(f"attn img shape:{attention_img[0]}")
 
         ## ---- sample
-        save_path = r"../sample/"
+        save_path = r"../ViT_scratch/sample/"
         visualize_attention(attention_data, layer_idx, head_idx, save_path=save_path)
 
         # Save the experiment
@@ -358,6 +368,7 @@ def main():
 
     def getlabels(image_files):
         le = LabelEncoder()
+        global label_mapping
         labels = []
         for image_file in image_files:
             # ファイル名の拡張子を除く部分を取得 (例: 'apple_1_1_1_crop')
@@ -372,6 +383,7 @@ def main():
             # 取得したクラスラベルとファイル名の確認 (必要に応じて処理を追加)
             # print(f"File: {image_file}, ClassLabel: {classlabel}")
         encoded_labels = le.fit_transform(labels)
+        label_mapping = {index: label for index, label in enumerate(le.classes_)}
         # print(f"encoded_labels: {encoded_labels}")
         # print(f"label amount::::{len(labels)}")
         return encoded_labels
@@ -401,6 +413,23 @@ def main():
     # print(f"Adjusted Total RGB image paths: {len(image_paths)}")
     # print(f"Adjusted Total depth image paths: {len(depth_paths)}")
 
+    # ペアの整合性を確認
+    assert len(image_paths) == len(depth_paths), "Image and depth paths must have the same length!"
+
+    # ペア化されたデータをシャッフル
+    paired_data = list(zip(image_paths, depth_paths))
+    random.shuffle(paired_data)  # ペアのままシャッフル
+    image_paths, depth_paths = zip(*paired_data)  # シャッフル後に再分割
+
+    # リストに戻す
+    image_paths = list(image_paths)
+    depth_paths = list(depth_paths)
+
+    # デバッグ用出力
+    print("After shuffle:")
+    print(f"First 5 image paths: {image_paths[:5]}")
+    print(f"First 5 depth paths: {depth_paths[:5]}")
+
     # データ数制限
     image_paths = image_paths[: args.max_data_size]
     depth_paths = depth_paths[: args.max_data_size]
@@ -413,15 +442,19 @@ def main():
     )
     
     # ラベル取得
+    train_labels = getlabels(image_train)
+    test_labels = getlabels(image_test)
+
     train_dataset = ImageDepthDataset(
-        image_train, depth_train, getlabels(image_train), transform=transform1
+        image_train, depth_train, train_labels, transform=transform1
     )
     test_dataset = ImageDepthDataset(
-        image_test, depth_test, getlabels(image_test), transform=transform1
+        image_test, depth_test, test_labels, transform=transform1
     )
 
     unique_labels = np.unique(getlabels(image_train + image_test))
     num_labels = len(unique_labels)
+    print(f"numberof labels: {num_labels}") 
 
     train_loader = DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=1
