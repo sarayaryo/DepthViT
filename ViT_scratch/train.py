@@ -221,9 +221,9 @@ class Trainer:
             # batch = [ [sub_t.to(self.device) for sub_t in t] for t in batch.values()]
             batch = [t.to(self.device) for t in batch.values()]
             images, depth, labels = batch
-            print(
-                f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}"
-            )
+            # print(
+            #     f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}"
+            # )
 
             # Zero the gradients
             self.optimizer.zero_grad()
