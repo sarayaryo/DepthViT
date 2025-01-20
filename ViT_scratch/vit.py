@@ -214,9 +214,11 @@ class MultiHeadAttention(nn.Module):
         if not output_attentions:
             return (attention_output, None)
         else:
+            
             attention_probs = torch.stack(
                 [attention_probs for _, attention_probs in attention_outputs], dim=1
             )
+               
             return (attention_output, attention_probs)
 
 
@@ -292,6 +294,7 @@ class FasterMultiHeadAttention(nn.Module):
             .contiguous()
             .view(batch_size, sequence_length, self.all_head_size)
         )
+        # print(f"attention_output:{attention_output.shape}")
         # Project the attention output back to the hidden size
         attention_output = self.output_projection(attention_output)
         attention_output = self.output_dropout(attention_output)
@@ -299,6 +302,7 @@ class FasterMultiHeadAttention(nn.Module):
         if not output_attentions:
             return (attention_output, None)
         else:
+            # print(f"attention_probs.shape:{attention_probs.shape}")
             return (attention_output, attention_probs)
 
 
@@ -366,6 +370,7 @@ class Encoder(nn.Module):
         super().__init__()
         # Create a list of transformer blocks
         self.blocks = nn.ModuleList([])
+        # num_hidden_layers is encoder blocks number
         for _ in range(config["num_hidden_layers"]):
             block = Block(config)
             self.blocks.append(block)
@@ -385,7 +390,9 @@ class Encoder(nn.Module):
         if not output_attentions:
             return (x, None)
         else:
+            # all_attention is all block attention in entire Encoder
             return (x, all_attentions)
+
 
 
 class ViTForClassfication(nn.Module):

@@ -34,8 +34,8 @@ def check_device_availability(device):
 config = {
     "patch_size": 32,  # Input image size: 32x32 -> 8x8 patches
     "hidden_size": 24,  # changed 48->24
-    "num_hidden_layers": 4,
-    "num_attention_heads": 4,
+    "num_hidden_layers": 6,
+    "num_attention_heads": 2,
     "intermediate_size": 4 * 24,  # 4 * hidden_size
     "hidden_dropout_prob": 0.0,
     "attention_probs_dropout_prob": 0.0,
@@ -105,12 +105,15 @@ def decode_label(encoded_label, label_mapping):
 
 def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None):
     global label_mapping
-    # print(get_list_shape(attention_data))
-    ### ---attnmap:(1, 4, 2, 4, 65, 65)
-    print(save_path)
-    print(label_mapping)
+    # print(len(attention_data))
 
-    for idx, entry in enumerate(attention_data):
+    # print(f"get_list_shape{attention_data.shape}")
+    ### ---attnmap:(1, 4, 2, 4, 65, 65)
+    # print(save_path)
+    # print(label_mapping)
+
+    for idx, entry in enumerate(attention_data): #entry is each image and depth pair
+        print(f"idx:{idx}")
         if idx > 10:
             break
         image = entry["image"] 
@@ -119,9 +122,14 @@ def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None)
         attention_dpt = entry["attention_dpt"] 
         label = entry["label"]
         label = decode_label(label, label_mapping)
-        # print(f"attention_img.shape:{attention_img.shape}")
+        print(f"attention_img.shape:{attention_img.shape}")
+        print(f"attention_dpt.shape:{attention_dpt.shape}")
+        # print(aaa)
         layer_idx = attention_img.size(0)-1
         attention = attention_img[layer_idx][head_idx].detach().cpu().numpy()  # Shape: (seq_len, seq_len)
+
+        # attention weight is average of n blocks
+        # attention_img_ave = attention_img
 
         # remove CLS
         spatial_attention = attention[1:].reshape(int(np.sqrt(attention.shape[1] - 1)), -1)  # Exclude CLS token
@@ -144,7 +152,7 @@ def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None)
             plt.close()
 
         if attention_dpt is not None:
-            print(f"attention_dpt.shape:{attention_dpt.shape}")
+            # print(f"attention_dpt.shape:{attention_dpt.shape}")
             layer_idx = attention_dpt.size(0)-1
             attention = attention_dpt[layer_idx][head_idx].detach().cpu().numpy()
             spatial_attention = attention[1:].reshape(int(np.sqrt(attention.shape[1] - 1)), -1)  # Exclude CLS token
@@ -272,23 +280,22 @@ class Trainer:
                 # Move the batch to the device
                 batch = [t.to(self.device) for t in batch.values()]
                 images, depth, labels = batch
-                # print(f"images:{images}")
-                # print(f"depth:{depth}")
+                # print(f"images:{images.shape}")
+                # print(f"depth:{depth.shape}")
                 # print(f"labels:{labels}")
                 # Get predictions
                 if self.method in [1,2]:
                     logits, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
-                    # all_attention_maps_img.append(attention_img)
-                    # all_attention_maps_dpt.append(attention_dpt)
+
 
                 elif self.method == 0: 
                     logits, attention_img = self.model(images, attentions_choice=True)
                     attention_dpt = None
-                    # all_attention_maps_img.append(attention_img)
+
                 # print(f"logits:{logits.shape}")
                 # print(f"attention_img: {get_list_shape(attention_img)}")
                 # print(f"imagesize: {images.size(0)}")
-                for i in range(images.size(0)):
+                for i in range(images.size(0)): # .size(0) is batch_size, then processing each image
                     attention_data.append({
                         "image": images[i].detach().cpu(),
                         "depth_image": depth[i].detach().cpu(),
