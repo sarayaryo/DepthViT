@@ -34,8 +34,8 @@ def check_device_availability(device):
 config = {
     "patch_size": 32,  # Input image size: 32x32 -> 8x8 patches
     "hidden_size": 24,  # changed 48->24
-    "num_hidden_layers": 6,
-    "num_attention_heads": 2,
+    "num_hidden_layers": 4,
+    "num_attention_heads": 4,
     "intermediate_size": 4 * 24,  # 4 * hidden_size
     "hidden_dropout_prob": 0.0,
     "attention_probs_dropout_prob": 0.0,
@@ -287,13 +287,12 @@ class Trainer:
                 if self.method in [1,2]:
                     logits, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
 
-
                 elif self.method == 0: 
                     logits, attention_img = self.model(images, attentions_choice=True)
                     attention_dpt = None
 
                 # print(f"logits:{logits.shape}")
-                # print(f"attention_img: {get_list_shape(attention_img)}")
+                print(f"attention_img: {get_list_shape(attention_img)}")
                 # print(f"imagesize: {images.size(0)}")
                 for i in range(images.size(0)): # .size(0) is batch_size, then processing each image
                     attention_data.append({
