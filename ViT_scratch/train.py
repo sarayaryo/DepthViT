@@ -8,6 +8,7 @@ from pathlib import Path
 import glob
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
+from scipy.ndimage import zoom
 
 from utils import save_experiment, save_checkpoint
 from data import prepare_data
@@ -103,13 +104,11 @@ class Late_loss:
 def decode_label(encoded_label, label_mapping):
     return label_mapping.get(encoded_label, "Unknown")
 
-def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None):
+def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, save_path=None):
     global label_mapping
     # print(len(attention_data))
-
     # print(f"get_list_shape{attention_data.shape}")
     ### ---attnmap:(1, 4, 2, 4, 65, 65)
-    # print(save_path)
     # print(label_mapping)
 
     for idx, entry in enumerate(attention_data): #entry is each image and depth pair
@@ -123,24 +122,32 @@ def visualize_attention(attention_data, layer_idx=0, head_idx=0, save_path=None)
         label = entry["label"]
         label = decode_label(label, label_mapping)
         print(f"attention_img.shape:{attention_img.shape}")
-        print(f"attention_dpt.shape:{attention_dpt.shape}")
-        # print(aaa)
-        layer_idx = attention_img.size(0)-1
-        attention = attention_img[layer_idx][head_idx].detach().cpu().numpy()  # Shape: (seq_len, seq_len)
+        # print(f"attention_img.shape:{type(attention_img)}")   
+        
+        # layer_idx = attention_img.size(0)-1
+        # attention = attention_img[layer_idx][head_idx].detach().cpu().numpy()  # Shape: (seq_len, seq_len)
 
-        # attention weight is average of n blocks
-        # attention_img_ave = attention_img
-
+        # attention weight is average of n blocks(layers)
+        attention_img_ave = torch.mean(attention_img, dim=0)
+        print(f"attention_img_ave.shape:{attention_img_ave.shape}")
+        
         # remove CLS
-        spatial_attention = attention[1:].reshape(int(np.sqrt(attention.shape[1] - 1)), -1)  # Exclude CLS token
+        # spatial_attention = attention[1:].reshape(int(np.sqrt(attention.shape[1] - 1)), -1)  # Exclude CLS token
+        attention_img_ave = attention_img_ave[:, 1:, 1:].cpu().numpy() ## trans to numpy
+        print(f"attention_img_ave.shape:{attention_img_ave.shape}")
+
+        attentionMAP_img =[]
+        for head in attention_img_ave:
+            attentionMAP_img.append(zoom(head, (zoomsize, zoomsize)))
 
         # resize attentionmap
         image_size = image.shape[-2:]  # (H, W)
-        spatial_attention_resized = np.array(Image.fromarray(spatial_attention).resize(image_size, resample=Image.BICUBIC))
+        # spatial_attention_resized = np.array(Image.fromarray(spatial_attention).resize(image_size, resample=Image.BICUBIC))
+        # print(aaa)
 
         plt.figure(figsize=(8, 6))
         plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
-        plt.imshow(spatial_attention_resized, cmap="jet", alpha=0.5)  
+        plt.imshow(attentionMAP_img[0], cmap="jet", alpha=0.5)  
         plt.title(f"RGB Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
         plt.colorbar()
 
@@ -220,7 +227,10 @@ class Trainer:
 
         ## ---- sample
         save_path = r"../ViT_scratch/sample/"
-        visualize_attention(attention_data, layer_idx, head_idx, save_path=save_path)
+        image_size = self.model.config["image_size"]
+        patch_size = self.model.config["patch_size"]
+        num_patch = image_size/patch_size
+        visualize_attention(attention_data, image_size/(num_patch*num_patch), layer_idx, head_idx, save_path=save_path)
 
         # Save the experiment
         save_experiment(
@@ -292,7 +302,7 @@ class Trainer:
                     attention_dpt = None
 
                 # print(f"logits:{logits.shape}")
-                print(f"attention_img: {get_list_shape(attention_img)}")
+                # print(f"attention_img: {get_list_shape(attention_img)}")
                 # print(f"imagesize: {images.size(0)}")
                 for i in range(images.size(0)): # .size(0) is batch_size, then processing each image
                     attention_data.append({
