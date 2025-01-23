@@ -393,6 +393,38 @@ class Encoder(nn.Module):
             # all_attention is all block attention in entire Encoder
             return (x, all_attentions)
 
+class Encoder_RGB_Depth(nn.Module):
+    """
+    The transformer encoder module specialized for multimordal
+    """
+
+    def __init__(self, config):
+        super().__init__()
+        # Create a list of transformer blocks
+        self.blocks = nn.ModuleList([])
+        # num_hidden_layers is encoder blocks number
+        for _ in range(config["num_hidden_layers"]):
+            block = Block(config)
+            self.blocks.append(block)
+
+    def forward(self, img, dpt, output_attentions=False):
+        # Calculate the transformer block's output for each block
+        all_attentions = []
+        # print(f"Encoder start: output_attentions={output_attentions}, type={type(output_attentions)}")
+        for block in self.blocks:
+
+            x, attention_probs = block(x, output_attentions=output_attentions)
+
+            if output_attentions:
+                all_attentions.append(attention_probs)
+        # Return the encoder's output and the attention probabilities (optional)
+        
+        if not output_attentions:
+            return (x, None)
+        else:
+            # all_attention is all block attention in entire Encoder
+            return (x, all_attentions)
+
 
 
 class ViTForClassfication(nn.Module):
@@ -554,6 +586,8 @@ class LateFusion(nn.Module):
     def forward(self, img, dpt, attentions_choice=False):
         # Calculate the embedding output for RGB
         embedding_output_rgb = self.embedding(img, Isdepth=False)
+        print(f"here::{embedding_output_rgb.shape}")
+        print(aaa)
         # Calculate the embedding output for Depth
         embedding_output_depth = self.embedding(dpt, Isdepth=True)
         

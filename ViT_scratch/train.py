@@ -1,8 +1,9 @@
 import torch
+from torch import nn, optim
 import random
 import numpy as np
 import time
-from torch import nn, optim
+
 import os
 from pathlib import Path
 import glob
@@ -112,8 +113,8 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
     # print(label_mapping)
 
     for idx, entry in enumerate(attention_data): #entry is each image and depth pair
-        print(f"idx:{idx}")
-        if idx > 10:
+        # print(f"idx:{idx}")
+        if idx > 20:
             break
         image = entry["image"] 
         depth = entry["depth_image"]
@@ -121,34 +122,29 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
         attention_dpt = entry["attention_dpt"] 
         label = entry["label"]
         label = decode_label(label, label_mapping)
-        print(f"attention_img.shape:{attention_img.shape}")
+        layer_idx = "ave"
+        head_idx = 0
+
+        # print(f"attention_img.shape:{attention_img.shape}")
         # print(f"attention_img.shape:{type(attention_img)}")   
         
-        # layer_idx = attention_img.size(0)-1
-        # attention = attention_img[layer_idx][head_idx].detach().cpu().numpy()  # Shape: (seq_len, seq_len)
-
-        # attention weight is average of n blocks(layers)
-        attention_img_ave = torch.mean(attention_img, dim=0)
-        print(f"attention_img_ave.shape:{attention_img_ave.shape}")
-        
         # remove CLS
-        # spatial_attention = attention[1:].reshape(int(np.sqrt(attention.shape[1] - 1)), -1)  # Exclude CLS token
-        attention_img_ave = attention_img_ave[:, 1:, 1:].cpu().numpy() ## trans to numpy
-        print(f"attention_img_ave.shape:{attention_img_ave.shape}")
-
-        attentionMAP_img =[]
-        for head in attention_img_ave:
-            attentionMAP_img.append(zoom(head, (zoomsize, zoomsize)))
+        attention_img = attention_img[:, :, 1:, 1:].cpu() ## trans to numpy
+        # print(f"attention_img.shape:{attention_img.shape}")
 
         # resize attentionmap
-        image_size = image.shape[-2:]  # (H, W)
-        # spatial_attention_resized = np.array(Image.fromarray(spatial_attention).resize(image_size, resample=Image.BICUBIC))
-        # print(aaa)
+        upsample = nn.Upsample(scale_factor=(zoomsize,zoomsize), mode='nearest')  ## mode choice = {nearest, bilinear, bicubic}
+        attentionMAP_img = (upsample(attention_img))
+        # print(f"attentionMAP_img.shape:{attentionMAP_img.shape}")
+
+        # averaging in Layer
+        attentionMAP_img_ave =torch.mean(attentionMAP_img, dim=0)
+        # print(f"attentionMAP_img_ave.shape:{attentionMAP_img_ave.shape}")
 
         plt.figure(figsize=(8, 6))
         plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
-        plt.imshow(attentionMAP_img[0], cmap="jet", alpha=0.5)  
-        plt.title(f"RGB Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
+        plt.imshow(attentionMAP_img_ave[0], cmap="jet", alpha=0.5)  
+        plt.title(f"RGB Attention Map for Label: {label}, Layer: {layer_idx}, Head: {head_idx}")
         plt.colorbar()
 
         if save_path:
@@ -159,21 +155,27 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
             plt.close()
 
         if attention_dpt is not None:
+            # remove CLS
+            attention_dpt = attention_dpt[:, :, 1:, 1:].cpu() ## trans to numpy
             # print(f"attention_dpt.shape:{attention_dpt.shape}")
-            layer_idx = attention_dpt.size(0)-1
-            attention = attention_dpt[layer_idx][head_idx].detach().cpu().numpy()
-            spatial_attention = attention[1:].reshape(int(np.sqrt(attention.shape[1] - 1)), -1)  # Exclude CLS token
-            spatial_attention_resized_dpt = np.array(
-                Image.fromarray(spatial_attention).resize(image_size, resample=Image.BILINEAR)
-            )
+
+            # resize attentionmap
+            upsample = nn.Upsample(scale_factor=(zoomsize,zoomsize), mode='nearest')
+            attentionMAP_dpt = (upsample(attention_dpt))
+            # print(f"attentionMAP_dpt.shape:{attentionMAP_dpt.shape}")
+
+            # averaging in Layer
+            attentionMAP_dpt_ave =torch.mean(attentionMAP_dpt, dim=0)
+            # print(f"attentionMAP_dpt_ave.shape:{attentionMAP_dpt_ave.shape}")
 
             plt.figure(figsize=(8, 6))
-            plt.imshow(depth.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8)
-            plt.imshow(spatial_attention_resized_dpt, cmap="jet", alpha=0.5)
-            plt.title(f"Depth Attention Map for Label {label}, Layer {layer_idx}, Head {head_idx}")
+            plt.imshow(depth.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
+            plt.imshow(attentionMAP_dpt_ave[0], cmap="jet", alpha=0.5)  
+            plt.title(f"Depth Attention Map for Label: {label}, Layer: {layer_idx}, Head: {head_idx}")
             plt.colorbar()
+
             if save_path:
-                plt.savefig(f"{save_path}_image{idx}_depth_layer{layer_idx}_head{head_idx}.png")
+                plt.savefig(f"{save_path}_depth{idx}_layer{layer_idx}_head{head_idx}.png")
                 plt.close()
             else:
                 plt.show()
@@ -347,6 +349,7 @@ def parse_args():
     parser.add_argument("--num_labels", type=int, default=10)
     parser.add_argument("--weight_decay", type=float, default=0.02, help="Weight decay for optimizer")
     parser.add_argument("--attentionmap", type=bool, default=False, help="Visualize Attentionmap")
+    parser.add_argument("--proposal1", type=bool, default=False)
 
 
     args = parser.parse_args()
