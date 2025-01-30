@@ -12,5 +12,6 @@
     "num_hidden_layers": 4,
     "patch_size": 32,
     "qkv_bias": true,
-    "use_faster_attention": true
+    "use_faster_attention": true,
+    "use_method1": true
 }

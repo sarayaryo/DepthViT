@@ -48,6 +48,7 @@ config = {
     "num_channels_forDepth": 1,
     "qkv_bias": True,
     "use_faster_attention": True,
+    "use_method1": True
 }
 # These are not hard constraints, but are used to prevent misconfigurations
 assert config["hidden_size"] % config["num_attention_heads"] == 0
