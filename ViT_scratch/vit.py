@@ -305,6 +305,137 @@ class FasterMultiHeadAttention(nn.Module):
             # print(f"attention_probs.shape:{attention_probs.shape}")
             return (attention_output, attention_probs)
 
+class RGB_Depth_CrossMultiHeadAttention(nn.Module):
+    """
+    Multi-head attention module with some optimizations.
+    All the heads are processed simultaneously with merged query, key, and value projections.
+    """
+
+    def __init__(self, config):
+        super().__init__()
+        self.hidden_size = config["hidden_size"]
+        self.num_attention_heads = config["num_attention_heads"]
+        # The attention head size is the hidden size divided by the number of attention heads
+        self.attention_head_size = self.hidden_size // self.num_attention_heads
+        self.all_head_size = self.num_attention_heads * self.attention_head_size
+        # Whether or not to use bias in the query, key, and value projection layers
+        self.qkv_bias = config["qkv_bias"]
+        # Create a linear layer to project the query, key, and value
+        self.qkv_projection = nn.Linear(
+            self.hidden_size, self.all_head_size * 3, bias=self.qkv_bias
+        )
+        self.attn_dropout = nn.Dropout(config["attention_probs_dropout_prob"])
+        # Create a linear layer to project the attention output back to the hidden size
+        # In most cases, all_head_size and hidden_size are the same
+        self.output_projection = nn.Linear(self.all_head_size, self.hidden_size)
+        self.output_dropout = nn.Dropout(config["hidden_dropout_prob"])
+        self.alpha = 0.5
+
+    def forward(self, img, dpt, output_attentions=False):
+        # Project the query, key, and value
+        # (batch_size, sequence_length, hidden_size) -> (batch_size, sequence_length, all_head_size * 3)
+        qkv_img = self.qkv_projection(img)
+        qkv_dpt = self.qkv_projection(dpt)
+
+        # Split the projected query, key, and value into query, key, and value
+        # (batch_size, sequence_length, all_head_size * 3) -> (batch_size, sequence_length, all_head_size)
+        query_img, key_img, value_img = torch.chunk(qkv_img, 3, dim=-1)
+        query_dpt, key_dpt, value_dpt = torch.chunk(qkv_dpt, 3, dim=-1)
+
+        # Resize the query, key, and value to (batch_size, num_attention_heads, sequence_length, attention_head_size)
+        batch_size, sequence_length, _ = query_img.size()
+        query_img = query_img.view(
+            batch_size,
+            sequence_length,
+            self.num_attention_heads,
+            self.attention_head_size,
+        ).transpose(1, 2)
+        key_img = key_img.view(
+            batch_size,
+            sequence_length,
+            self.num_attention_heads,
+            self.attention_head_size,
+        ).transpose(1, 2)
+        value_img = value_img.view(
+            batch_size,
+            sequence_length,
+            self.num_attention_heads,
+            self.attention_head_size,
+        ).transpose(1, 2)
+
+        # Calculate the attention scores
+        # softmax(Q*K.T/sqrt(head_size))*V
+
+        attention_scores_img = torch.matmul(query_img, key_img.transpose(-1, -2))
+        attention_scores_img = attention_scores_img / math.sqrt(self.attention_head_size)
+
+        batch_size, sequence_length, _ = query_dpt.size()
+        query_dpt = query_dpt.view(
+            batch_size,
+            sequence_length,
+            self.num_attention_heads,
+            self.attention_head_size,
+        ).transpose(1, 2)
+        key_dpt = key_dpt.view(
+            batch_size,
+            sequence_length,
+            self.num_attention_heads,
+            self.attention_head_size,
+        ).transpose(1, 2)
+        value_dpt = value_dpt.view(
+            batch_size,
+            sequence_length,
+            self.num_attention_heads,
+            self.attention_head_size,
+        ).transpose(1, 2)
+        attention_scores_dpt = torch.matmul(query_dpt, key_dpt.transpose(-1, -2))
+        attention_scores_dpt = attention_scores_dpt / math.sqrt(self.attention_head_size)
+
+        ## cross attention
+        attention_scores_img = attention_scores_img + self.alpha*attention_scores_dpt
+        attention_scores_dpt = attention_scores_dpt + self.alpha*attention_scores_img
+
+
+        attention_probs_img = nn.functional.softmax(attention_scores_img, dim=-1)
+        attention_probs_img = self.attn_dropout(attention_probs_img)
+        # Calculate the attention output
+        attention_output_img = torch.matmul(attention_probs_img, value_img)
+        # Resize the attention output
+        # from (batch_size, num_attention_heads, sequence_length, attention_head_size)
+        # To (batch_size, sequence_length, all_head_size)
+        attention_output_img = (
+            attention_output_img.transpose(1, 2)
+            .contiguous()
+            .view(batch_size, sequence_length, self.all_head_size)
+        )
+
+        attention_probs_dpt = nn.functional.softmax(attention_scores_dpt, dim=-1)
+        attention_probs_dpt = self.attn_dropout(attention_probs_dpt)
+        # Calculate the attention output
+        attention_output_dpt = torch.matmul(attention_probs_dpt, value_dpt)
+        attention_output_dpt = (
+            attention_output_dpt.transpose(1, 2)
+            .contiguous()
+            .view(batch_size, sequence_length, self.all_head_size)
+        )
+
+        # print(f"attention_output:{attention_output.shape}")
+        # Project the attention output back to the hidden size
+        attention_output_img = self.output_projection(attention_output_img)
+        attention_output_img = self.output_dropout(attention_output_img)
+
+        # print(f"attention_output:{attention_output.shape}")
+        # Project the attention output back to the hidden size
+        attention_output_dpt = self.output_projection(attention_output_dpt)
+        attention_output_dpt = self.output_dropout(attention_output_dpt)
+
+        # Return the attention output and the attention probabilities (optional)
+        if not output_attentions:
+            return (attention_output_img, None, attention_output_dpt, None)
+        else:
+            # print(f"attention_probs.shape:{attention_probs.shape}")
+            return (attention_output_img, attention_probs_img, attention_output_dpt, attention_probs_dpt)
+
 
 class MLP(nn.Module):
     """
@@ -334,8 +465,11 @@ class Block(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.use_faster_attention = config.get("use_faster_attention", False)
+        self.use_method1 = config.get("use_method1", False)
         if self.use_faster_attention:
             self.attention = FasterMultiHeadAttention(config)
+        elif self.use_method1: 
+            self.attention = RGB_Depth_CrossMultiHeadAttention(config)
         else:
             self.attention = MultiHeadAttention(config)
         self.layernorm_1 = nn.LayerNorm(config["hidden_size"])
@@ -359,6 +493,46 @@ class Block(nn.Module):
             return (x, None)
         else:
             return (x, attention_probs)
+
+class Block_RGB_Depth(nn.Module):
+    """
+    A single transformer block.
+    """
+
+    def __init__(self, config):
+        super().__init__()
+        self.use_faster_attention = config.get("use_faster_attention", False)
+        self.use_method1 = config.get("use_method1", False)
+        if self.use_method1: 
+            self.attention = RGB_Depth_CrossMultiHeadAttention(config)
+        elif self.use_faster_attention:
+            self.attention = FasterMultiHeadAttention(config)
+        else:
+            self.attention = MultiHeadAttention(config)
+        self.layernorm_1 = nn.LayerNorm(config["hidden_size"])
+        self.mlp = MLP(config)
+        self.layernorm_2 = nn.LayerNorm(config["hidden_size"])
+
+    def forward(self, img, dpt, output_attentions=False):
+        # Self-attention
+        # print(f"Block.forward: input output_attentions={output_attentions}, type={type(output_attentions)}")
+        attention_output_img, attention_probs_img, attention_output_dpt, attention_probs_dpt = self.attention(
+            self.layernorm_1(img), self.layernorm_1(dpt), output_attentions=output_attentions
+        )
+        # Skip connection
+        img = img + attention_output_img
+        dpt = dpt + attention_output_dpt
+        # Feed-forward network
+        mlp_output_img = self.mlp(self.layernorm_2(img))
+        mlp_output_dpt = self.mlp(self.layernorm_2(dpt))
+        # Skip connection
+        img = img + mlp_output_img
+        dpt = dpt + mlp_output_dpt
+        # Return the transformer block's output and the attention probabilities (optional)
+        if not output_attentions:
+            return (img, None, dpt, None)
+        else:
+            return (img, attention_probs_img, dpt, attention_probs_dpt)
 
 
 class Encoder(nn.Module):
@@ -404,26 +578,28 @@ class Encoder_RGB_Depth(nn.Module):
         self.blocks = nn.ModuleList([])
         # num_hidden_layers is encoder blocks number
         for _ in range(config["num_hidden_layers"]):
-            block = Block(config)
+            block = Block_RGB_Depth(config)
             self.blocks.append(block)
 
     def forward(self, img, dpt, output_attentions=False):
         # Calculate the transformer block's output for each block
-        all_attentions = []
+        all_attentions_img = []
+        all_attentions_dpt = []
         # print(f"Encoder start: output_attentions={output_attentions}, type={type(output_attentions)}")
         for block in self.blocks:
 
-            x, attention_probs = block(x, output_attentions=output_attentions)
+            img, attention_probs_img, dpt, attention_probs_dpt = block(img, dpt, output_attentions=output_attentions)
 
             if output_attentions:
-                all_attentions.append(attention_probs)
+                all_attentions_img.append(attention_probs_img)
+                all_attentions_dpt.append(attention_probs_dpt)
         # Return the encoder's output and the attention probabilities (optional)
         
         if not output_attentions:
-            return (x, None)
+            return (img, None, dpt, None)
         else:
             # all_attention is all block attention in entire Encoder
-            return (x, all_attentions)
+            return (img, all_attentions_img, dpt, all_attentions_dpt)
 
 
 
@@ -568,6 +744,7 @@ class LateFusion(nn.Module):
         self.image_size = config["image_size"]
         self.hidden_size = config["hidden_size"]
         self.num_classes = config["num_classes"]
+        self.use_method1 = config.get("use_method1", False)
         # Create the embedding module
         self.embedding = Embeddings(config)
         
@@ -576,7 +753,7 @@ class LateFusion(nn.Module):
         self.encoder_depth = Encoder(config)
 
         ### ----- use common Encoder ------
-        # self.encoder_rgb_depth = Encoder(config)
+        self.encoder_rgb_depth = Encoder_RGB_Depth(config)
 
         # Create a linear layer to project the encoder's output to the number of classes
         self.classifier = nn.Linear(self.hidden_size, self.num_classes)
@@ -586,19 +763,25 @@ class LateFusion(nn.Module):
     def forward(self, img, dpt, attentions_choice=False):
         # Calculate the embedding output for RGB
         embedding_output_rgb = self.embedding(img, Isdepth=False)
-        print(f"here::{embedding_output_rgb.shape}")
-        print(aaa)
+        # print(f"here::{embedding_output_rgb.shape}")
         # Calculate the embedding output for Depth
         embedding_output_depth = self.embedding(dpt, Isdepth=True)
-        
-        # Pass through separate encoders
-        encoder_output_rgb, all_attentions_rgb = self.encoder_rgb(
-            embedding_output_rgb, output_attentions=attentions_choice
-        )
-        encoder_output_depth, all_attentions_depth = self.encoder_depth(
-            embedding_output_depth, output_attentions=attentions_choice
-        )
-        
+        # print(f"here{attentions_choice}")
+        if self.use_method1:
+            # Pass through separate encoders
+            encoder_output_rgb, all_attentions_rgb, encoder_output_depth, all_attentions_depth = self.encoder_rgb_depth(
+                embedding_output_rgb, embedding_output_depth, output_attentions=attentions_choice
+            )
+
+        else: 
+            # Pass through separate encoders
+            encoder_output_rgb, all_attentions_rgb = self.encoder_rgb(
+                embedding_output_rgb, output_attentions=attentions_choice
+            )
+            encoder_output_depth, all_attentions_depth = self.encoder_depth(
+                embedding_output_depth, output_attentions=attentions_choice
+            )
+            
         # Fusion (simple addition here, but can be concatenation or weighted sum)
         fusion_output = encoder_output_rgb + encoder_output_depth
         
