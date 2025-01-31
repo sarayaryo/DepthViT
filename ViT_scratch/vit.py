@@ -329,7 +329,8 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         # In most cases, all_head_size and hidden_size are the same
         self.output_projection = nn.Linear(self.all_head_size, self.hidden_size)
         self.output_dropout = nn.Dropout(config["hidden_dropout_prob"])
-        self.alpha = 0.5
+        self.alpha = 0.0
+        self.beta = 0.5
 
     def forward(self, img, dpt, output_attentions=False):
         # Project the query, key, and value
@@ -393,7 +394,7 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
 
         ## cross attention
         attention_scores_img = attention_scores_img + self.alpha*attention_scores_dpt
-        attention_scores_dpt = attention_scores_dpt + self.alpha*attention_scores_img
+        attention_scores_dpt = attention_scores_dpt + self.beta*attention_scores_img
 
 
         attention_probs_img = nn.functional.softmax(attention_scores_img, dim=-1)
