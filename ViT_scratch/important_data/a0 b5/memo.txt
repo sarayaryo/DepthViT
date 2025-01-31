@@ -1,0 +1,50 @@
+S C:\DepthViT\ViT_scratch> python train.py --method 2 --dataset rgbd-dataset --batch_size 4 --epochs 20 --max_data_size 10000
+CUDA is available! Using NVIDIA GeForce RTX 4060 Ti
+Total image files: 623502
+After shuffle:
+First 5 image paths: ['../data/rgbd-dataset\\toothpaste\\toothpaste_1\\toothpaste_1_4_202_crop.png', '../data/rgbd-dataset\\water_bottle\\water_bottle_4\\water_bottle_4_1_40_crop.png', '../data/rgbd-dataset\\pliers\\pliers_2\\pliers_2_1_176_crop.png', '../data/rgbd-dataset\\glue_stick\\glue_stick_5\\glue_stick_5_4_30_crop.png', '../data/rgbd-dataset\\food_jar\\food_jar_3\\food_jar_3_4_116_crop.png']
+First 5 depth paths: ['../data/rgbd-dataset\\toothpaste\\toothpaste_1\\toothpaste_1_4_202_depthcrop.png', '../data/rgbd-dataset\\water_bottle\\water_bottle_4\\water_bottle_4_1_40_depthcrop.png', '../data/rgbd-dataset\\pliers\\pliers_2\\pliers_2_1_176_depthcrop.png', '../data/rgbd-dataset\\glue_stick\\glue_stick_5\\glue_stick_5_4_30_depthcrop.png', '../data/rgbd-dataset\\food_jar\\food_jar_3\\food_jar_3_4_116_depthcrop.png']
+Total RGB image paths: 10000
+Total depth image paths: 10000
+numberof labels: 47
+train epoch: 0
+Epoch: 1, Train loss: 3.1489, Test loss: 2.7767, Accuracy: 0.2715
+train epoch: 1
+Epoch: 2, Train loss: 2.5138, Test loss: 2.5112, Accuracy: 0.3080
+train epoch: 2
+Epoch: 3, Train loss: 2.1805, Test loss: 2.0323, Accuracy: 0.4010
+train epoch: 3
+Epoch: 4, Train loss: 1.9941, Test loss: 1.8284, Accuracy: 0.4520
+train epoch: 4
+Epoch: 5, Train loss: 1.8754, Test loss: 2.1212, Accuracy: 0.4280
+train epoch: 5
+Epoch: 6, Train loss: 1.8528, Test loss: 1.7760, Accuracy: 0.4765
+train epoch: 6
+Epoch: 7, Train loss: 1.7891, Test loss: 2.2423, Accuracy: 0.4090
+train epoch: 7
+Epoch: 8, Train loss: 1.7643, Test loss: 1.8663, Accuracy: 0.4675
+train epoch: 8
+Epoch: 9, Train loss: 1.7171, Test loss: 2.1942, Accuracy: 0.4385
+train epoch: 9
+Epoch: 10, Train loss: 1.8013, Test loss: 1.6296, Accuracy: 0.5495
+train epoch: 10
+Epoch: 11, Train loss: 1.7133, Test loss: 1.6789, Accuracy: 0.4880
+train epoch: 11
+Epoch: 12, Train loss: 1.6745, Test loss: 1.7735, Accuracy: 0.5095
+train epoch: 12
+Epoch: 13, Train loss: 1.6688, Test loss: 2.3373, Accuracy: 0.3725
+train epoch: 13
+Epoch: 14, Train loss: 1.7039, Test loss: 1.4621, Accuracy: 0.5740
+train epoch: 14
+Epoch: 15, Train loss: 1.6179, Test loss: 1.7303, Accuracy: 0.4935
+train epoch: 15
+Epoch: 16, Train loss: 1.6313, Test loss: 1.5615, Accuracy: 0.5475
+train epoch: 16
+Epoch: 17, Train loss: 1.5986, Test loss: 1.8250, Accuracy: 0.4940
+train epoch: 17
+Epoch: 18, Train loss: 1.5960, Test loss: 1.8968, Accuracy: 0.4735
+train epoch: 18
+Epoch: 19, Train loss: 1.6286, Test loss: 1.4525, Accuracy: 0.5375
+train epoch: 19
+Epoch: 20, Train loss: 1.5923, Test loss: 1.9574, Accuracy: 0.4520
+Time: 3015.2079 seconds
