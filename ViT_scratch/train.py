@@ -198,12 +198,12 @@ class Trainer:
         self.fusion_method = fusion_methods.get(method)
         self.num_layers = model.config["num_hidden_layers"]
 
-    def train(self, trainloader, testloader, epochs, save_model_every_n_epochs=0):
+    def train(self, trainloader, testloader, validloader, epochs, save_model_every_n_epochs=0):
         """
         Train the model for the specified number of epochs.
         """
         # Keep track of the losses and accuracies
-        train_losses, test_losses, accuracies = [], [], []
+        train_losses, test_losses, valid_losses, accuracies, valid_accuracies = [], [], [], [], []
         # Train the model
         for i in range(epochs):
             print(f"train epoch: {i}")
@@ -212,9 +212,16 @@ class Trainer:
             train_losses.append(train_loss)
             test_losses.append(test_loss)
             accuracies.append(accuracy)
-            print(
-                f"Epoch: {i+1}, Train loss: {train_loss:.4f}, Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}"
-            )
+
+            if validloader is not None:
+                valid_accuracy, valid_loss, _ = self.evaluate(validloader)
+                valid_losses.append(valid_loss)
+                valid_accuracies.append(valid_accuracy)
+                print(f"Epoch: {i+1}, Train loss: {train_loss:.4f}, Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Valid loss: {valid_loss:.4f}, Valid Accuracy: {valid_accuracy:.4f}")
+            else:
+                print(
+                    f"Epoch: {i+1}, Train loss: {train_loss:.4f}, Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}"
+                )
             if (
                 save_model_every_n_epochs > 0
                 and (i + 1) % save_model_every_n_epochs == 0
@@ -370,21 +377,10 @@ def main():
     device = args.device
     save_model_every_n_epochs = args.save_model_every
     method = args.method
-    # # Load the CIFAR10 dataset
-    # trainloader, testloader, _ = prepare_data(batch_size=batch_size)
-
-    # Newデータセット
-    # dataset_path = r'Imagedata\desk_1\rgbd-scenes\desk\desk_1'
 
     transform1 = transforms.Compose(
         [transforms.Resize((256, 256)), transforms.ToTensor()]
     )
-
-    # train_dataset = datasets.ImageFolder(train_dataset_dir, transform=transform1)
-    # test_dataset = datasets.ImageFolder(test_dataset_dir, transform=transform1)
-
-    # train_list = glob.glob(os.path.join(train_dataset_dir,'**','*.png'), recursive=True)
-    # test_list = glob.glob(os.path.join(test_dataset_dir, '**','*.jpg'), recursive=True)
 
     def getlabels(image_files):
         le = LabelEncoder()
@@ -404,46 +400,45 @@ def main():
             # print(f"File: {image_file}, ClassLabel: {classlabel}")
         encoded_labels = le.fit_transform(labels)
         label_mapping = {index: label for index, label in enumerate(le.classes_)}
-        # print(f"encoded_labels: {encoded_labels}")
-        # print(f"label amount::::{len(labels)}")
+
         return encoded_labels
     
 
     # 画像ファイルのパスを取得 (RGBおよび深度画像)
-    image_files = glob.glob(
-        os.path.join(args.dataset_path, "**", "*.png"), recursive=True
-    )
-    print(f"Total image files: {len(image_files)}")
-    image_paths = []
-    depth_paths = []
+    def load_datapath(dataset_path):
+        if dataset_path=="rgbd-dataset-10k":
+            image_paths = glob.glob(os.path.join(dataset_path, "train", "images", "*.png"))
+            depth_paths = glob.glob(os.path.join(dataset_path, "train", "depth", "*.png"))
+        else:
+            image_files = glob.glob(
+            os.path.join(args.dataset_path, "**", "*.png"), recursive=True
+            )
+            # 画像ファイルを RGB と深度に分類
+            image_paths = []
+            depth_paths = []
+            for file_path in image_files:
+                filename = os.path.basename(file_path)
+                if "depth" in filename:
+                    depth_paths.append(file_path)
+                elif "maskcrop" not in filename:
+                    image_paths.append(file_path)
+                # ペア化されたデータをシャッフル
+            paired_data = list(zip(image_paths, depth_paths))
+            random.shuffle(paired_data)  # ペアのままシャッフル
+            image_paths, depth_paths = zip(*paired_data)  # シャッフル後に再分割
 
-    # 画像ファイルを RGB と深度に分類
-    for file_path in image_files:
-        filename = os.path.basename(file_path)
-        if "depth" in filename:
-            depth_paths.append(file_path)
-        elif "maskcrop" not in filename:
-            image_paths.append(file_path)
+            # リストに戻す
+            image_paths = list(image_paths)
+            depth_paths = list(depth_paths)
 
-    # min_length = min(len(image_paths), len(depth_paths))
+        # ペアの整合性を確認
+        assert len(image_paths) == len(depth_paths), "Image and depth paths must have the same length!"
+        return image_paths, depth_paths
 
-    # image_paths と depth_paths で、順番が正しいかどうかは保証されない
-    # image_paths = image_paths[:min_length]
-    # depth_paths = depth_paths[:min_length]
-    # print(f"Adjusted Total RGB image paths: {len(image_paths)}")
-    # print(f"Adjusted Total depth image paths: {len(depth_paths)}")
 
-    # ペアの整合性を確認
-    assert len(image_paths) == len(depth_paths), "Image and depth paths must have the same length!"
-
-    # ペア化されたデータをシャッフル
-    paired_data = list(zip(image_paths, depth_paths))
-    random.shuffle(paired_data)  # ペアのままシャッフル
-    image_paths, depth_paths = zip(*paired_data)  # シャッフル後に再分割
-
-    # リストに戻す
-    image_paths = list(image_paths)
-    depth_paths = list(depth_paths)
+    # print(f"Total image files: {len(image_files)}")
+    print(args.dataset_path)
+    image_paths, depth_paths = load_datapath(args.dataset_path)
 
     # デバッグ用出力
     print("After shuffle:")
@@ -457,32 +452,64 @@ def main():
     print(f"Total RGB image paths: {len(image_paths)}")
     print(f"Total depth image paths: {len(depth_paths)}")
 
-    image_train, image_test, depth_train, depth_test = train_test_split(
-        image_paths, depth_paths, test_size=0.2, random_state=0
-    )
-    
+    def get_dataloader(image_paths, depth_paths, batch_size, transform, split_ratio=(0.8, 0.1, 0.1)):
+
+        # 訓練・検証・テストデータに分割
+        train_ratio, valid_ratio, test_ratio = split_ratio
+        image_train, image_temp, depth_train, depth_temp = train_test_split(image_paths, depth_paths, test_size=(valid_ratio + test_ratio), random_state=42)
+        image_valid, image_test, depth_valid, depth_test = train_test_split(image_temp, depth_temp, test_size=(test_ratio / (valid_ratio + test_ratio)), random_state=42)
+
+        # ラベル取得
+        train_labels = getlabels(image_train)
+        valid_labels = getlabels(image_valid)
+        test_labels = getlabels(image_test)
+
+        # データセット作成
+        train_dataset = ImageDepthDataset(image_train, depth_train, train_labels, transform=transform)
+        valid_dataset = ImageDepthDataset(image_valid, depth_valid, valid_labels, transform=transform)
+        test_dataset = ImageDepthDataset(image_test, depth_test, test_labels, transform=transform)
+
+        # DataLoader 作成
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=1)
+        valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=1)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=1)
+
+        return train_loader, valid_loader, test_loader, len(set(train_labels))
+
+    # image_train, image_test, depth_train, depth_test = train_test_split(
+    #     image_paths, depth_paths, test_size=0.2, random_state=0
+    # )
+
+    train_loader, valid_loader, test_loader, num_labels = get_dataloader(image_paths, depth_paths, args.batch_size, transform1)
+
+
     # ラベル取得
-    train_labels = getlabels(image_train)
-    test_labels = getlabels(image_test)
+    # train_labels = getlabels(image_train)
+    # test_labels = getlabels(image_test)
 
-    train_dataset = ImageDepthDataset(
-        image_train, depth_train, train_labels, transform=transform1
-    )
-    test_dataset = ImageDepthDataset(
-        image_test, depth_test, test_labels, transform=transform1
-    )
+    # train_dataset = ImageDepthDataset(
+    #     image_train, depth_train, train_labels, transform=transform1
+    # )
+    # test_dataset = ImageDepthDataset(
+    #     image_test, depth_test, test_labels, transform=transform1
+    # )
 
-    unique_labels = np.unique(getlabels(image_train + image_test))
-    num_labels = len(unique_labels)
+    # unique_labels = np.unique(getlabels(image_train + image_test))
+    # num_labels = len(unique_labels)
+
     print(f"numberof labels: {num_labels}") 
 
-    train_loader = DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=1
-    )  # changed num_workers 2 -> 1
+    # train_loader = DataLoader(
+    #     train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=1
+    # )  # changed num_workers 2 -> 1
 
-    test_loader = DataLoader(
-        test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=1
-    )
+    # valid_loader = DataLoader(
+    #     valid_dataset, batch_size=args.batch_size, shuffle=False, num_workers=1
+    # )
+
+    # test_loader = DataLoader(
+    #     test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=1
+    # )
 
     ViT_methods = {
         0: ViTForClassfication,
@@ -504,6 +531,7 @@ def main():
     trainer.train(
         train_loader,
         test_loader,
+        valid_loader,
         epochs,
         save_model_every_n_epochs=save_model_every_n_epochs,
     )
