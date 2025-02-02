@@ -329,8 +329,8 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         # In most cases, all_head_size and hidden_size are the same
         self.output_projection = nn.Linear(self.all_head_size, self.hidden_size)
         self.output_dropout = nn.Dropout(config["hidden_dropout_prob"])
-        self.alpha = 0.0
-        self.beta = 0.5
+        self.alpha = 0.5
+        self.beta = 0.0
 
     def forward(self, img, dpt, output_attentions=False):
         # Project the query, key, and value

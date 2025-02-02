@@ -10,12 +10,13 @@ import glob
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from scipy.ndimage import zoom
+import scipy.stats as stats
 
 from utils import save_experiment, save_checkpoint
-from data import prepare_data
 from vit import ViTForClassfication, EarlyFusion, LateFusion, get_list_shape
 from torchvision import datasets, transforms
 from data import ImageDepthDataset
+
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from PIL import Image
@@ -32,6 +33,23 @@ def check_device_availability(device):
         print("Using CPU.")
     return device
 
+def spearman_rank_correlation(attention_img, attention_dpt):
+    """
+    スピアマンの順位相関係数を計算する
+    :param attention_img: torch.Tensor, shape (1, C, 64, 64) の Attention マップ
+    :param attention_dpt: torch.Tensor, shape (1, C, 64, 64) の Attention マップ
+    :return: float スピアマン順位相関係数
+    """
+    assert attention_img.shape == attention_dpt.shape, "入力のshapeが一致しません"
+
+    # すべてのチャンネルをまとめてflatten（4096 * C の要素）
+    img_flatten = attention_img.flatten().cpu().numpy()
+    dpt_flatten = attention_dpt.flatten().cpu().numpy()
+
+    # スピアマンの順位相関係数を計算
+    coeff, _ = stats.spearmanr(img_flatten, dpt_flatten)
+    
+    return coeff
 
 config = {
     "patch_size": 32,  # Input image size: 32x32 -> 8x8 patches
@@ -131,7 +149,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
         
         # remove CLS
         attention_img = attention_img[:, :, 1:, 1:].cpu() ## trans to numpy
-        # print(f"attention_img.shape:{attention_img.shape}")
+        print(f"attention_img.shape:{attention_img.shape}")
 
         # resize attentionmap
         upsample = nn.Upsample(scale_factor=(zoomsize,zoomsize), mode='nearest')  ## mode choice = {nearest, bilinear, bicubic}
