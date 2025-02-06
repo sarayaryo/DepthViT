@@ -51,6 +51,17 @@ def spearman_rank_correlation(attention_img, attention_dpt):
     
     return coeff
 
+def total_speerman(attention_data):
+
+    rs = []
+    for idx, entry in enumerate(attention_data): 
+        attention_img = entry["attention_img"] 
+        attention_dpt = entry["attention_dpt"] 
+        rs_i = spearman_rank_correlation(attention_img, attention_dpt)
+        rs.append(rs_i)
+    return rs
+
+
 config = {
     "patch_size": 32,  # Input image size: 32x32 -> 8x8 patches
     "hidden_size": 24,  # changed 48->24
@@ -149,7 +160,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
         
         # remove CLS
         attention_img = attention_img[:, :, 1:, 1:].cpu() ## trans to numpy
-        print(f"attention_img.shape:{attention_img.shape}")
+        # print(f"attention_img.shape:{attention_img.shape}")
 
         # resize attentionmap
         upsample = nn.Upsample(scale_factor=(zoomsize,zoomsize), mode='nearest')  ## mode choice = {nearest, bilinear, bicubic}
@@ -162,7 +173,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
 
         plt.figure(figsize=(8, 6))
         plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
-        plt.imshow(attentionMAP_img_ave[0], cmap="jet", alpha=0.5)  
+        plt.imshow(attentionMAP_img_ave[0], cmap="jet", alpha=0.5)  ###チャンネルで平均化している
         plt.title(f"RGB Attention Map for Label: {label}, Layer: {layer_idx}, Head: {head_idx}")
         plt.colorbar()
 
@@ -230,16 +241,18 @@ class Trainer:
             train_losses.append(train_loss)
             test_losses.append(test_loss)
             accuracies.append(accuracy)
-
+            rs = total_speerman(attention_data)
+        
             if validloader is not None:
                 valid_accuracy, valid_loss, _ = self.evaluate(validloader)
                 valid_losses.append(valid_loss)
                 valid_accuracies.append(valid_accuracy)
-                print(f"Epoch: {i+1}, Train loss: {train_loss:.4f}, Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Valid loss: {valid_loss:.4f}, Valid Accuracy: {valid_accuracy:.4f}")
+                print(f"Train loss: {train_loss:.4f}, Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, "
+                    f"Valid loss: {valid_loss:.4f}, Valid Accuracy: {valid_accuracy:.4f}, Relational score: {np.mean(rs):.4f}")
             else:
-                print(
-                    f"Epoch: {i+1}, Train loss: {train_loss:.4f}, Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}"
-                )
+                print(f"Train loss: {train_loss:.4f}, Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, "
+                    f"Relational score: {np.mean(rs):.4f}")
+
             if (
                 save_model_every_n_epochs > 0
                 and (i + 1) % save_model_every_n_epochs == 0
@@ -248,6 +261,7 @@ class Trainer:
                 print("\tSave checkpoint at epoch", i + 1)
                 save_checkpoint(self.exp_name, self.model, i + 1)
 
+        print(f"amount of pair:{len(rs)}")
         # visualize_attention
         layer_idx = 2
         head_idx = 0
@@ -376,6 +390,8 @@ def parse_args():
     parser.add_argument("--weight_decay", type=float, default=0.02, help="Weight decay for optimizer")
     parser.add_argument("--attentionmap", type=bool, default=False, help="Visualize Attentionmap")
     parser.add_argument("--proposal1", type=bool, default=False)
+    parser.add_argument("--alpha", type=float, default=0.5)
+    parser.add_argument("--beta", type=float, default=0.5)
 
 
     args = parser.parse_args()
@@ -538,6 +554,8 @@ def main():
     model_class = ViT_methods.get(method, ViTForClassfication)
 
     config["num_classes"] = num_labels
+    config["alpha"] = args.alpha
+    config["beta"] = args.beta
     model = model_class(config)
 
     # Create the model, optimizer, loss function and trainer
