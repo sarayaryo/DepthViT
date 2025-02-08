@@ -7,13 +7,14 @@
     "image_size": 256,
     "initializer_range": 0.02,
     "intermediate_size": 96,
-    "num_attention_heads": 4,
+    "num_attention_heads": 6,
     "num_channels": 3,
     "num_channels_forDepth": 1,
-    "num_classes": 47,
-    "num_hidden_layers": 4,
+    "num_classes": 37,
+    "num_hidden_layers": 8,
     "patch_size": 32,
     "qkv_bias": true,
+    "spearman_k": 0.5,
     "use_faster_attention": true,
     "use_method1": true
 }

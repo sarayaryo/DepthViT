@@ -10,7 +10,7 @@ import glob
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from scipy.ndimage import zoom
-import scipy.stats as stats
+from scipy.stats import rankdata, spearmanr
 
 from utils import save_experiment, save_checkpoint
 from vit import ViTForClassfication, EarlyFusion, LateFusion, get_list_shape
@@ -35,38 +35,80 @@ def check_device_availability(device):
 
 def spearman_rank_correlation(attention_img, attention_dpt):
     """
-    スピアマンの順位相関係数を計算する
-    :param attention_img: torch.Tensor, shape (1, C, 64, 64) の Attention マップ
-    :param attention_dpt: torch.Tensor, shape (1, C, 64, 64) の Attention マップ
-    :return: float スピアマン順位相関係数
+    :param attention_img: torch.Tensor, shape (batch, head, 65, 65) 
+
     """
     assert attention_img.shape == attention_dpt.shape, "入力のshapeが一致しません"
 
-    # すべてのチャンネルをまとめてflatten（4096 * C の要素）
-    img_flatten = attention_img.flatten().cpu().numpy()
-    dpt_flatten = attention_dpt.flatten().cpu().numpy()
+    rs_batch = []
 
-    # スピアマンの順位相関係数を計算
-    coeff, _ = stats.spearmanr(img_flatten, dpt_flatten)
-    
-    return coeff
+    for idx, (entry_img, entry_dpt) in enumerate(zip(attention_img, attention_dpt)):
+        img_flatten = entry_img.flatten().cpu().numpy()
+        dpt_flatten = entry_dpt.flatten().cpu().numpy()
+        # print(f"img_flatten.shape:{img_flatten.shape}") ##(H * W)
 
-def total_speerman(attention_data):
+        coeff, _ = spearmanr(img_flatten, dpt_flatten)
+        rs_batch.append(coeff)
+
+    return rs_batch
+
+def precision_top_k(attention_img, attention_dpt, k=1.0):
+
+    precisions_batch = []
+    for idx, (entry_img, entry_dpt) in enumerate(zip(attention_img, attention_dpt)):
+
+        # calculate top-k% 
+        top_k = int(len(entry_img) * k)
+
+        img_flatten = entry_img.flatten().cpu().numpy()
+        dpt_flatten = entry_dpt.flatten().cpu().numpy()
+
+        # idx sort by descending and cut off
+        img_top_k_idx = np.argsort(img_flatten)[::-1][:top_k]
+        dpt_top_k_idx = np.argsort(dpt_flatten)[::-1][:top_k]
+
+        # 
+        intersection = len(set(img_top_k_idx) & set(dpt_top_k_idx))
+        precision = intersection / top_k
+
+        precisions_batch.append(precision)
+
+    return precisions_batch
+
+def total_consistency(attention_data, k=1.0):
 
     rs = []
+    precisions = []
+
     for idx, entry in enumerate(attention_data): 
         attention_img = entry["attention_img"] 
-        attention_dpt = entry["attention_dpt"] 
-        rs_i = spearman_rank_correlation(attention_img, attention_dpt)
-        rs.append(rs_i)
-    return rs
+        attention_dpt = entry["attention_dpt"]
+
+        # remove CLS
+        attention_img = attention_img[:, :, 1:, 1:].cpu() ## trans to numpy
+        attention_dpt = attention_dpt[:, :, 1:, 1:].cpu()
+        # print(f"attention :{attention_img.shape}")
+
+        # averaging in head
+        attention_img =torch.mean(attention_img, dim=1)  ##(batch, head, H, W) -> (batch, H, W)
+        attention_dpt =torch.mean(attention_dpt, dim=1)
+
+        rs_batch = spearman_rank_correlation(attention_img, attention_dpt)
+        precision_top_k_batch = precision_top_k(attention_img, attention_dpt, k)
+
+        precisions.extend(precision_top_k_batch)
+        rs.extend(rs_batch)
+
+    return rs, precisions
+
+
 
 
 config = {
     "patch_size": 32,  # Input image size: 32x32 -> 8x8 patches
     "hidden_size": 24,  # changed 48->24
-    "num_hidden_layers": 4,
-    "num_attention_heads": 4,
+    "num_hidden_layers": 8,
+    "num_attention_heads": 6,
     "intermediate_size": 4 * 24,  # 4 * hidden_size
     "hidden_dropout_prob": 0.0,
     "attention_probs_dropout_prob": 0.0,
@@ -137,27 +179,22 @@ def decode_label(encoded_label, label_mapping):
 
 def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, save_path=None):
     global label_mapping
-    # print(len(attention_data))
-    # print(f"get_list_shape{attention_data.shape}")
-    ### ---attnmap:(1, 4, 2, 4, 65, 65)
-    # print(label_mapping)
+    ### ---attnmap:(batch, head, 65, 65)
 
-    for idx, entry in enumerate(attention_data): #entry is each image and depth pair
+    for idx, entry in enumerate(attention_data): #entry is batch image and depth pair
         # print(f"idx:{idx}")
-        if idx > 20:
+
+        if idx > 10:
             break
         image = entry["image"] 
         depth = entry["depth_image"]
-        attention_img = entry["attention_img"] 
-        attention_dpt = entry["attention_dpt"] 
+        attention_img = entry["attention_img"]
+        attention_dpt = entry["attention_dpt"]
         label = entry["label"]
-        label = decode_label(label, label_mapping)
-        layer_idx = "ave"
-        head_idx = 0
 
-        # print(f"attention_img.shape:{attention_img.shape}")
-        # print(f"attention_img.shape:{type(attention_img)}")   
-        
+        layer_idx = "ave"
+        head_idx = "ave"
+       
         # remove CLS
         attention_img = attention_img[:, :, 1:, 1:].cpu() ## trans to numpy
         # print(f"attention_img.shape:{attention_img.shape}")
@@ -167,22 +204,24 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
         attentionMAP_img = (upsample(attention_img))
         # print(f"attentionMAP_img.shape:{attentionMAP_img.shape}")
 
-        # averaging in Layer
-        attentionMAP_img_ave =torch.mean(attentionMAP_img, dim=0)
+        # averaging in head
+        attentionMAP_img_ave =torch.mean(attentionMAP_img, dim=1)  ##(batch, head, H, W) -> (batch, H, W)
         # print(f"attentionMAP_img_ave.shape:{attentionMAP_img_ave.shape}")
 
-        plt.figure(figsize=(8, 6))
-        plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
-        plt.imshow(attentionMAP_img_ave[0], cmap="jet", alpha=0.5)  ###チャンネルで平均化している
-        plt.title(f"RGB Attention Map for Label: {label}, Layer: {layer_idx}, Head: {head_idx}")
-        plt.colorbar()
+        for i in range(len(attentionMAP_img_ave)):
+            label_i = decode_label(label[i], label_mapping)
+            plt.figure(figsize=(8, 6))
+            plt.imshow(image.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
+            plt.imshow(attentionMAP_img_ave[i], cmap="jet", alpha=0.5)  
+            plt.title(f"RGB Attention Map for Label: {label_i}, Layer: {layer_idx}, Head: {head_idx}")
+            plt.colorbar()
 
-        if save_path:
-            plt.savefig(f"{save_path}_image{idx}_layer{layer_idx}_head{head_idx}.png")
-            plt.close()
-        else:
-            plt.show()
-            plt.close()
+            if save_path:
+                plt.savefig(f"{save_path}_image{idx}_layer{layer_idx}_head{head_idx}.png")
+                plt.close()
+            else:
+                plt.show()
+                plt.close()
 
         if attention_dpt is not None:
             # remove CLS
@@ -194,22 +233,24 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
             attentionMAP_dpt = (upsample(attention_dpt))
             # print(f"attentionMAP_dpt.shape:{attentionMAP_dpt.shape}")
 
-            # averaging in Layer
-            attentionMAP_dpt_ave =torch.mean(attentionMAP_dpt, dim=0)
+            # averaging in head
+            attentionMAP_dpt_ave =torch.mean(attentionMAP_dpt, dim=1)
             # print(f"attentionMAP_dpt_ave.shape:{attentionMAP_dpt_ave.shape}")
 
-            plt.figure(figsize=(8, 6))
-            plt.imshow(depth.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
-            plt.imshow(attentionMAP_dpt_ave[0], cmap="jet", alpha=0.5)  
-            plt.title(f"Depth Attention Map for Label: {label}, Layer: {layer_idx}, Head: {head_idx}")
-            plt.colorbar()
+            for i in range(len(attentionMAP_dpt_ave)):
+                plt.figure(figsize=(8, 6))
+                plt.imshow(depth.permute(1, 2, 0).cpu().numpy(), cmap="gray", alpha=0.8) 
+                plt.imshow(attentionMAP_dpt_ave[i], cmap="jet", alpha=0.5)  
+                plt.title(f"Depth Attention Map for Label: {label}, Layer: {layer_idx}, Head: {head_idx}")
+                plt.colorbar()
 
-            if save_path:
-                plt.savefig(f"{save_path}_depth{idx}_layer{layer_idx}_head{head_idx}.png")
-                plt.close()
-            else:
-                plt.show()
-                plt.close()
+                if save_path:
+                    plt.savefig(f"{save_path}_dapth{idx}_layer{layer_idx}_head{head_idx}.png")
+                    plt.close()
+                else:
+                    plt.show()
+                    plt.close()
+
 
 
 class Trainer:
@@ -226,6 +267,7 @@ class Trainer:
         fusion_methods = {0: SimpleViT_loss, 1: Early_loss, 2: Late_loss}
         self.fusion_method = fusion_methods.get(method)
         self.num_layers = model.config["num_hidden_layers"]
+        self.k = model.config["spearman_k"]
 
     def train(self, trainloader, testloader, validloader, epochs, save_model_every_n_epochs=0):
         """
@@ -241,17 +283,17 @@ class Trainer:
             train_losses.append(train_loss)
             test_losses.append(test_loss)
             accuracies.append(accuracy)
-            rs = total_speerman(attention_data)
+            rs, precision_top_k = total_consistency(attention_data, self.k)
         
             if validloader is not None:
                 valid_accuracy, valid_loss, _ = self.evaluate(validloader)
                 valid_losses.append(valid_loss)
                 valid_accuracies.append(valid_accuracy)
                 print(f"Train loss: {train_loss:.4f}, Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, "
-                    f"Valid loss: {valid_loss:.4f}, Valid Accuracy: {valid_accuracy:.4f}, Relational score: {np.mean(rs):.4f}")
+                    f"Valid loss: {valid_loss:.4f}, Valid Accuracy: {valid_accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top{self.k*100}% score: {np.mean(precision_top_k):.4f}")
             else:
                 print(f"Train loss: {train_loss:.4f}, Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, "
-                    f"Relational score: {np.mean(rs):.4f}")
+                    f"Spearman score: {np.mean(rs):.4f}, Precision top{self.k*100}% score: {np.mean(precision_top_k):.4f}")
 
             if (
                 save_model_every_n_epochs > 0
@@ -332,9 +374,10 @@ class Trainer:
                 # Move the batch to the device
                 batch = [t.to(self.device) for t in batch.values()]
                 images, depth, labels = batch
-                # print(f"images:{images.shape}")
-                # print(f"depth:{depth.shape}")
-                # print(f"labels:{labels}")
+                # print(f"images:{images.shape}")  ##(4, 3, 256, 256)
+                # print(f"depth:{depth.shape}")  ##(4, 1, 256, 256)
+                # print(f"labels:{labels}")  ##(3, 8, 6, 0) <- this is just label
+
                 # Get predictions
                 if self.method in [1,2]:
                     logits, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
@@ -350,7 +393,7 @@ class Trainer:
                     attention_data.append({
                         "image": images[i].detach().cpu(),
                         "depth_image": depth[i].detach().cpu(),
-                        "label": labels[i].detach().cpu().item(),
+                        "label": labels.detach().cpu(),
                         "attention_img": attention_img[i].detach().cpu(),
                         "attention_dpt": attention_dpt[i].detach().cpu()
                     })
@@ -392,6 +435,7 @@ def parse_args():
     parser.add_argument("--proposal1", type=bool, default=False)
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--beta", type=float, default=0.5)
+    parser.add_argument("--topk", type=float, default=1.0)
 
 
     args = parser.parse_args()
@@ -556,6 +600,7 @@ def main():
     config["num_classes"] = num_labels
     config["alpha"] = args.alpha
     config["beta"] = args.beta
+    config["spearman_k"] = args.topk
     model = model_class(config)
 
     # Create the model, optimizer, loss function and trainer
