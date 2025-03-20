@@ -5,11 +5,11 @@ import numpy as np
 import time
 
 import os
-from pathlib import Path
+# from pathlib import Path
 import glob
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
-from scipy.ndimage import zoom
+# from scipy.ndimage import zoom
 from scipy.stats import rankdata, spearmanr
 
 from utils import save_experiment, save_checkpoint
@@ -19,7 +19,7 @@ from data import ImageDepthDataset
 
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
-from PIL import Image
+# from PIL import Image
 
 
 def check_device_availability(device):
@@ -387,7 +387,7 @@ class Trainer:
                     attention_dpt = None
 
                 # print(f"logits:{logits.shape}")
-                # print(f"attention_img: {get_list_shape(attention_img)}")
+                # print(f"attention_img: {len(attention_img)}")
                 # print(f"imagesize: {images.size(0)}")
                 for i in range(images.size(0)): # .size(0) is batch_size, then processing each image
                     attention_data.append({
@@ -460,14 +460,13 @@ def main():
         [transforms.Resize((256, 256)), transforms.ToTensor()]
     )
 
-    def getlabels(image_files):
+    def getlabels_WRGBD(image_files):
         le = LabelEncoder()
         global label_mapping
         labels = []
         for image_file in image_files:
             # ファイル名の拡張子を除く部分を取得 (例: 'apple_1_1_1_crop')
             filename = os.path.splitext(os.path.basename(image_file))[0]
-
             # クラスラベルを抽出 ('apple_1' の部分)
             classlabel = filename.split("_")[
                 0
@@ -480,6 +479,13 @@ def main():
         label_mapping = {index: label for index, label in enumerate(le.classes_)}
 
         return encoded_labels
+    
+    def getlabels_NYU(folder_paths):
+        le = LabelEncoder()
+        labels = [os.path.basename(folder).split("_")[0] for folder in folder_paths] ### nyu2/bathroom_001a_out ⇒ [0] is bathroom
+        encoded_labels = le.fit_transform(labels)
+        label_mapping = {index: label for index, label in enumerate(le.classes_)}
+        return encoded_labels, label_mapping
     
 
     # 画像ファイルのパスを取得 (RGBおよび深度画像)
@@ -512,7 +518,36 @@ def main():
         # ペアの整合性を確認
         assert len(image_paths) == len(depth_paths), "Image and depth paths must have the same length!"
         return image_paths, depth_paths
+    
+    def load_datapath_NYU(dataset_path):
+        image_paths = []
+        depth_paths = []
+        labels = []
 
+        # 各クラスのフォルダを取得
+        class_folders = [os.path.join(dataset_path, folder) for folder in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, folder))]
+
+        for folder in class_folders:
+            class_label = os.path.basename(folder).split("_")[0]  # 'classroom' や 'basement' を取得
+            rgb_files = sorted(glob.glob(os.path.join(folder, "*.jpg")))  # RGB画像
+            depth_files = sorted(glob.glob(os.path.join(folder, "*.png")))  # 深度画像
+
+            # RGB画像と深度画像のペアを作成
+            for rgb, depth in zip(rgb_files, depth_files):
+                image_paths.append(rgb)
+                depth_paths.append(depth)
+                labels.append(class_label)
+
+        # シャッフル
+        paired_data = list(zip(image_paths, depth_paths, labels))
+        random.shuffle(paired_data)
+        image_paths, depth_paths, labels = zip(*paired_data)
+
+        return list(image_paths), list(depth_paths), list(labels)
+
+    
+    image_paths, depth_paths, labels =load_datapath_NYU("..\\data\\nyu_data")
+    print(aaa)
 
     # print(f"Total image files: {len(image_files)}")
     print(args.dataset_path)
@@ -538,9 +573,9 @@ def main():
         image_valid, image_test, depth_valid, depth_test = train_test_split(image_temp, depth_temp, test_size=(test_ratio / (valid_ratio + test_ratio)), random_state=42)
 
         # ラベル取得
-        train_labels = getlabels(image_train)
-        valid_labels = getlabels(image_valid)
-        test_labels = getlabels(image_test)
+        train_labels = getlabels_WRGBD(image_train)
+        valid_labels = getlabels_WRGBD(image_valid)
+        test_labels = getlabels_WRGBD(image_test)
 
         # データセット作成
         train_dataset = ImageDepthDataset(image_train, depth_train, train_labels, transform=transform)
@@ -562,8 +597,8 @@ def main():
 
 
     # ラベル取得
-    # train_labels = getlabels(image_train)
-    # test_labels = getlabels(image_test)
+    # train_labels = getlabels_WRGBD(image_train)
+    # test_labels = getlabels_WRGBD(image_test)
 
     # train_dataset = ImageDepthDataset(
     #     image_train, depth_train, train_labels, transform=transform1
@@ -572,7 +607,7 @@ def main():
     #     image_test, depth_test, test_labels, transform=transform1
     # )
 
-    # unique_labels = np.unique(getlabels(image_train + image_test))
+    # unique_labels = np.unique(getlabels_WRGBD(image_train + image_test))
     # num_labels = len(unique_labels)
 
     print(f"numberof labels: {num_labels}") 
