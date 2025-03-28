@@ -528,6 +528,7 @@ def main():
         class_folders = [os.path.join(dataset_path, folder) for folder in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, folder))]
 
         for folder in class_folders:
+            print(folder)
             class_label = os.path.basename(folder).split("_")[0]  # 'classroom' や 'basement' を取得
             rgb_files = sorted(glob.glob(os.path.join(folder, "*.jpg")))  # RGB画像
             depth_files = sorted(glob.glob(os.path.join(folder, "*.png")))  # 深度画像
@@ -546,8 +547,8 @@ def main():
         return list(image_paths), list(depth_paths), list(labels)
 
     
-    image_paths, depth_paths, labels =load_datapath_NYU("..\\data\\nyu_data")
-    print(aaa)
+    image_paths, depth_paths, labels =load_datapath_NYU("..\\data\\nyu_data_sample")
+    
 
     # print(f"Total image files: {len(image_files)}")
     print(args.dataset_path)
