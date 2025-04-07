@@ -45,7 +45,6 @@ def spearman_rank_correlation(attention_img, attention_dpt):
     for idx, (entry_img, entry_dpt) in enumerate(zip(attention_img, attention_dpt)):
         img_flatten = entry_img.flatten().cpu().numpy()
         dpt_flatten = entry_dpt.flatten().cpu().numpy()
-        # print(f"img_flatten.shape:{img_flatten.shape}") ##(H * W)
 
         coeff, _ = spearmanr(img_flatten, dpt_flatten)
         rs_batch.append(coeff)
@@ -87,7 +86,6 @@ def total_consistency(attention_data, k=1.0):
         # remove CLS
         attention_img = attention_img[:, :, 1:, 1:].cpu() ## trans to numpy
         attention_dpt = attention_dpt[:, :, 1:, 1:].cpu()
-        # print(f"attention :{attention_img.shape}")
 
         # averaging in head
         attention_img =torch.mean(attention_img, dim=1)  ##(batch, head, H, W) -> (batch, H, W)
@@ -138,7 +136,6 @@ class SimpleViT_loss:
         self.labels = labels
 
     def calculate_loss(self):
-        # print(self.images.shape)
         return self.loss_fn(self.model(self.images)[0], self.labels)
 
 # EarlyFusion
@@ -151,7 +148,6 @@ class Early_loss:
         self.labels = labels
 
     def calculate_loss(self):
-        #print("[test] here: loss = self.loss_fn")
         preds = self.model(self.images, self.depth)[0]
         loss = self.loss_fn(preds, self.labels)
         # loss2 = self.loss_fn(self.model(self.depth, Isdepth=True)[0], self.labels)
@@ -182,8 +178,6 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
     ### ---attnmap:(batch, head, 65, 65)
 
     for idx, entry in enumerate(attention_data): #entry is batch image and depth pair
-        # print(f"idx:{idx}")
-
         if idx > 10:
             break
         image = entry["image"] 
@@ -197,16 +191,13 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
        
         # remove CLS
         attention_img = attention_img[:, :, 1:, 1:].cpu() ## trans to numpy
-        # print(f"attention_img.shape:{attention_img.shape}")
 
         # resize attentionmap
         upsample = nn.Upsample(scale_factor=(zoomsize,zoomsize), mode='nearest')  ## mode choice = {nearest, bilinear, bicubic}
         attentionMAP_img = (upsample(attention_img))
-        # print(f"attentionMAP_img.shape:{attentionMAP_img.shape}")
 
         # averaging in head
         attentionMAP_img_ave =torch.mean(attentionMAP_img, dim=1)  ##(batch, head, H, W) -> (batch, H, W)
-        # print(f"attentionMAP_img_ave.shape:{attentionMAP_img_ave.shape}")
 
         for i in range(len(attentionMAP_img_ave)):
             label_i = decode_label(label[i], label_mapping)
@@ -387,7 +378,8 @@ class Trainer:
                     attention_dpt = None
 
                 # print(f"logits:{logits.shape}")
-                # print(f"attention_img: {len(attention_img)}")
+                print(f"attention_img: {len(attention_img)}")
+                print(f"attention_img: {attention_img.shape}")
                 # print(f"imagesize: {images.size(0)}")
                 for i in range(images.size(0)): # .size(0) is batch_size, then processing each image
                     attention_data.append({
@@ -467,6 +459,7 @@ def main():
         for image_file in image_files:
             # ファイル名の拡張子を除く部分を取得 (例: 'apple_1_1_1_crop')
             filename = os.path.splitext(os.path.basename(image_file))[0]
+            
             # クラスラベルを抽出 ('apple_1' の部分)
             classlabel = filename.split("_")[
                 0
@@ -482,11 +475,27 @@ def main():
     
     def getlabels_NYU(folder_paths):
         le = LabelEncoder()
-        labels = [os.path.basename(folder).split("_")[0] for folder in folder_paths] ### nyu2/bathroom_001a_out ⇒ [0] is bathroom
+        labels = []  # 空のリストを作成
+        for folder in folder_paths:
+            # print(f"folder:{folder}")
+            # フォルダのパスから最後の部分（フォルダ名）を取得
+            dir_path = os.path.dirname(folder)
+            folder_name = os.path.basename(dir_path)
+            # print(f"last:{folder_name}")
+            # フォルダ名を"_"で区切り、最初の要素をラベルとして取り出す
+            label = folder_name.split("_")[0]
+            # print(f"label:{label}")
+            
+            # ラベルをリストに追加
+            labels.append(label)
+
+        # ラベルを数値にエンコード
         encoded_labels = le.fit_transform(labels)
+
+        # インデックスとラベルのマッピングを作成（必要であれば返すなどして使える）
         label_mapping = {index: label for index, label in enumerate(le.classes_)}
-        return encoded_labels, label_mapping
-    
+
+        return encoded_labels
 
     # 画像ファイルのパスを取得 (RGBおよび深度画像)
     def load_datapath(dataset_path):
@@ -528,7 +537,7 @@ def main():
         class_folders = [os.path.join(dataset_path, folder) for folder in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, folder))]
 
         for folder in class_folders:
-            print(folder)
+            # print(folder)
             class_label = os.path.basename(folder).split("_")[0]  # 'classroom' や 'basement' を取得
             rgb_files = sorted(glob.glob(os.path.join(folder, "*.jpg")))  # RGB画像
             depth_files = sorted(glob.glob(os.path.join(folder, "*.png")))  # 深度画像
@@ -547,12 +556,12 @@ def main():
         return list(image_paths), list(depth_paths), list(labels)
 
     
-    image_paths, depth_paths, labels =load_datapath_NYU("..\\data\\nyu_data_sample")
+    image_paths, depth_paths, labels =load_datapath_NYU("..\\data\\nyu_data\\nyu2")
     
 
     # print(f"Total image files: {len(image_files)}")
-    print(args.dataset_path)
-    image_paths, depth_paths = load_datapath(args.dataset_path)
+    # print(args.dataset_path)
+    # image_paths, depth_paths = load_datapath(args.dataset_path)
 
     # デバッグ用出力
     print("After shuffle:")
@@ -566,7 +575,7 @@ def main():
     print(f"Total RGB image paths: {len(image_paths)}")
     print(f"Total depth image paths: {len(depth_paths)}")
 
-    def get_dataloader(image_paths, depth_paths, batch_size, transform, split_ratio=(0.8, 0.1, 0.1)):
+    def get_dataloader(image_paths, depth_paths, batch_size, transform, dataset_type=0, split_ratio=(0.8, 0.1, 0.1)):
 
         # 訓練・検証・テストデータに分割
         train_ratio, valid_ratio, test_ratio = split_ratio
@@ -574,9 +583,14 @@ def main():
         image_valid, image_test, depth_valid, depth_test = train_test_split(image_temp, depth_temp, test_size=(test_ratio / (valid_ratio + test_ratio)), random_state=42)
 
         # ラベル取得
-        train_labels = getlabels_WRGBD(image_train)
-        valid_labels = getlabels_WRGBD(image_valid)
-        test_labels = getlabels_WRGBD(image_test)
+        if dataset_type==0:
+            getlabels = getlabels_WRGBD
+        elif dataset_type==1:
+            getlabels = getlabels_NYU
+
+        train_labels = getlabels(image_train)
+        valid_labels = getlabels(image_valid)
+        test_labels = getlabels(image_test)
 
         # データセット作成
         train_dataset = ImageDepthDataset(image_train, depth_train, train_labels, transform=transform)
@@ -593,9 +607,9 @@ def main():
     # image_train, image_test, depth_train, depth_test = train_test_split(
     #     image_paths, depth_paths, test_size=0.2, random_state=0
     # )
-
-    train_loader, valid_loader, test_loader, num_labels = get_dataloader(image_paths, depth_paths, args.batch_size, transform1)
-
+    dataset_type = 1
+    train_loader, valid_loader, test_loader, num_labels = get_dataloader(image_paths, depth_paths, args.batch_size, transform1, dataset_type)
+    # print(aa)
 
     # ラベル取得
     # train_labels = getlabels_WRGBD(image_train)

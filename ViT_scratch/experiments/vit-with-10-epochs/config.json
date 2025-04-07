@@ -1,7 +1,7 @@
 {
     "alpha": 0.5,
     "attention_probs_dropout_prob": 0.0,
-    "beta": 0.0,
+    "beta": 0.5,
     "hidden_dropout_prob": 0.0,
     "hidden_size": 24,
     "image_size": 256,
@@ -10,11 +10,11 @@
     "num_attention_heads": 6,
     "num_channels": 3,
     "num_channels_forDepth": 1,
-    "num_classes": 47,
+    "num_classes": 564,
     "num_hidden_layers": 8,
     "patch_size": 32,
     "qkv_bias": true,
-    "spearman_k": 0.5,
+    "spearman_k": 1.0,
     "use_faster_attention": true,
     "use_method1": true
 }
