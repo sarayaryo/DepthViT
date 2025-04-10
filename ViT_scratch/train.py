@@ -378,8 +378,8 @@ class Trainer:
                     attention_dpt = None
 
                 # print(f"logits:{logits.shape}")
-                print(f"attention_img: {len(attention_img)}")
-                print(f"attention_img: {attention_img.shape}")
+                # print(f"attention_img: {len(attention_img)}")
+                # print(f"attention_img: {attention_img.shape}")
                 # print(f"imagesize: {images.size(0)}")
                 for i in range(images.size(0)): # .size(0) is batch_size, then processing each image
                     attention_data.append({
@@ -556,8 +556,7 @@ def main():
         return list(image_paths), list(depth_paths), list(labels)
 
     
-    image_paths, depth_paths, labels =load_datapath_NYU("..\\data\\nyu_data\\nyu2")
-    
+    image_paths, depth_paths, labels =load_datapath_NYU("..\\data\\nyu_data_sample")
 
     # print(f"Total image files: {len(image_files)}")
     # print(args.dataset_path)

@@ -794,7 +794,8 @@ class LateFusion(nn.Module):
         if not attentions_choice:
             return (logits, None)
         else:
-            # print(f"all_attentions_rgb shape: {get_list_shape(all_attentions_rgb)}")
+            # print(f"all_attentions_rgb shape: {all_attentions_rgb[2].shape}")
+            # print(aaa)
             # print(f"all_attentions_depth shape: {get_list_shape(all_attentions_depth)}")
             return (logits, all_attentions_rgb, all_attentions_depth)
 
