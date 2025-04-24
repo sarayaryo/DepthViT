@@ -1,0 +1,8 @@
+__pycache__
+data/nyu_data/
+data/rgbd-dataset/
+data/rgbd-scenes/
+data/rgbd_tinyimagenet.zip/
+
+ViT_scratch/experiments/attention
+
