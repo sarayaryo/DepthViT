@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Train batch_size 16",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/Vit_scratch/train.py",
+        "cwd": "${workspaceFolder}/ViT_scratch",
+        "console": "integratedTerminal",
+        "args": [
+          "--method", "2",
+          "--dataset", "nyu_data_sample",
+          "--batch_size", "16",
+          "--epochs", "20",
+          "--max_data_size", "200"
+        ]
+      }
+    ]
+  }
+  

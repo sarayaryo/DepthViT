@@ -1,0 +1,133 @@
+PS C:\DepthViT\ViT_scratch> python train.py --method 2 --dataset rgbd-dataset-10k --batch_size 4 --epochs 30 --max_data_size 100000
+CUDA is available! Using NVIDIA GeForce RTX 4060 Ti
+../data/rgbd-dataset-10k/
+After shuffle:
+First 5 image paths: ['../data/rgbd-dataset-10k\\valid\\images\\lime_1_1_84_crop.png', '../data/rgbd-dataset-10k\\train\\images\\plate_1_1_212_crop.png', '../data/rgbd-dataset-10k\\train\\images\\cell_phone_4_4_48_crop.png', '../data/rgbd-dataset-10k\\valid\\images\\stapler_6_4_76_crop.png', '../data/rgbd-dataset-10k\\train\\images\\pear_1_1_135_crop.png']
+First 5 depth paths: ['../data/rgbd-dataset-10k\\valid\\depth\\lime_1_1_84_depthcrop.png', '../data/rgbd-dataset-10k\\train\\depth\\plate_1_1_212_depthcrop.png', '../data/rgbd-dataset-10k\\train\\depth\\cell_phone_4_4_48_depthcrop.png', '../data/rgbd-dataset-10k\\valid\\depth\\stapler_6_4_76_depthcrop.png', '../data/rgbd-dataset-10k\\train\\depth\\pear_1_1_135_depthcrop.png']
+Total RGB image paths: 9964
+Total depth image paths: 9964
+numberof labels: 47
+train epoch: 0
+Epoch: 1, Train loss: 3.3301, Test loss: 2.6047, Accuracy: 0.2106, Valid loss: 2.6511, Valid Accuracy: 0.2018
+train epoch: 1
+Epoch: 2, Train loss: 2.4940, Test loss: 2.3146, Accuracy: 0.3571, Valid loss: 2.2607, Valid Accuracy: 0.3655
+train epoch: 2
+Epoch: 3, Train loss: 2.0857, Test loss: 1.9606, Accuracy: 0.4173, Valid loss: 1.9237, Valid Accuracy: 0.4277
+train epoch: 3
+Epoch: 4, Train loss: 1.9154, Test loss: 2.2844, Accuracy: 0.3320, Valid loss: 2.2947, Valid Accuracy: 0.3363
+train epoch: 4
+Epoch: 5, Train loss: 1.8368, Test loss: 1.7566, Accuracy: 0.4684, Valid loss: 1.8100, Valid Accuracy: 0.4729
+train epoch: 5
+Epoch: 6, Train loss: 1.7782, Test loss: 1.8368, Accuracy: 0.4724, Valid loss: 1.8819, Valid Accuracy: 0.4468
+train epoch: 6
+Epoch: 7, Train loss: 1.7610, Test loss: 1.6622, Accuracy: 0.5005, Valid loss: 1.7221, Valid Accuracy: 0.4910
+train epoch: 7
+Epoch: 8, Train loss: 1.7477, Test loss: 1.6294, Accuracy: 0.5015, Valid loss: 1.6094, Valid Accuracy: 0.5110
+train epoch: 8
+Epoch: 9, Train loss: 1.6776, Test loss: 1.7724, Accuracy: 0.4885, Valid loss: 1.7376, Valid Accuracy: 0.5010
+train epoch: 9
+Epoch: 10, Train loss: 1.6926, Test loss: 1.7176, Accuracy: 0.4654, Valid loss: 1.6949, Valid Accuracy: 0.4910
+train epoch: 10
+Epoch: 11, Train loss: 1.6915, Test loss: 1.7324, Accuracy: 0.4704, Valid loss: 1.7122, Valid Accuracy: 0.4869
+train epoch: 11
+Epoch: 12, Train loss: 1.6661, Test loss: 1.6019, Accuracy: 0.4945, Valid loss: 1.6093, Valid Accuracy: 0.4839
+train epoch: 12
+Epoch: 13, Train loss: 1.6483, Test loss: 1.5547, Accuracy: 0.5296, Valid loss: 1.4664, Valid Accuracy: 0.5452
+train epoch: 13
+Epoch: 14, Train loss: 1.6815, Test loss: 1.6638, Accuracy: 0.4945, Valid loss: 1.6515, Valid Accuracy: 0.4970
+train epoch: 14
+Epoch: 15, Train loss: 1.6107, Test loss: 1.9535, Accuracy: 0.4584, Valid loss: 1.9302, Valid Accuracy: 0.4749
+train epoch: 15
+Epoch: 16, Train loss: 1.6244, Test loss: 1.9136, Accuracy: 0.4584, Valid loss: 1.8780, Valid Accuracy: 0.4639
+train epoch: 16
+Epoch: 17, Train loss: 1.6393, Test loss: 1.4695, Accuracy: 0.5476, Valid loss: 1.3475, Valid Accuracy: 0.5713
+train epoch: 17
+Epoch: 18, Train loss: 1.6386, Test loss: 1.6665, Accuracy: 0.4985, Valid loss: 1.6104, Valid Accuracy: 0.5171
+train epoch: 18
+Epoch: 19, Train loss: 1.5969, Test loss: 1.3682, Accuracy: 0.5787, Valid loss: 1.3487, Valid Accuracy: 0.5944
+train epoch: 19
+Epoch: 20, Train loss: 1.6382, Test loss: 1.7338, Accuracy: 0.4975, Valid loss: 1.6827, Valid Accuracy: 0.5050
+train epoch: 20
+Epoch: 21, Train loss: 1.6284, Test loss: 1.3830, Accuracy: 0.5677, Valid loss: 1.4038, Valid Accuracy: 0.5552
+train epoch: 21
+Epoch: 22, Train loss: 1.6052, Test loss: 1.6803, Accuracy: 0.5226, Valid loss: 1.6038, Valid Accuracy: 0.5221
+train epoch: 22
+Epoch: 23, Train loss: 1.6373, Test loss: 1.5746, Accuracy: 0.5306, Valid loss: 1.6248, Valid Accuracy: 0.5191
+train epoch: 23
+Epoch: 24, Train loss: 1.5587, Test loss: 1.5147, Accuracy: 0.5426, Valid loss: 1.5987, Valid Accuracy: 0.5301
+train epoch: 24
+Epoch: 25, Train loss: 1.6597, Test loss: 2.0088, Accuracy: 0.4383, Valid loss: 2.0827, Valid Accuracy: 0.4418
+train epoch: 25
+Epoch: 26, Train loss: 1.5888, Test loss: 1.6602, Accuracy: 0.5145, Valid loss: 1.6826, Valid Accuracy: 0.5241
+train epoch: 26
+Epoch: 27, Train loss: 1.5918, Test loss: 1.6225, Accuracy: 0.4945, Valid loss: 1.6649, Valid Accuracy: 0.5040
+train epoch: 27
+Epoch: 28, Train loss: 1.5850, Test loss: 1.7247, Accuracy: 0.4925, Valid loss: 1.6445, Valid Accuracy: 0.5201
+train epoch: 28
+Epoch: 29, Train loss: 1.5872, Test loss: 1.4524, Accuracy: 0.5527, Valid loss: 1.5037, Valid Accuracy: 0.5512
+train epoch: 29
+Epoch: 30, Train loss: 1.5690, Test loss: 1.5442, Accuracy: 0.5416, Valid loss: 1.5234, Valid Accuracy: 0.5331
+Time: 1094.3057 seconds
+
+
+0206
+train epoch: 0
+Epoch: 1, Train loss: 3.4309, Test loss: 3.0251, Accuracy: 0.1464, Valid loss: 2.9796, Valid Accuracy: 0.1697, Relational score: 0.3667
+train epoch: 1
+Epoch: 2, Train loss: 2.6317, Test loss: 2.4843, Accuracy: 0.2718, Valid loss: 2.4219, Valid Accuracy: 0.3002, Relational score: 0.4443
+train epoch: 2
+Epoch: 3, Train loss: 2.2491, Test loss: 2.0363, Accuracy: 0.4263, Valid loss: 1.9257, Valid Accuracy: 0.4498, Relational score: 0.4129
+train epoch: 3
+Epoch: 4, Train loss: 2.0274, Test loss: 1.9291, Accuracy: 0.4092, Valid loss: 1.9140, Valid Accuracy: 0.4086, Relational score: 0.3706
+train epoch: 4
+Epoch: 5, Train loss: 1.8850, Test loss: 2.1374, Accuracy: 0.4092, Valid loss: 1.9909, Valid Accuracy: 0.4147, Relational score: 0.5033
+train epoch: 5
+Epoch: 6, Train loss: 1.8579, Test loss: 2.1775, Accuracy: 0.3761, Valid loss: 2.1412, Valid Accuracy: 0.3815, Relational score: 0.3782
+train epoch: 6
+Epoch: 7, Train loss: 1.8312, Test loss: 1.8676, Accuracy: 0.4243, Valid loss: 1.8653, Valid Accuracy: 0.4277, Relational score: 0.3758
+train epoch: 7
+Epoch: 8, Train loss: 1.7960, Test loss: 1.8164, Accuracy: 0.4564, Valid loss: 1.7945, Valid Accuracy: 0.4478, Relational score: 0.3727
+train epoch: 8
+Epoch: 9, Train loss: 1.7326, Test loss: 1.8873, Accuracy: 0.4905, Valid loss: 1.8292, Valid Accuracy: 0.4990, Relational score: 0.3984
+train epoch: 9
+Epoch: 10, Train loss: 1.7160, Test loss: 1.7981, Accuracy: 0.4714, Valid loss: 1.7512, Valid Accuracy: 0.4729, Relational score: 0.3772
+train epoch: 10
+Epoch: 11, Train loss: 1.7253, Test loss: 1.7439, Accuracy: 0.4774, Valid loss: 1.6381, Valid Accuracy: 0.4990, Relational score: 0.4102
+train epoch: 11
+Epoch: 12, Train loss: 1.6971, Test loss: 1.7511, Accuracy: 0.4433, Valid loss: 1.6337, Valid Accuracy: 0.4880, Relational score: 0.2625
+train epoch: 12
+Epoch: 13, Train loss: 1.6921, Test loss: 1.5210, Accuracy: 0.5266, Valid loss: 1.5239, Valid Accuracy: 0.5010, Relational score: 0.3430
+train epoch: 13
+Epoch: 14, Train loss: 1.6836, Test loss: 1.6264, Accuracy: 0.4945, Valid loss: 1.6100, Valid Accuracy: 0.4920, Relational score: 0.3541
+train epoch: 14
+Epoch: 15, Train loss: 1.6633, Test loss: 1.7555, Accuracy: 0.4925, Valid loss: 1.7253, Valid Accuracy: 0.4960, Relational score: 0.4090
+train epoch: 15
+Epoch: 16, Train loss: 1.6565, Test loss: 1.6205, Accuracy: 0.5206, Valid loss: 1.6407, Valid Accuracy: 0.5201, Relational score: 0.3215
+train epoch: 16
+Epoch: 17, Train loss: 1.6347, Test loss: 1.6245, Accuracy: 0.5155, Valid loss: 1.5871, Valid Accuracy: 0.5221, Relational score: 0.3493
+train epoch: 17
+Epoch: 18, Train loss: 1.6628, Test loss: 1.7979, Accuracy: 0.5095, Valid loss: 1.7220, Valid Accuracy: 0.5060, Relational score: 0.4037
+train epoch: 18
+Epoch: 19, Train loss: 1.6830, Test loss: 1.7162, Accuracy: 0.4714, Valid loss: 1.7299, Valid Accuracy: 0.4618, Relational score: 0.4525
+train epoch: 19
+Epoch: 20, Train loss: 1.6262, Test loss: 1.7058, Accuracy: 0.4925, Valid loss: 1.6668, Valid Accuracy: 0.4990, Relational score: 0.4621
+train epoch: 20
+Epoch: 21, Train loss: 1.6438, Test loss: 1.7659, Accuracy: 0.4744, Valid loss: 1.7321, Valid Accuracy: 0.4769, Relational score: 0.5141
+train epoch: 21
+Epoch: 22, Train loss: 1.6144, Test loss: 1.9544, Accuracy: 0.4774, Valid loss: 1.9082, Valid Accuracy: 0.4809, Relational score: 0.4911
+train epoch: 22
+Epoch: 23, Train loss: 1.6209, Test loss: 1.6303, Accuracy: 0.5015, Valid loss: 1.6509, Valid Accuracy: 0.5080, Relational score: 0.4680
+train epoch: 23
+Epoch: 24, Train loss: 1.6280, Test loss: 1.4927, Accuracy: 0.5466, Valid loss: 1.5234, Valid Accuracy: 0.5351, Relational score: 0.3732
+train epoch: 24
+Epoch: 25, Train loss: 1.6199, Test loss: 1.5909, Accuracy: 0.5145, Valid loss: 1.5189, Valid Accuracy: 0.5462, Relational score: 0.5456
+train epoch: 25
+Epoch: 26, Train loss: 1.6099, Test loss: 1.8210, Accuracy: 0.4634, Valid loss: 1.8564, Valid Accuracy: 0.4639, Relational score: 0.3402
+train epoch: 26
+Epoch: 27, Train loss: 1.6002, Test loss: 1.9420, Accuracy: 0.4493, Valid loss: 1.9507, Valid Accuracy: 0.4468, Relational score: 0.3720
+train epoch: 27
+Epoch: 28, Train loss: 1.5977, Test loss: 1.8678, Accuracy: 0.4784, Valid loss: 1.7860, Valid Accuracy: 0.4749, Relational score: 0.4767
+train epoch: 28
+Epoch: 29, Train loss: 1.6045, Test loss: 1.5886, Accuracy: 0.5326, Valid loss: 1.5409, Valid Accuracy: 0.5412, Relational score: 0.3960
+train epoch: 29
+Epoch: 30, Train loss: 1.5960, Test loss: 2.0394, Accuracy: 0.4002, Valid loss: 1.9398, Valid Accuracy: 0.4327, Relational score: 0.2937
