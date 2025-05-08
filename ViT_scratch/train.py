@@ -406,15 +406,21 @@ class Trainer:
         ## --------------test phase-----------------
         # accuracy, test_loss, attention_data_initial, attention_data_mid, attention_data_final = self.evaluate(testloader, True)
         accuracy, test_loss, attention_data_final = self.evaluate(testloader, True)
-        rs, precision_top_k = total_consistency(attention_data_final, self.k)
+        if self.method in [1,2]:
+            rs, precision_top_k = total_consistency(attention_data_final, self.k)
+
         test_losses.append(test_loss)
         accuracies.append(accuracy)
 
-        print(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top{self.k*100}% score: {np.mean(precision_top_k):.4f}")
-        logging.info(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top{self.k*100}% score: {np.mean(precision_top_k):.4f}")
-
-        print(f"amount of pair:{len(rs)}")
-        logging.info(f"amount of pair:{len(rs)}")
+        if self.method in [1,2]:
+            print(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top{self.k*100}% score: {np.mean(precision_top_k):.4f}")
+            logging.info(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top{self.k*100}% score: {np.mean(precision_top_k):.4f}")
+            print(f"amount of pair:{len(rs)}")
+            logging.info(f"amount of pair:{len(rs)}")
+        else:
+            print(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}")
+            logging.info(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}")
+        
         # visualize_attention
         layer_idx = 2
         head_idx = 0
