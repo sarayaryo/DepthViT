@@ -393,8 +393,8 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         attention_scores_dpt = attention_scores_dpt / math.sqrt(self.attention_head_size)
 
         ## cross attention
-        shared_attention_scores_img = attention_scores_img + self.alpha*attention_scores_dpt
-        shared_attention_scores_dpt = attention_scores_dpt + self.beta*attention_scores_img
+        shared_attention_scores_img = (1-self.alpha)*attention_scores_img + self.alpha*attention_scores_dpt
+        shared_attention_scores_dpt = (1-self.beta)*attention_scores_dpt + self.beta*attention_scores_img
 
 
         attention_probs_img = nn.functional.softmax(shared_attention_scores_img, dim=-1)

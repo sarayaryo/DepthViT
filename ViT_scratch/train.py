@@ -20,12 +20,19 @@ from scipy.stats import rankdata, spearmanr
 from utils import save_experiment, save_checkpoint
 from vit import ViTForClassfication, EarlyFusion, LateFusion, get_list_shape
 from torchvision import datasets, transforms
-from data import ImageDepthDataset
+from data import ImageDepthDataset, getlabels_NYU, getlabels_WRGBD, getlabels_TinyImageNet, load_datapath_WRGBD, load_datapath_NYU, load_datapath_TinyImageNet
 
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 # from PIL import Image
 
+def normalize_attention_map(attention_map):
+    min_val = np.min(attention_map)
+    max_val = np.max(attention_map)
+    if max_val - min_val > 0:
+        return (attention_map - min_val) / (max_val - min_val)
+    else:
+        return attention_map
 
 def check_gpu_memory(string="", epoch=None):
     if torch.cuda.is_available():
@@ -240,14 +247,11 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
         # print(f"attention_img.shape:{attention_img.shape}") #--> torch.Size([6, 64, 64])
 
         # resize attentionmap
-        # upsample = nn.Upsample(scale_factor=(zoomsize,zoomsize), mode='nearest')  ## mode choice = {nearest, bilinear, bicubic}
-        # attention_img = attention_img.unsqueeze(0)
-        # attentionMAP_img = (upsample(attention_img))
-        # attentionMAP_img = attentionMAP_img.squeeze(0)
         attentionMAP_img = zoom(attention_img, (1, zoomsize, zoomsize), order=0)  # nearest interpolation
 
         # averaging in head
         attentionMAP_img_ave =np.mean(attentionMAP_img, axis=0)  ##(head, H, W) -> (H, W)
+        attentionMAP_img_ave = normalize_attention_map(attentionMAP_img_ave)
         # print(f"attentionMAP_img_ave.shape:{attentionMAP_img_ave.shape}")
 
         label_i = decode_label(label, label_mapping)
@@ -256,7 +260,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
             image = image.permute(1, 2, 0).cpu().numpy()
         elif isinstance(image, np.ndarray) and image.shape[0] in [1, 3]:
             image = image.transpose(1, 2, 0)
-        plt.imshow(image, cmap="gray", alpha=0.8) 
+        plt.imshow(image, alpha=0.8) 
         plt.imshow(attentionMAP_img_ave, cmap="jet", alpha=0.5)  
         plt.title(f"RGB Attention Map for Label: {label_i}, Layer: {layer_idx}, Head: {head_idx}")
         plt.colorbar()
@@ -272,6 +276,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
 
         if attention_dpt is not None:
             # remove CLS
+
             
             attention_dpt = attention_dpt[:, 1:, 1:] ## trans to numpy
 
@@ -284,6 +289,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
 
             # averaging in head
             attentionMAP_dpt_ave =np.mean(attentionMAP_dpt, axis=0)  ##(head, H, W) -> (H, W)
+            attentionMAP_dpt_ave = normalize_attention_map(attentionMAP_dpt_ave)
 
             label_i = decode_label(label, label_mapping)
             plt.figure(figsize=(8, 6))
@@ -291,7 +297,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
                 depth = depth.permute(1, 2, 0).cpu().numpy()
             elif isinstance(depth, np.ndarray) and depth.shape[0] in [1, 3]:
                 depth = depth.transpose(1, 2, 0)
-            plt.imshow(depth, cmap="gray", alpha=0.8) 
+            plt.imshow(depth, alpha=0.8) 
             plt.imshow(attentionMAP_dpt_ave, cmap="jet", alpha=0.5)  
             plt.title(f"Depth Attention Map for Label: {label_i}, Layer: {layer_idx}, Head: {head_idx}")
             plt.colorbar()
@@ -574,7 +580,7 @@ def parse_args():
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--beta", type=float, default=0.5)
     parser.add_argument("--topk", type=float, default=1.0)
-
+    parser.add_argument("--dataset_type", type=int, default=1)
 
     args = parser.parse_args()
     if args.device is None:
@@ -601,112 +607,16 @@ def main():
         [transforms.Resize((256, 256)), transforms.ToTensor()]
     )
 
-    def getlabels_WRGBD(image_files):
-        le = LabelEncoder()
-        global label_mapping
-        labels = []
-        for image_file in image_files:
-            # ファイル名の拡張子を除く部分を取得 (例: 'apple_1_1_1_crop')
-            filename = os.path.splitext(os.path.basename(image_file))[0]
-            
-            # クラスラベルを抽出 ('apple_1' の部分)
-            classlabel = filename.split("_")[
-                0
-            ]  # 'apple_1' の 'apple' 部分だけを取り出す
-            # classlabel = '_'.join(filename.split('_')[:2])
-            labels.append(classlabel)
-            # 取得したクラスラベルとファイル名の確認 (必要に応じて処理を追加)
-            # print(f"File: {image_file}, ClassLabel: {classlabel}")
-        encoded_labels = le.fit_transform(labels)
-        label_mapping = {index: label for index, label in enumerate(le.classes_)}
-
-        return encoded_labels
-    
-    def getlabels_NYU(folder_paths):
-        le = LabelEncoder()
-        labels = []  # 空のリストを作成
-        for folder in folder_paths:
-            # print(f"folder:{folder}")
-            # フォルダのパスから最後の部分（フォルダ名）を取得
-            dir_path = os.path.dirname(folder)
-            folder_name = os.path.basename(dir_path)
-            # print(f"last:{folder_name}")
-            # フォルダ名を"_"で区切り、最初の要素をラベルとして取り出す
-            label = folder_name.split("_")[0]
-            # print(f"label:{label}")
-            
-            # ラベルをリストに追加
-            labels.append(label)
-
-        # ラベルを数値にエンコード
-        encoded_labels = le.fit_transform(labels)
-
-        # インデックスとラベルのマッピングを作成（必要であれば返すなどして使える）
-        label_mapping = {index: label for index, label in enumerate(le.classes_)}
-
-        return encoded_labels
-
-    # 画像ファイルのパスを取得 (RGBおよび深度画像)
-    def load_datapath(dataset_path):
-        if dataset_path=="rgbd-dataset-10k":
-            image_paths = glob.glob(os.path.join(dataset_path, "train", "images", "*.png"))
-            depth_paths = glob.glob(os.path.join(dataset_path, "train", "depth", "*.png"))
-        else:
-            image_files = glob.glob(
-            os.path.join(args.dataset_path, "**", "*.png"), recursive=True
-            )
-            # 画像ファイルを RGB と深度に分類
-            image_paths = []
-            depth_paths = []
-            for file_path in image_files:
-                filename = os.path.basename(file_path)
-                if "depth" in filename:
-                    depth_paths.append(file_path)
-                elif "maskcrop" not in filename:
-                    image_paths.append(file_path)
-                # ペア化されたデータをシャッフル
-            paired_data = list(zip(image_paths, depth_paths))
-            random.shuffle(paired_data)  # ペアのままシャッフル
-            image_paths, depth_paths = zip(*paired_data)  # シャッフル後に再分割
-
-            # リストに戻す
-            image_paths = list(image_paths)
-            depth_paths = list(depth_paths)
-
-        # ペアの整合性を確認
-        assert len(image_paths) == len(depth_paths), "Image and depth paths must have the same length!"
-        return image_paths, depth_paths
-    
-    def load_datapath_NYU(dataset_path):
-        image_paths = []
-        depth_paths = []
-        labels = []
-
-        # 各クラスのフォルダを取得
-        class_folders = [os.path.join(dataset_path, folder) for folder in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, folder))]
-
-        for folder in class_folders:
-            # print(folder)
-            class_label = os.path.basename(folder).split("_")[0]  # 'classroom' や 'basement' を取得
-            rgb_files = sorted(glob.glob(os.path.join(folder, "*.jpg")))  # RGB画像
-            depth_files = sorted(glob.glob(os.path.join(folder, "*.png")))  # 深度画像
-
-            # RGB画像と深度画像のペアを作成
-            for rgb, depth in zip(rgb_files, depth_files):
-                image_paths.append(rgb)
-                depth_paths.append(depth)
-                labels.append(class_label)
-
-        # シャッフル
-        paired_data = list(zip(image_paths, depth_paths, labels))
-        random.shuffle(paired_data)
-        image_paths, depth_paths, labels = zip(*paired_data)
-
-        return list(image_paths), list(depth_paths), list(labels)
-
-    
+    dataset_type = args.dataset_type
     # image_paths, depth_paths, labels =load_datapath_NYU("..\\data\\nyu_data_sample")
-    image_paths, depth_paths, labels =load_datapath_NYU(args.dataset_path)
+    if dataset_type==0:
+        load_datapath = load_datapath_WRGBD
+    elif dataset_type==1:
+        load_datapath = load_datapath_NYU
+    elif dataset_type==2:
+        load_datapath = load_datapath_TinyImageNet
+
+    image_paths, depth_paths, labels =load_datapath(args.dataset_path)
 
     # print(f"Total image files: {len(image_files)}")
     # print(args.dataset_path)
@@ -736,10 +646,12 @@ def main():
             getlabels = getlabels_WRGBD
         elif dataset_type==1:
             getlabels = getlabels_NYU
+        elif dataset_type==2:
+            getlabels = getlabels_TinyImageNet
 
-        train_labels = getlabels(image_train)
-        valid_labels = getlabels(image_valid)
-        test_labels = getlabels(image_test)
+        train_labels, label_mapping = getlabels(image_train)
+        valid_labels, label_mapping = getlabels(image_valid)
+        test_labels, label_mapping = getlabels(image_test)
 
         # データセット作成
         train_dataset = ImageDepthDataset(image_train, depth_train, train_labels, transform=transform)
@@ -753,10 +665,8 @@ def main():
 
         return train_loader, valid_loader, test_loader, len(set(train_labels))
 
-    # image_train, image_test, depth_train, depth_test = train_test_split(
-    #     image_paths, depth_paths, test_size=0.2, random_state=0
-    # )
-    dataset_type = 1
+    
+    dataset_type = 2
     train_loader, valid_loader, test_loader, num_labels = get_dataloader(image_paths, depth_paths, args.batch_size, transform1, dataset_type)
     # print(f"train_loader: {len(train_loader.dataset)}")
     # print(f"valid_loader: {len(valid_loader.dataset)}")
