@@ -115,7 +115,7 @@ def getlabels_WRGBD(image_files):
     encoded_labels = le.fit_transform(labels)
     label_mapping = {index: label for index, label in enumerate(le.classes_)}
 
-    return encoded_labels
+    return encoded_labels, label_mapping
 
 def getlabels_NYU(folder_paths):
     le = LabelEncoder()
@@ -197,7 +197,7 @@ def load_datapath_WRGBD(dataset_path):
 
     # ペアの整合性を確認
     assert len(image_paths) == len(depth_paths), "Image and depth paths must have the same length!"
-    return image_paths, depth_paths
+    return image_paths, depth_paths, None
 
 
 def load_datapath_NYU(dataset_path):

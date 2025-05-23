@@ -666,7 +666,7 @@ def main():
         return train_loader, valid_loader, test_loader, len(set(train_labels))
 
     
-    dataset_type = 2
+    dataset_type = args.dataset_type
     train_loader, valid_loader, test_loader, num_labels = get_dataloader(image_paths, depth_paths, args.batch_size, transform1, dataset_type)
     # print(f"train_loader: {len(train_loader.dataset)}")
     # print(f"valid_loader: {len(valid_loader.dataset)}")
