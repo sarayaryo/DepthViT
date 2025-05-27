@@ -1,8 +1,11 @@
 # Import libraries
 import torch
 import os
+import glob
+import random
 import torchvision
 import torchvision.transforms as transforms
+from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader, Dataset
 from PIL import Image
 
@@ -56,6 +59,7 @@ class ImageDepthDataset(Dataset):
         """
         self.image_paths = image_paths
         self.depth_paths = depth_paths
+        # print(f"self.labels:{labels}")
         self.labels = [torch.tensor(label, dtype=torch.long) for label in labels]
         self.transform = transform
 
@@ -90,3 +94,168 @@ class ImageDepthDataset(Dataset):
             'depth': depth,
             'label': label
         }
+
+
+def getlabels_WRGBD(image_files):
+    le = LabelEncoder()
+    global label_mapping
+    labels = []
+    for image_file in image_files:
+        # ファイル名の拡張子を除く部分を取得 (例: 'apple_1_1_1_crop')
+        filename = os.path.splitext(os.path.basename(image_file))[0]
+        
+        # クラスラベルを抽出 ('apple_1' の部分)
+        classlabel = filename.split("_")[
+            0
+        ]  # 'apple_1' の 'apple' 部分だけを取り出す
+        # classlabel = '_'.join(filename.split('_')[:2])
+        labels.append(classlabel)
+        # 取得したクラスラベルとファイル名の確認 (必要に応じて処理を追加)
+        # print(f"File: {image_file}, ClassLabel: {classlabel}")
+    encoded_labels = le.fit_transform(labels)
+    label_mapping = {index: label for index, label in enumerate(le.classes_)}
+
+    return encoded_labels, label_mapping
+
+def getlabels_NYU(folder_paths):
+    le = LabelEncoder()
+    labels = []  # 空のリストを作成
+    for folder in folder_paths:
+        # print(f"folder:{folder}")
+        # フォルダのパスから最後の部分（フォルダ名）を取得
+        dir_path = os.path.dirname(folder)
+        folder_name = os.path.basename(dir_path)
+        # print(f"last:{folder_name}")
+        # フォルダ名を"_"で区切り、最初の要素をラベルとして取り出す
+        label = folder_name.split("_")[0]
+        # print(f"label:{label}")
+        
+        # ラベルをリストに追加
+        labels.append(label)
+
+    # ラベルを数値にエンコード
+    encoded_labels = le.fit_transform(labels)
+
+    # インデックスとラベルのマッピングを作成（必要であれば返すなどして使える）
+    label_mapping = {index: label for index, label in enumerate(le.classes_)}
+
+    return encoded_labels, label_mapping
+
+def getlabels_TinyImageNet(folder_paths):
+    le = LabelEncoder()
+    labels = []  # 空のリストを作成
+    for folder in folder_paths:
+        # print(f"folder:{folder}")
+        # print(aaa)
+        # フォルダのパスから最後の部分（フォルダ名）を取得
+        dir_path = os.path.dirname(folder)
+        folder_name = os.path.basename(dir_path)
+        # print(f"last:{folder_name}")
+        # フォルダ名を"_"で区切り、最初の要素をラベルとして取り出す
+        label = folder_name.split("_")[0]
+        # print(f"label:{label}")
+        
+        # ラベルをリストに追加
+        labels.append(label)
+
+    # ラベルを数値にエンコード
+    encoded_labels = le.fit_transform(labels)
+
+    # インデックスとラベルのマッピングを作成（必要であれば返すなどして使える）
+    label_mapping = {index: label for index, label in enumerate(le.classes_)}
+
+    return encoded_labels, label_mapping
+
+
+
+# 画像ファイルのパスを取得 (RGBおよび深度画像)
+def load_datapath_WRGBD(dataset_path):
+    if dataset_path=="rgbd-dataset-10k":
+        image_paths = glob.glob(os.path.join(dataset_path, "train", "images", "*.png"))
+        depth_paths = glob.glob(os.path.join(dataset_path, "train", "depth", "*.png"))
+    else:
+        image_files = glob.glob(
+        os.path.join(dataset_path, "**", "*.png"), recursive=True
+        )
+        # 画像ファイルを RGB と深度に分類
+        image_paths = []
+        depth_paths = []
+        for file_path in image_files:
+            filename = os.path.basename(file_path)
+            if "depth" in filename:
+                depth_paths.append(file_path)
+            elif "maskcrop" not in filename:
+                image_paths.append(file_path)
+            # ペア化されたデータをシャッフル
+        paired_data = list(zip(image_paths, depth_paths))
+        random.shuffle(paired_data)  # ペアのままシャッフル
+        image_paths, depth_paths = zip(*paired_data)  # シャッフル後に再分割
+
+        # リストに戻す
+        image_paths = list(image_paths)
+        depth_paths = list(depth_paths)
+
+    # ペアの整合性を確認
+    assert len(image_paths) == len(depth_paths), "Image and depth paths must have the same length!"
+    return image_paths, depth_paths, None
+
+
+def load_datapath_NYU(dataset_path):
+    image_paths = []
+    depth_paths = []
+    labels = []
+
+    # 各クラスのフォルダを取得
+    class_folders = [os.path.join(dataset_path, folder) for folder in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, folder))]
+
+    for folder in class_folders:
+        # print(folder)
+        class_label = os.path.basename(folder).split("_")[0]  # 'classroom' や 'basement' を取得
+        rgb_files = sorted(glob.glob(os.path.join(folder, "*.jpg")))  # RGB画像
+        depth_files = sorted(glob.glob(os.path.join(folder, "*.png")))  # 深度画像
+
+        # RGB画像と深度画像のペアを作成
+        for rgb, depth in zip(rgb_files, depth_files):
+            image_paths.append(rgb)
+            depth_paths.append(depth)
+            labels.append(class_label)
+
+    # シャッフル
+    paired_data = list(zip(image_paths, depth_paths, labels))
+    random.shuffle(paired_data)
+    image_paths, depth_paths, labels = zip(*paired_data)
+
+    return list(image_paths), list(depth_paths), list(labels)
+
+def load_datapath_TinyImageNet(dataset_path):
+    image_paths = []
+    depth_paths = []
+    labels = []
+
+    # 各クラスのフォルダを取得
+    class_folders = [os.path.join(dataset_path, folder) for folder in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, folder))]
+
+    for folder in class_folders:
+        # print(folder)
+        
+        class_label = os.path.basename(folder).split("_")[0]  # 'classroom' や 'basement' を取得
+        # print(f"label:{class_label}")
+
+        rgb_files = sorted(glob.glob(os.path.join(folder, "*_rgb.png")))  # RGB画像
+        # print(f"rgb_files:{rgb_files}")
+        depth_files = sorted(glob.glob(os.path.join(folder, "*_depth.png")))  # 深度画像
+        # print(f"depth_files:{depth_files}")
+
+        # RGB画像と深度画像のペアを作成
+        for rgb, depth in zip(rgb_files, depth_files):
+            image_paths.append(rgb)
+            depth_paths.append(depth)
+            labels.append(class_label)
+        # print(aaa)
+
+    # シャッフル
+    paired_data = list(zip(image_paths, depth_paths, labels))
+    random.shuffle(paired_data)
+    image_paths, depth_paths, labels = zip(*paired_data)
+
+    return list(image_paths), list(depth_paths), list(labels)

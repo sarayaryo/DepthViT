@@ -13,21 +13,11 @@ $ python train.py --method 2 --dataset rod_sample --batch_size 4 --epochs 3 --ma
 2. change directry to ViT_scratch
  cd .\ViT_scratch
 
-3. run_trial
-3-1. if want to use GPU
- pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
- python train.py --method 2 --dataset rod_sample --batch_size 4 --epochs 3 --max_data_size 10 
- python train.py --method 2 --dataset rod_sample --batch_size 4 --epochs 2 --max_data_size 1000
+3.  run_actual
 
-3-2. if only CPU
- editting now...
-
-4. run_actual
-4-1. if want to use GPU
- pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
- python train.py --method 2 --dataset rgbd-dataset --batch_size 16 --epochs 100 
- python train.py --method 2 --dataset rgbd-dataset --batch_size 4 --epochs 20 --max_data_size 100000
-
- python train.py --method 2 --dataset rgbd-dataset --batch_size 4 --epochs 20 --max_data_size 10000 ##time 1923 sec.
-
- batchsize >> 8 is anywhere error!!
+| 3-1. use WRGBD
+    python train.py --method 2 --dataset_type 0 --alpha 0.5 --beta 0.5 --dataset rod_sample --batch_size 16 --epochs 30 --max_data_size 20000000
+　3-2. use NYUv2
+    python train.py --method 2 --dataset_type 1 --alpha 0.5 --beta 0.5 --dataset nyu_data_sample --batch_size 16 --epochs 30 --max_data_size 20000000
+  3-3. use WRGBD
+    python train.py --method 2 --dataset_type 2 --alpha 0.5 --beta 0.5 --dataset rgbd_tinyimagenet --batch_size 16 --epochs 30 --max_data_size 20000000

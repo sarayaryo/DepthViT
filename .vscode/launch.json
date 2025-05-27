@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "nyu_data",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/Vit_scratch/train.py",
+        "cwd": "${workspaceFolder}/ViT_scratch",
+        "console": "integratedTerminal",
+        "args": [
+          "--method", "2",
+          "--dataset", "nyu_data/nyu2",
+          "--batch_size", "16",
+          "--epochs", "2",
+          "--max_data_size", "200",
+          "--alpha", "0.5",
+          "--beta", "0.5",
+        ]
+      },
+      {
+        "name": "nyu_data",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/Vit_scratch/train.py",
+        "cwd": "${workspaceFolder}/ViT_scratch",
+        "console": "integratedTerminal",
+        "args": [
+          "--method", "2",
+          "--dataset", "nyu_data/nyu2",
+          "--batch_size", "16",
+          "--epochs", "2",
+          "--max_data_size", "200",
+          "--alpha", "0.1",
+          "--beta", "0.9",
+        ]
+      }
+    ]
+  }
+  

@@ -393,8 +393,8 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         attention_scores_dpt = attention_scores_dpt / math.sqrt(self.attention_head_size)
 
         ## cross attention
-        shared_attention_scores_img = attention_scores_img + self.alpha*attention_scores_dpt
-        shared_attention_scores_dpt = attention_scores_dpt + self.beta*attention_scores_img
+        shared_attention_scores_img = (1-self.alpha)*attention_scores_img + self.alpha*attention_scores_dpt
+        shared_attention_scores_dpt = (1-self.beta)*attention_scores_dpt + self.beta*attention_scores_img
 
 
         attention_probs_img = nn.functional.softmax(shared_attention_scores_img, dim=-1)
@@ -624,20 +624,20 @@ class ViTForClassfication(nn.Module):
         # Initialize the weights
         self.apply(self._init_weights)
 
-    def forward(self, x, output_attentions=False, Isdepth=False):
+    def forward(self, x, attentions_choice=False):
         # Calculate the embedding output
-        embedding_output_image = self.embedding(x, Isdepth=Isdepth)
+        embedding_output_image = self.embedding(x, Isdepth=False)
 
         # Calculate the encoder's output
         encoder_output, all_attentions = self.encoder(
-            embedding_output_image, output_attentions=output_attentions
+            embedding_output_image, output_attentions=attentions_choice
         )
         
         # Calculate the logits, take the [CLS] token's output as features for classification
         logits = self.classifier(encoder_output[:, 0, :])
         # Return the logits and the attention probabilities (optional)
 
-        if not output_attentions:
+        if not attentions_choice:
             return (logits, None)
         else:
             return (logits, all_attentions)
