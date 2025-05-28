@@ -24,6 +24,7 @@ from data import ImageDepthDataset, getlabels_NYU, getlabels_WRGBD, getlabels_Ti
 
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+import cv2
 # from PIL import Image
 
 def normalize_attention_map(attention_map):
@@ -150,7 +151,7 @@ def total_consistency(attention_data, k=1.0):
     return rs, precisions
 
 config = {
-    "patch_size": 32,  # Input image size: 32x32 -> 8x8 patches
+    "patch_size": 16,  # Input image size: 32x32 -> 8x8 patches
     "hidden_size": 24,  # changed 48->24
     "num_hidden_layers": 8,
     "num_attention_heads": 6,
@@ -225,7 +226,7 @@ def decode_label(encoded_label, label_mapping):
 
 def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, save_path=None):
     global label_mapping
-    ### ---attnmap:(batch_size, head, 65, 65)
+    ## ---attnmap:(batch_size, head, 65, 65)
     # print(f"save_path = {repr(save_path)}")
 
     for idx, entry in enumerate(attention_data): #entry is batch image and depth pair
@@ -241,27 +242,36 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
         layer_idx = "ave"
         head_idx = "ave"
        
-        # remove CLS
-        # print(attention_img.shape) #--> torch.Size([6, 65, 65])
-        attention_img = attention_img[:, 1:, 1:] ## trans to numpy
-        # print(f"attention_img.shape:{attention_img.shape}") #--> torch.Size([6, 64, 64])
+        ## attention from CLSToken
+        ## attnmap:(head, 65, 65) -> (head, 64)        
+        attention_img = attention_img[:, 0, 1:]
+        # print(f"attention_img.shape:{attention_img.shape}")        
 
-        # resize attentionmap
-        attentionMAP_img = zoom(attention_img, (1, zoomsize, zoomsize), order=0)  # nearest interpolation
+        ## averaging in head
+        ##(head, 64) -> (64)
+        attention_img_ave =np.mean(attention_img, axis=0)  
+        # print(f"attentionMAP_img_ave.shape:{attention_img_ave.shape}")
+        patch_count = attention_img_ave.shape[0]
+        patch = int(patch_count**0.5)
 
-        # averaging in head
-        attentionMAP_img_ave =np.mean(attentionMAP_img, axis=0)  ##(head, H, W) -> (H, W)
-        attentionMAP_img_ave = normalize_attention_map(attentionMAP_img_ave)
-        # print(f"attentionMAP_img_ave.shape:{attentionMAP_img_ave.shape}")
+        ##(64) -> (8, 8)
+        attention_img_ave = normalize_attention_map(attention_img_ave)
+        attention_img_ave = attention_img_ave.reshape(patch, patch)
+        # print(f"attention_img_ave.shape:{attention_img_ave.shape}")
 
+        ## resize attentionmap (8, 8) -> (256, 256)
+        attention_img_ave = cv2.resize(attention_img_ave, (256, 256), interpolation=cv2.INTER_LINEAR)
+
+        ## label_mapping
         label_i = decode_label(label, label_mapping)
+
         plt.figure(figsize=(8, 6))
         if isinstance(image, torch.Tensor):
             image = image.permute(1, 2, 0).cpu().numpy()
         elif isinstance(image, np.ndarray) and image.shape[0] in [1, 3]:
             image = image.transpose(1, 2, 0)
-        plt.imshow(image, alpha=0.8) 
-        plt.imshow(attentionMAP_img_ave, cmap="jet", alpha=0.5)  
+        plt.imshow(image, alpha=1.0) 
+        plt.imshow(attention_img_ave, cmap="jet", alpha=0.5)  
         plt.title(f"RGB Attention Map for Label: {label_i}, Layer: {layer_idx}, Head: {head_idx}")
         plt.colorbar()
 
@@ -272,36 +282,40 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
         else:
             plt.show()
             plt.close()
-        # print(f"attention_dpt:{attention_dpt}")
-
+        
         if attention_dpt is not None:
-            # remove CLS
+            ## attention from CLSToken
+            ## attnmap:(head, 65, 65) -> (head, 64)        
+            attention_dpt = attention_dpt[:, 0, 1:]
+            # print(f"attention_dpt.shape:{attention_dpt.shape}")        
 
-            
-            attention_dpt = attention_dpt[:, 1:, 1:] ## trans to numpy
+            ## averaging in head
+            ##(head, 64) -> (64)
+            attention_dpt_ave =np.mean(attention_dpt, axis=0)  
+            # print(f"attentionMAP_dpt_ave.shape:{attention_dpt_ave.shape}")
+            patch_count = attention_dpt_ave.shape[0]
+            patch = int(patch_count**0.5)
 
-            # resize attentionmap
-            # upsample = nn.Upsample(scale_factor=(zoomsize,zoomsize), mode='nearest')  ## mode choice = {nearest, bilinear, bicubic}
-            # attention_dpt = attention_dpt.unsqueeze(0)
-            # attentionMAP_dpt = (upsample(attention_dpt))
-            # attentionMAP_dpt = attentionMAP_dpt.squeeze(0)
-            attentionMAP_dpt = zoom(attention_dpt, (1, zoomsize, zoomsize), order=0)
+            ##(64) -> (8, 8)
+            attention_dpt_ave = normalize_attention_map(attention_dpt_ave)
+            attention_dpt_ave = attention_dpt_ave.reshape(patch, patch)
+            # print(f"attention_dpt_ave.shape:{attention_dpt_ave.shape}")
 
-            # averaging in head
-            attentionMAP_dpt_ave =np.mean(attentionMAP_dpt, axis=0)  ##(head, H, W) -> (H, W)
-            attentionMAP_dpt_ave = normalize_attention_map(attentionMAP_dpt_ave)
+            ## resize attentionmap (8, 8) -> (256, 256)
+            cv2.resize(attention_dpt_ave, (256, 256), interpolation=cv2.INTER_LINEAR)
 
+            ## label_mapping
             label_i = decode_label(label, label_mapping)
+
             plt.figure(figsize=(8, 6))
             if isinstance(depth, torch.Tensor):
                 depth = depth.permute(1, 2, 0).cpu().numpy()
             elif isinstance(depth, np.ndarray) and depth.shape[0] in [1, 3]:
                 depth = depth.transpose(1, 2, 0)
             plt.imshow(depth, alpha=0.8) 
-            plt.imshow(attentionMAP_dpt_ave, cmap="jet", alpha=0.5)  
+            plt.imshow(attention_dpt_ave, cmap="jet", alpha=0.5)  
             plt.title(f"Depth Attention Map for Label: {label_i}, Layer: {layer_idx}, Head: {head_idx}")
             plt.colorbar()
-
             if save_path:
                 filename = f"{save_path}depth{idx}_layer{layer_idx}_head{head_idx}.png"
                 plt.savefig(filename)

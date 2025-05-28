@@ -365,8 +365,6 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         ).transpose(1, 2)
 
         # Calculate the attention scores
-        # softmax(Q*K.T/sqrt(head_size))*V
-
         attention_scores_img = torch.matmul(query_img, key_img.transpose(-1, -2))
         attention_scores_img = attention_scores_img / math.sqrt(self.attention_head_size)
 
@@ -389,18 +387,24 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
             self.num_attention_heads,
             self.attention_head_size,
         ).transpose(1, 2)
+
+        # Calculate the attention scores
         attention_scores_dpt = torch.matmul(query_dpt, key_dpt.transpose(-1, -2))
         attention_scores_dpt = attention_scores_dpt / math.sqrt(self.attention_head_size)
 
-        ## cross attention
-        shared_attention_scores_img = (1-self.alpha)*attention_scores_img + self.alpha*attention_scores_dpt
-        shared_attention_scores_dpt = (1-self.beta)*attention_scores_dpt + self.beta*attention_scores_img
-
-
-        attention_probs_img = nn.functional.softmax(shared_attention_scores_img, dim=-1)
+        # Softmax
+        attention_probs_img = nn.functional.softmax(attention_scores_img, dim=-1)
         attention_probs_img = self.attn_dropout(attention_probs_img)
+
+        attention_probs_dpt = nn.functional.softmax(attention_scores_dpt, dim=-1)
+        attention_probs_dpt = self.attn_dropout(attention_probs_dpt)
+
+        ## cross attention (probs is how atteentioned to each other)
+        shared_attention_probs_img = (1-self.alpha)*attention_probs_img + self.alpha*attention_probs_dpt
+        shared_attention_probs_dpt = (1-self.beta)*attention_probs_dpt + self.beta*attention_probs_img
+
         # Calculate the attention output
-        attention_output_img = torch.matmul(attention_probs_img, value_img)
+        attention_output_img = torch.matmul(shared_attention_probs_img, value_img)
         # Resize the attention output
         # from (batch_size, num_attention_heads, sequence_length, attention_head_size)
         # To (batch_size, sequence_length, all_head_size)
@@ -410,10 +414,8 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
             .view(batch_size, sequence_length, self.all_head_size)
         )
 
-        attention_probs_dpt = nn.functional.softmax(shared_attention_scores_dpt, dim=-1)
-        attention_probs_dpt = self.attn_dropout(attention_probs_dpt)
         # Calculate the attention output
-        attention_output_dpt = torch.matmul(attention_probs_dpt, value_dpt)
+        attention_output_dpt = torch.matmul(shared_attention_probs_dpt, value_dpt)
         attention_output_dpt = (
             attention_output_dpt.transpose(1, 2)
             .contiguous()

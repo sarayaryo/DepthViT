@@ -19,5 +19,5 @@ $ python train.py --method 2 --dataset rod_sample --batch_size 4 --epochs 3 --ma
     python train.py --method 2 --dataset_type 0 --alpha 0.5 --beta 0.5 --dataset rod_sample --batch_size 16 --epochs 30 --max_data_size 20000000
 　3-2. use NYUv2
     python train.py --method 2 --dataset_type 1 --alpha 0.5 --beta 0.5 --dataset nyu_data_sample --batch_size 16 --epochs 30 --max_data_size 20000000
-  3-3. use WRGBD
+  3-3. use TinyImageNet
     python train.py --method 2 --dataset_type 2 --alpha 0.5 --beta 0.5 --dataset rgbd_tinyimagenet --batch_size 16 --epochs 30 --max_data_size 20000000
