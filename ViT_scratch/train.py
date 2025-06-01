@@ -3,12 +3,11 @@ from torch import nn, optim
 import random
 import numpy as np
 import gc
+import csv
 import psutil
 import logging
 import time
 from torch.optim.lr_scheduler import StepLR
-
-
 import os
 # from pathlib import Path
 import glob
@@ -71,6 +70,17 @@ def save_attention_data(attention_data, save_path, filename_prefix, layer_name):
         # 辞書形式でテンソルを保存
         torch.save(data, filename)
         # print(f"Saved: {filename}")
+
+def save_sample_list(sample_list, filename):
+    if not sample_list:
+        print(f"No data to save for {filename}")
+        return
+    keys = sample_list[0].keys()
+    with open(filename, "w", newline='', encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=keys)
+        writer.writeheader()
+        writer.writerows(sample_list)
+    print(f"Saved {len(sample_list)} samples to {filename}")
 
 def check_device_availability(device):
     if device == "cuda":
@@ -230,13 +240,14 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
     # print(f"save_path = {repr(save_path)}")
 
     for idx, entry in enumerate(attention_data): #entry is batch image and depth pair
-        if idx > 10:
+        if idx > 30:
             break
         image = entry["image"] 
         depth = entry["depth_image"]
         attention_img = entry["attention_img"]
         attention_dpt = entry["attention_dpt"]
         label = entry["label"]
+        paths = entry["path"] if "path" in entry else None
         # print(f"label:{label.shape}")
 
         layer_idx = "ave"
@@ -302,7 +313,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
             # print(f"attention_dpt_ave.shape:{attention_dpt_ave.shape}")
 
             ## resize attentionmap (8, 8) -> (256, 256)
-            cv2.resize(attention_dpt_ave, (256, 256), interpolation=cv2.INTER_LINEAR)
+            attention_dpt_ave = cv2.resize(attention_dpt_ave, (256, 256), interpolation=cv2.INTER_LINEAR)
 
             ## label_mapping
             label_i = decode_label(label, label_mapping)
@@ -312,7 +323,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
                 depth = depth.permute(1, 2, 0).cpu().numpy()
             elif isinstance(depth, np.ndarray) and depth.shape[0] in [1, 3]:
                 depth = depth.transpose(1, 2, 0)
-            plt.imshow(depth, alpha=0.8) 
+            plt.imshow(depth, alpha=1.0) 
             plt.imshow(attention_dpt_ave, cmap="jet", alpha=0.5)  
             plt.title(f"Depth Attention Map for Label: {label_i}, Layer: {layer_idx}, Head: {head_idx}")
             plt.colorbar()
@@ -325,7 +336,7 @@ def visualize_attention(attention_data, zoomsize=4, layer_idx=0, head_idx=0, sav
                 plt.close()
 
 
-def process_attention_data(images, depth, labels, attention_img, attention_dpt, layer_size):
+def process_attention_data(images, depth, labels, attention_img, attention_dpt, layer_size, image_paths=None):
     """
     Process attention data for initial, mid, and final layers.
     """
@@ -334,9 +345,10 @@ def process_attention_data(images, depth, labels, attention_img, attention_dpt, 
         attention_data.append({
             "image": images[i].detach().cpu().numpy(),
             "depth_image": depth[i].cpu().numpy(),
-            "label": labels,
+            "label": labels[i].item(),
             "attention_img": attention_img[layer_size][i].cpu().numpy(),
-            "attention_dpt": attention_dpt[layer_size][i].cpu().numpy() if attention_dpt is not None else None
+            "attention_dpt": attention_dpt[layer_size][i].cpu().numpy() if attention_dpt is not None else None,
+            "path": image_paths[i] if image_paths is not None else None
         })
     return attention_data
 
@@ -425,12 +437,15 @@ class Trainer:
         
         ## --------------test phase-----------------
         # accuracy, test_loss, attention_data_initial, attention_data_mid, attention_data_final = self.evaluate(testloader, True)
-        accuracy, test_loss, attention_data_final = self.evaluate(testloader, True)
+        accuracy, test_loss, attention_data_final, wrong_images, correct_images = self.evaluate(testloader, True)
         if self.method in [1,2]:
             rs, precision_top_k = total_consistency(attention_data_final, self.k)
 
         test_losses.append(test_loss)
         accuracies.append(accuracy)
+
+        save_sample_list(wrong_images, "wrong_images.csv")
+        save_sample_list(correct_images, "correct_images.csv")
 
         if self.method in [1,2]:
             print(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top{self.k*100}% score: {np.mean(precision_top_k):.4f}")
@@ -473,8 +488,12 @@ class Trainer:
         for idx, batch in enumerate(trainloader):
 
             # batch = [ [sub_t.to(self.device) for sub_t in t] for t in batch.values()]
-            batch = [t.to(self.device) for t in batch.values()]
-            images, depth, labels = batch
+            # batch = [t.to(self.device) for t in batch.values()]
+            # images, depth, labels = batch
+            images = batch["image"].to(self.device)
+            depth = batch["depth"].to(self.device)
+            labels = batch["label"].to(self.device)
+
             # print(
             #     f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}"
             # )
@@ -516,12 +535,20 @@ class Trainer:
         attention_data_mid = []
         attention_data_final = []
 
+        correct_images = []
+        wrong_images = []
+
         with torch.no_grad():
             for idx, batch in enumerate(testloader):
                 # print(f"Batch {idx}")
                 # Move the batch to the device
-                batch = [t.to(self.device) for t in batch.values()]
-                images, depth, labels = batch
+                # batch = [t.to(self.device) for t in batch.values()]
+                # images, depth, labels = batch
+                images = batch["image"].to(self.device)
+                depth = batch["depth"].to(self.device)
+                labels = batch["label"].to(self.device)
+                paths = batch["path"]
+
                 # print(f"images:{images.shape}")  ##(batchsize, 3, 256, 256)
                 # print(f"depth:{depth.shape}")  ##(batchsize, 1, 256, 256)
                 # print(f"labels:{labels}")  ##(3, 8, 6, 0) <- this is just label
@@ -547,7 +574,7 @@ class Trainer:
                     # mid part of layer
                     # attention_data_mid.extend(process_attention_data(images, depth, labels, attention_img, attention_dpt, layer_size//2-1))
                     # final part of layer
-                    attention_data_final.extend(process_attention_data(images, depth, labels, attention_img, attention_dpt, layer_size-1))
+                    attention_data_final.extend(process_attention_data(images, depth, labels, attention_img, attention_dpt, layer_size-1, image_paths=paths))
 
                 # Calculate the loss
                 method_instance = self.fusion_method(
@@ -559,17 +586,34 @@ class Trainer:
 
                 # Calculate the accuracy
                 predictions = torch.argmax(logits, dim=1)
+                
+                ## record correct and wrong samples
+                for i in range(len(labels)):
+                    sample_info = {
+                        "index": idx * testloader.batch_size + i,
+                        "path": batch["path"][i] if "path" in batch else None,
+                        "label": labels[i].item(),
+                        "pred": predictions[i].item(),
+                        
+                    }
+                    if predictions[i] == labels[i]:
+                        correct_images.append(sample_info)
+                    else:
+                        wrong_images.append(sample_info)
+
+
                 correct += torch.sum(predictions == labels).item()
 
                 del batch, images, depth, labels, logits, attention_img, attention_dpt, loss
                 gc.collect()
 
+        
         accuracy = correct / len(testloader.dataset)
         avg_loss = total_loss / len(testloader.dataset)
         # print(type(all_attention_maps_img))
         if attentions_choice:
             # return accuracy, avg_loss, attention_data_initial, attention_data_mid, attention_data_final
-            return accuracy, avg_loss, attention_data_final
+            return accuracy, avg_loss, attention_data_final, wrong_images, correct_images
         else:
             return accuracy, avg_loss, None, None, None
 
@@ -604,6 +648,7 @@ def parse_args():
 
 
 def main():
+    global label_mapping
     args = parse_args()
     device = check_device_availability(args.device)
     with open("training.log", "w", encoding="utf-8") as f:
@@ -640,6 +685,13 @@ def main():
     print(f"First 5 image paths: {image_paths[:5]}")
     print(f"First 5 depth paths: {depth_paths[:5]}")
 
+    # random.seed(42)
+    # combined = list(zip(image_paths, depth_paths))
+    # random.shuffle(combined)
+    # image_paths, depth_paths = zip(*combined)
+    # image_paths = list(image_paths)
+    # depth_paths = list(depth_paths)
+
     # データ数制限
     image_paths = image_paths[: args.max_data_size]
     depth_paths = depth_paths[: args.max_data_size]
@@ -662,9 +714,9 @@ def main():
         elif dataset_type==2:
             getlabels = getlabels_TinyImageNet
 
-        train_labels, label_mapping = getlabels(image_train)
-        valid_labels, label_mapping = getlabels(image_valid)
-        test_labels, label_mapping = getlabels(image_test)
+        train_labels, label_mapping_train = getlabels(image_train)
+        valid_labels, _ = getlabels(image_valid)
+        test_labels, label_mapping_test = getlabels(image_test)
 
         # データセット作成
         train_dataset = ImageDepthDataset(image_train, depth_train, train_labels, transform=transform)
@@ -676,11 +728,10 @@ def main():
         valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
-        return train_loader, valid_loader, test_loader, len(set(train_labels))
+        return train_loader, valid_loader, test_loader, len(set(train_labels)), label_mapping_test
 
-    
     dataset_type = args.dataset_type
-    train_loader, valid_loader, test_loader, num_labels = get_dataloader(image_paths, depth_paths, args.batch_size, transform1, dataset_type)
+    train_loader, valid_loader, test_loader, num_labels, label_mapping = get_dataloader(image_paths, depth_paths, args.batch_size, transform1, dataset_type)
     # print(f"train_loader: {len(train_loader.dataset)}")
     # print(f"valid_loader: {len(valid_loader.dataset)}")
     # print(f"test_loader: {len(test_loader.dataset)}")

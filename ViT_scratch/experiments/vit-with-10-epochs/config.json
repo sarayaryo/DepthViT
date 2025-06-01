@@ -10,7 +10,7 @@
     "num_attention_heads": 6,
     "num_channels": 3,
     "num_channels_forDepth": 1,
-    "num_classes": 45,
+    "num_classes": 46,
     "num_hidden_layers": 8,
     "patch_size": 16,
     "qkv_bias": true,

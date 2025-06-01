@@ -1,18 +1,20 @@
-INFO:root:train epoch: 0, Train loss: 3.8507
+INFO:root:train epoch: 0, Train loss: 3.9594
 INFO:root:epoch:0
-INFO:root:before_valid:  epoch(batch)0:  CPUメモリ使用量: 26.20%, 全メモリ: 59.67 GB, 使用中メモリ: 15.66 GB, 空きメモリ: 44.01 GB
+INFO:root:before_valid:  epoch(batch)0:  CPUメモリ使用量: 32.20%, 全メモリ: 59.67 GB, 使用中メモリ: 19.21 GB, 空きメモリ: 40.45 GB
 INFO:root:CUDAが利用できません。
 INFO:root:Batch:0
-INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 26.20%, 全メモリ: 59.67 GB, 使用中メモリ: 15.66 GB, 空きメモリ: 44.00 GB
+INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 32.20%, 全メモリ: 59.67 GB, 使用中メモリ: 19.21 GB, 空きメモリ: 40.45 GB
 INFO:root:CUDAが利用できません。
-INFO:root:Valid loss: 4.3151, Valid Accuracy: 0.0000
-INFO:root:Validation loss improved to 4.3151.
-INFO:root:after_valid:  epoch(batch)0:  CPUメモリ使用量: 26.20%, 全メモリ: 59.67 GB, 使用中メモリ: 15.66 GB, 空きメモリ: 44.01 GB
+INFO:root:Valid loss: 3.8433, Valid Accuracy: 0.0500
+INFO:root:Validation loss improved to 3.8433.
+INFO:root:after_valid:  epoch(batch)0:  CPUメモリ使用量: 32.20%, 全メモリ: 59.67 GB, 使用中メモリ: 19.22 GB, 空きメモリ: 40.45 GB
 INFO:root:CUDAが利用できません。
-INFO:root:train epoch: 1, Train loss: 3.7414
-INFO:root:train epoch: 2, Train loss: 3.5511
+INFO:root:train epoch: 1, Train loss: 3.5600
+INFO:root:train epoch: 2, Train loss: 3.4537
+INFO:root:train epoch: 3, Train loss: 3.0990
+INFO:root:train epoch: 4, Train loss: 2.8866
 INFO:root:Batch:0
-INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 26.20%, 全メモリ: 59.67 GB, 使用中メモリ: 15.65 GB, 空きメモリ: 44.01 GB
+INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 32.20%, 全メモリ: 59.67 GB, 使用中メモリ: 19.23 GB, 空きメモリ: 40.44 GB
 INFO:root:CUDAが利用できません。
-INFO:root:Test loss: 4.3396, Accuracy: 0.0000, Spearman score: 0.0460, Precision top100.0% score: 1.0000
+INFO:root:Test loss: 5.4257, Accuracy: 0.0500, Spearman score: 0.0396, Precision top100.0% score: 1.0000
 INFO:root:amount of pair:5120

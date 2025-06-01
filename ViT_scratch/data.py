@@ -92,7 +92,8 @@ class ImageDepthDataset(Dataset):
         return {
             'image': image,
             'depth': depth,
-            'label': label
+            'label': label,
+            'path': self.image_paths[idx],
         }
 
 
