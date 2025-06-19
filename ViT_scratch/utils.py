@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 from vit import ViTForClassfication
 
 
-def save_experiment(experiment_name, config, model, train_losses, test_losses, accuracies, base_dir="experiments"):
+def save_experiment(experiment_name, config, model, train_losses, test_losses, accuracies, label_mapping=None, base_dir="experiments"):
     outdir = os.path.join(base_dir, experiment_name)
     os.makedirs(outdir, exist_ok=True)
     
@@ -27,6 +27,11 @@ def save_experiment(experiment_name, config, model, train_losses, test_losses, a
             'accuracies': accuracies,
         }
         json.dump(data, f, sort_keys=True, indent=4)
+
+    # Save the label mapping
+    label_file = os.path.join(outdir, 'label_mapping.json')
+    with open(label_file, 'w', encoding='utf-8') as f:
+        json.dump(label_mapping, f, ensure_ascii=False, indent=4)
     
     # Save the model
     save_checkpoint(experiment_name, model, "final", base_dir=base_dir)
@@ -52,11 +57,17 @@ def load_experiment(experiment_name, checkpoint_name="model_final.pt", base_dir=
     train_losses = data['train_losses']
     test_losses = data['test_losses']
     accuracies = data['accuracies']
+
+    # Load the label mapping
+    label_file = os.path.join(outdir, 'label_mapping.json')
+    with open(label_file, 'r', encoding='utf-8') as f:
+        label_mapping = json.load(f)
+
     # Load the model
     model = ViTForClassfication(config)
     cpfile = os.path.join(outdir, checkpoint_name)
     model.load_state_dict(torch.load(cpfile))
-    return config, model, train_losses, test_losses, accuracies
+    return config, model, train_losses, test_losses, accuracies, label_mapping
 
 
 def visualize_images():

@@ -1,19 +1,15 @@
 import torch
 from torch import nn, optim
-import random
 import numpy as np
 import gc
 import csv
 import psutil
 import logging
 import time
-from torch.optim.lr_scheduler import StepLR
 import os
 # from pathlib import Path
-import glob
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
-from scipy.ndimage import zoom
 from scipy.stats import rankdata, spearmanr
 
 from utils import save_experiment, save_checkpoint
@@ -476,7 +472,7 @@ class Trainer:
 
         # Save the experiment
         save_experiment(
-            self.exp_name, config, self.model, train_losses, test_losses, accuracies
+            self.exp_name, config, self.model, train_losses, test_losses, accuracies, label_mapping
         )
 
     def train_epoch(self, trainloader):
@@ -628,7 +624,7 @@ def parse_args():
     parser.add_argument("--max_data_size", type=int, default=100000)
     parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--device", type=str)
-    parser.add_argument("--save_model_every", type=int, default=0)
+    parser.add_argument("--save_model_every", type=int, default=10)
     parser.add_argument("--method", type=int, default=0)
     parser.add_argument("--dataset", type=str, default="rod_sample")
     parser.add_argument("--num_labels", type=int, default=10)
