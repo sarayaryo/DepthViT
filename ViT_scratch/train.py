@@ -2,11 +2,13 @@ import torch
 from torch import nn, optim
 import numpy as np
 import gc
+import sys
 import csv
 import psutil
 import logging
 import time
 import os
+
 # from pathlib import Path
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
@@ -19,7 +21,7 @@ from data import ImageDepthDataset, getlabels_NYU, getlabels_WRGBD, getlabels_Ti
 
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
-import cv2
+import cv2 
 # from PIL import Image
 
 def normalize_attention_map(attention_map):
@@ -82,10 +84,13 @@ def check_device_availability(device):
     if device == "cuda":
         if torch.cuda.is_available():
             print(f"CUDA is available! Using {torch.cuda.get_device_name(0)}")
+
         else:
+            print("CUDAが利用できません。2")
             print("CUDA is not available. Falling back to CPU.")
             return "cpu"
     else:
+        print("CUDAが利用できません。")
         print("Using CPU.")
     return device
 
@@ -157,15 +162,15 @@ def total_consistency(attention_data, k=1.0):
     return rs, precisions
 
 config = {
-    "patch_size": 16,  # Input image size: 32x32 -> 8x8 patches
-    "hidden_size": 24,  # changed 48->24
-    "num_hidden_layers": 8,
-    "num_attention_heads": 6,
-    "intermediate_size": 4 * 24,  # 4 * hidden_size
+    "patch_size": 4,  # Input image size: 32x32 -> 8x8 patches
+    "hidden_size": 48, 
+    "num_hidden_layers": 4,
+    "num_attention_heads": 4,
+    "intermediate_size": 4 * 48,  # 4 * hidden_size
     "hidden_dropout_prob": 0.0,
     "attention_probs_dropout_prob": 0.0,
     "initializer_range": 0.02,
-    "image_size": 256,
+    "image_size": 32,
     "num_classes": 10,  # num_classes of CIFAR10
     "num_channels": 3,
     "num_channels_forDepth": 1,
@@ -375,11 +380,13 @@ class Trainer:
         # scheduler = StepLR(self.optimizer, step_size=10, gamma=0.1)  # 10エポックごとに学習率を0.1倍に減少
         best_valid_loss = float("inf")
         # Train the model
+        torch.cuda.empty_cache()
         for i in range(epochs):
             # print(f"train epoch: {i}")
             train_loss = self.train_epoch(trainloader)
-            print(f"train epoch: {i}, Train loss: {self.train_epoch(trainloader):.4f}")
-            logging.info(f"train epoch: {i}, Train loss: {self.train_epoch(trainloader):.4f}")
+            print(f"train epoch: {i}, Train loss: {train_loss:.4f}")
+            logging.info(f"train epoch: {i}, Train loss: {train_loss:.4f}")
+
 
             if i%5 == 0:
                 logging.info(f"epoch:{i}")
@@ -490,9 +497,7 @@ class Trainer:
             depth = batch["depth"].to(self.device)
             labels = batch["label"].to(self.device)
 
-            # print(
-            #     f"depth shape: {depth.shape}, images shape: {images.shape}, labels shape: {labels.shape}"
-            # )
+            check_gpu_memory(f"batch{idx}",idx)
 
             # Zero the gradients
             self.optimizer.zero_grad()
@@ -518,8 +523,8 @@ class Trainer:
 
             del batch, images, depth, labels, preds, loss
             gc.collect()
+            torch.cuda.empty_cache()
 
-        torch.cuda.empty_cache()
         return total_loss / len(trainloader.dataset)
 
     @torch.no_grad()
@@ -602,6 +607,7 @@ class Trainer:
 
                 del batch, images, depth, labels, logits, attention_img, attention_dpt, loss
                 gc.collect()
+                torch.cuda.empty_cache()
 
         
         accuracy = correct / len(testloader.dataset)
@@ -623,7 +629,7 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--max_data_size", type=int, default=100000)
     parser.add_argument("--lr", type=float, default=1e-2)
-    parser.add_argument("--device", type=str)
+    parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--save_model_every", type=int, default=10)
     parser.add_argument("--method", type=int, default=0)
     parser.add_argument("--dataset", type=str, default="rod_sample")
@@ -646,7 +652,8 @@ def parse_args():
 def main():
     global label_mapping
     args = parse_args()
-    device = check_device_availability(args.device)
+
+    args.device = check_device_availability(args.device)
     with open("training.log", "w", encoding="utf-8") as f:
         f.write("")  # ファイルを空にする
     # Training parameters
@@ -658,9 +665,9 @@ def main():
     method = args.method
 
     transform1 = transforms.Compose(
-        [transforms.Resize((256, 256)), transforms.ToTensor()]
+        [transforms.Resize((32, 32)), transforms.ToTensor()]
     )
-
+    
     dataset_type = args.dataset_type
     # image_paths, depth_paths, labels =load_datapath_NYU("..\\data\\nyu_data_sample")
     if dataset_type==0:
@@ -672,21 +679,11 @@ def main():
 
     image_paths, depth_paths, labels =load_datapath(args.dataset_path)
 
-    # print(f"Total image files: {len(image_files)}")
-    # print(args.dataset_path)
-    # image_paths, depth_paths = load_datapath(args.dataset_path)
-
     # デバッグ用出力
     print("After shuffle:")
     print(f"First 5 image paths: {image_paths[:5]}")
     print(f"First 5 depth paths: {depth_paths[:5]}")
 
-    # random.seed(42)
-    # combined = list(zip(image_paths, depth_paths))
-    # random.shuffle(combined)
-    # image_paths, depth_paths = zip(*combined)
-    # image_paths = list(image_paths)
-    # depth_paths = list(depth_paths)
 
     # データ数制限
     image_paths = image_paths[: args.max_data_size]
@@ -728,39 +725,8 @@ def main():
 
     dataset_type = args.dataset_type
     train_loader, valid_loader, test_loader, num_labels, label_mapping = get_dataloader(image_paths, depth_paths, args.batch_size, transform1, dataset_type)
-    # print(f"train_loader: {len(train_loader.dataset)}")
-    # print(f"valid_loader: {len(valid_loader.dataset)}")
-    # print(f"test_loader: {len(test_loader.dataset)}")
-    # print(aa)
-
-    # ラベル取得
-    # train_labels = getlabels_WRGBD(image_train)
-    # test_labels = getlabels_WRGBD(image_test)
-
-    # train_dataset = ImageDepthDataset(
-    #     image_train, depth_train, train_labels, transform=transform1
-    # )
-    # test_dataset = ImageDepthDataset(
-    #     image_test, depth_test, test_labels, transform=transform1
-    # )
-
-    # unique_labels = np.unique(getlabels_WRGBD(image_train + image_test))
-    # num_labels = len(unique_labels)
 
     print(f"numberof labels: {num_labels}") 
-
-    # train_loader = DataLoader(
-    #     train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=1
-    # )  # changed num_workers 2 -> 1
-
-    # valid_loader = DataLoader(
-    #     valid_dataset, batch_size=args.batch_size, shuffle=False, num_workers=1
-    # )
-
-    # test_loader = DataLoader(
-    #     test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=1
-    # )
-    
 
     ViT_methods = {
         0: ViTForClassfication,
@@ -775,6 +741,9 @@ def main():
     config["beta"] = args.beta
     config["spearman_k"] = args.topk
     model = model_class(config)
+
+    # print("After model init:")
+    # print(torch.cuda.memory_summary())
 
     # Create the model, optimizer, loss function and trainer
     # model = ViTForClassfication(config)

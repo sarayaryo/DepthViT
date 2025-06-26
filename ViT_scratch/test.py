@@ -1,5 +1,5 @@
 import torch
-from utils import load_experiment  # あなたが使っているload関数に置換
+from utils import load_experiment 
 from data import ImageDepthDataset, load_datapath_NYU, getlabels_NYU
 from torchvision import transforms
 import argparse
@@ -22,6 +22,7 @@ def visualize_attention_NYU(model, base_path, label_mapping, output=None, device
     raw_images = [np.asarray(Image.open(image_paths[i]).convert("RGB")) for i in indices]
     label_ids = [labels[i] for i in indices]
     id_to_label = label_mapping
+    # print(label_mapping)
 
     test_transform = transforms.Compose([
         transforms.ToTensor(),
@@ -33,7 +34,7 @@ def visualize_attention_NYU(model, base_path, label_mapping, output=None, device
     img_h, img_w = raw_images[0].shape[:2]
 
     model = model.to(device)
-    logits, attention_maps = model(images, output_attentions=True)
+    logits, attention_maps = model(images, attentions_choice=True)
     predictions = torch.argmax(logits, dim=1)
     attention_maps = torch.cat(attention_maps, dim=1)
     attention_maps = attention_maps[:, :, 0, 1:].mean(dim=1)
@@ -48,12 +49,12 @@ def visualize_attention_NYU(model, base_path, label_mapping, output=None, device
         img = np.concatenate((raw_images[i], raw_images[i]), axis=1)
         ax.imshow(img)
 
-        extended_attention_map = np.concatenate((np.zeros((img_h, img_w)), attention_maps[i].cpu()), axis=1)
+        extended_attention_map = np.concatenate((np.zeros((img_h, img_w)), attention_maps[i].cpu().detach().numpy()), axis=1)
         extended_attention_map = np.ma.masked_where(mask==1, extended_attention_map)
         ax.imshow(extended_attention_map, alpha=0.5, cmap='jet')
 
-        gt = id_to_label[label_ids[i]]
-        pred = id_to_label[predictions[i].item()]
+        gt = id_to_label[str(label_ids[i])]
+        pred = id_to_label[str(predictions[i].item())]
         ax.set_title(f"gt: {gt} / pred: {pred}", color=("green" if gt == pred else "red"))
     if output is not None:
         plt.savefig(output)
@@ -65,9 +66,9 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     base_path = r'..\data\nyu_data\nyu2'
     experiment_name = "vit-with-10-epochs"
-    config, model, _, _, _ = load_experiment(experiment_name)
+    config, model, _, _, _, label_mapping = load_experiment(experiment_name)
 
-    visualize_attention_NYU(model, base_path, label_mapping, "attention.png", device=device)
+    visualize_attention_NYU(model, base_path, label_mapping, "sharefusion_attention.png", device=device)
 
 if __name__ == "__main__":
     main()
