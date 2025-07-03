@@ -6,7 +6,7 @@ from torch.nn import functional as F
 import torchvision
 import torchvision.transforms as transforms
 
-from vit import ViTForClassfication
+from vit import ViTForClassfication, LateFusion
 
 
 def save_experiment(experiment_name, config, model, train_losses, test_losses, accuracies, label_mapping=None, base_dir="experiments"):
@@ -44,7 +44,7 @@ def save_checkpoint(experiment_name, model, epoch, base_dir="experiments"):
     torch.save(model.state_dict(), cpfile)
 
 
-def load_experiment(experiment_name, checkpoint_name="model_final.pt", base_dir="experiments"):
+def load_experiment(experiment_name, checkpoint_name="model_final.pt", base_dir="experiments", depth=False, map_location=None):
     outdir = os.path.join(base_dir, experiment_name)
     # Load the config
     configfile = os.path.join(outdir, 'config.json')
@@ -65,8 +65,13 @@ def load_experiment(experiment_name, checkpoint_name="model_final.pt", base_dir=
 
     # Load the model
     model = ViTForClassfication(config)
+    if depth:
+        model = LateFusion(config)
     cpfile = os.path.join(outdir, checkpoint_name)
-    model.load_state_dict(torch.load(cpfile))
+    if map_location is not None:
+        model.load_state_dict(torch.load(cpfile, map_location=map_location, weights_only=False))
+    else:
+        model.load_state_dict(torch.load(cpfile), weights_only=False)
     return config, model, train_losses, test_losses, accuracies, label_mapping
 
 
