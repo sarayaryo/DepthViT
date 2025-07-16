@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils import load_experiment 
+from utils import load_experiment, VariationalMI
 from data import ImageDepthDataset, load_datapath_NYU, getlabels_NYU
 from torchvision import transforms
 import argparse
@@ -20,14 +20,14 @@ def process_attention(attention_maps, img_h, img_w):
     attention_maps = F.interpolate(attention_maps.unsqueeze(1), size=(img_h, img_w), mode='bilinear', align_corners=False).squeeze(1)
     return attention_maps
 
-def show_images_with_attention(raw_images, raw_depths, attention_maps_img, attention_maps_dpt, label_ids, predictions, id_to_label, output=None, show=True):
-    import matplotlib.pyplot as plt
-    import numpy as np
+def show_images_with_attention(raw_images, raw_depths, attention_maps_img, attention_maps_dpt, label_ids, predictions, id_to_label, output=None, show=True, i=0):
 
     num_images = len(raw_images)
     img_h, img_w = raw_images[0].shape[:2]
 
-    fig = plt.figure(figsize=(20, 10))
+    ## figsize (640* 4, 480) == (16, 3)
+    fig = plt.figure(figsize=(160, 15))
+    
     mask = np.concatenate([
         np.ones((img_h, img_w)),        # 1: RGB (非表示)
         np.zeros((img_h, img_w)),       # 2: RGB (表示)
@@ -54,48 +54,22 @@ def show_images_with_attention(raw_images, raw_depths, attention_maps_img, atten
 
         gt = id_to_label[str(label_ids[i])]
         pred = id_to_label[str(predictions[i].item())]
-        ax.set_title(
-            f"gt: {gt} / pred: {pred}", 
-            fontsize=12,
-            color=("green" if gt == pred else "red"))
+        if i == 0:
+            ax.set_title(
+                f"gt: {gt} / pred: {pred}", 
+                fontsize=120,
+                pad = 4,
+                color=("green" if gt == pred else "red")
+                )
     
-    plt.tight_layout()
+    # plt.tight_layout()
     if output is not None:
+        plt.subplots_adjust(left=0, right=1, top=0.95, bottom=0, hspace=0, wspace=0)
         plt.savefig(output)
     if show:
         plt.show()
 
-import torch
-import torch.nn as nn
 
-class VariationalMI(nn.Module):
-    def __init__(self, dim):
-        super().__init__()
-        self.mu_net = nn.Sequential(
-            nn.Linear(dim, dim),
-            nn.ReLU(),
-            nn.Linear(dim, dim)
-        )
-        self.logvar_net = nn.Sequential(
-            nn.Linear(dim, dim),
-            nn.ReLU(),
-            nn.Linear(dim, dim)
-        )
-
-    def forward(self, x, y):
-        mu = self.mu_net(x)
-        logvar = self.logvar_net(x)
-        var = logvar.exp()
-
-        log_p = -0.5 * (((y - mu)**2)/var + logvar + torch.log(torch.tensor(2*3.1415))).sum(dim=1)
-
-        y_perm = y[torch.randperm(y.size(0))]
-        log_p_neg = -0.5 * (((y_perm - mu)**2)/var + logvar + torch.log(torch.tensor(2*3.1415))).sum(dim=1)
-
-        mi = (log_p - log_p_neg).mean()
-        return mi
-
-    
 def RGB_visualize_attention_NYU(model, base_path, label_mapping, image_size, output=None, device="cuda"):
     from PIL import Image
     model.eval()
@@ -246,12 +220,10 @@ def test(model, base_path, label_mapping, image_size, device="cuda", num_images 
 
         output_name = f"attention_block{i}.png"
         show_images_with_attention(
-            raw_images, raw_depths, attn_img, attn_dpt,
-            label_ids, predictions, id_to_label, output_name, False
+            i, raw_images, raw_depths, attn_img, attn_dpt,
+            label_ids, predictions, id_to_label, output_name, False, i
         )
         
-
-
 def main():
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
