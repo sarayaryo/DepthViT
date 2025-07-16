@@ -94,18 +94,29 @@ def check_device_availability(device):
         print("Using CPU.")
     return device
 
+
 def spearman_rank_correlation(attention_img, attention_dpt):
     """
-    :param attention_img: torch.Tensor, shape (batch, head, 65, 65) 
+    Computes Spearman's rank correlation coefficient batch-wise.
 
+    :param attention_img: torch.Tensor or np.ndarray, shape (batch, head, 65, 65)
+    :param attention_dpt: torch.Tensor or np.ndarray, shape (batch, head, 65, 65)
+    :return: list of Spearman's rho per entry
     """
     assert attention_img.shape == attention_dpt.shape, "入力のshapeが一致しません"
 
     rs_batch = []
 
+    is_tensor = torch.is_tensor(attention_img)
+
     for idx, (entry_img, entry_dpt) in enumerate(zip(attention_img, attention_dpt)):
-        img_flatten = entry_img.flatten()
-        dpt_flatten = entry_dpt.flatten()
+        if is_tensor:
+            # detach before converting to numpy
+            img_flatten = entry_img.reshape(-1).detach().cpu().numpy()
+            dpt_flatten = entry_dpt.reshape(-1).detach().cpu().numpy()
+        else:
+            img_flatten = entry_img.reshape(-1)
+            dpt_flatten = entry_dpt.reshape(-1)
 
         coeff, _ = spearmanr(img_flatten, dpt_flatten)
         rs_batch.append(coeff)
@@ -532,8 +543,6 @@ class Trainer:
         self.model.eval()
         total_loss = 0
         correct = 0
-        attention_data_initial = []
-        attention_data_mid = []
         attention_data_final = []
 
         correct_images = []
@@ -566,14 +575,9 @@ class Trainer:
                     logits, attention_img = self.model(images, attentions_choice=True)
                     attention_dpt = None
                 
-
                 if attentions_choice:
                     layer_size = len(attention_img)
 
-                    # initial part of layer
-                    # attention_data_initial.extend(process_attention_data(images, depth, labels, attention_img, attention_dpt, 0))
-                    # mid part of layer
-                    # attention_data_mid.extend(process_attention_data(images, depth, labels, attention_img, attention_dpt, layer_size//2-1))
                     # final part of layer
                     attention_data_final.extend(process_attention_data(images, depth, labels, attention_img, attention_dpt, layer_size-1, image_paths=paths))
 

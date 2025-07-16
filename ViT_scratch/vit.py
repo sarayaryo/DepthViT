@@ -399,7 +399,7 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         attention_probs_dpt = nn.functional.softmax(attention_scores_dpt, dim=-1)
         attention_probs_dpt = self.attn_dropout(attention_probs_dpt)
 
-        ## cross attention (probs is how atteentioned to each other)
+        ## Share-Fusion (probs is how atteentioned to each other)
         shared_attention_probs_img = (1-self.alpha)*attention_probs_img + self.alpha*attention_probs_dpt
         shared_attention_probs_dpt = (1-self.beta)*attention_probs_dpt + self.beta*attention_probs_img
 
@@ -589,21 +589,35 @@ class Encoder_RGB_Depth(nn.Module):
         all_attentions_img = []
         all_attentions_dpt = []
         # print(f"Encoder start: output_attentions={output_attentions}, type={type(output_attentions)}")
-        for block in self.blocks:
 
-            img, attention_probs_img, dpt, attention_probs_dpt = block(img, dpt, output_attentions=output_attentions)
+        if self.training:
+            for block in self.blocks:
 
-            if output_attentions:
-                all_attentions_img.append(attention_probs_img)
-                all_attentions_dpt.append(attention_probs_dpt)
-        # Return the encoder's output and the attention probabilities (optional)
-        
-        if not output_attentions:
-            return (img, None, dpt, None)
+                img, attention_probs_img, dpt, attention_probs_dpt = block(img, dpt, output_attentions=output_attentions)
+
+                if output_attentions:
+                    all_attentions_img.append(attention_probs_img)
+                    all_attentions_dpt.append(attention_probs_dpt)
+            
+            if not output_attentions:
+                return (img, None, dpt, None)
+            else:
+                # all_attention is all block attention in entire Encoder
+                return (img, all_attentions_img, dpt, all_attentions_dpt)
         else:
-            # all_attention is all block attention in entire Encoder
-            return (img, all_attentions_img, dpt, all_attentions_dpt)
+            for block in self.blocks:
 
+                img, attention_probs_img, dpt, attention_probs_dpt = block(img, dpt, output_attentions=output_attentions)
+
+                if output_attentions:
+                    all_attentions_img.append(attention_probs_img)
+                    all_attentions_dpt.append(attention_probs_dpt)
+            
+            if not output_attentions:
+                return (img, None, dpt, None)
+            else:
+                # all_attention is all block attention in entire Encoder
+                return (img, all_attentions_img, dpt, all_attentions_dpt)
 
 
 class ViTForClassfication(nn.Module):
