@@ -805,14 +805,12 @@ class LateFusion(nn.Module):
         # Classification using [CLS] token
         logits = self.classifier(fusion_output[:, 0, :])
 
-        # print(f"here:attention_rgb{type(all_attentions_rgb)}
+        if not self.training:
+            return (logits, encoder_output_rgb, encoder_output_depth, all_attentions_rgb, all_attentions_depth)
 
         if not attentions_choice:
             return (logits, None)
         else:
-            # print(f"all_attentions_rgb shape: {all_attentions_rgb[2].shape}")
-            # print(aaa)
-            # print(f"all_attentions_depth shape: {get_list_shape(all_attentions_depth)}")
             return (logits, all_attentions_rgb, all_attentions_depth)
 
     def _init_weights(self, module):

@@ -12,15 +12,14 @@ import os
 # from pathlib import Path
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
-from scipy.stats import rankdata, spearmanr
+from scipy.stats import spearmanr
 
 from utils import save_experiment, save_checkpoint
 from vit import ViTForClassfication, EarlyFusion, LateFusion, get_list_shape
 from torchvision import datasets, transforms
-from data import ImageDepthDataset, getlabels_NYU, getlabels_WRGBD, getlabels_TinyImageNet, load_datapath_WRGBD, load_datapath_NYU, load_datapath_TinyImageNet
+from data import load_datapath_NYU, load_datapath_WRGBD, load_datapath_TinyImageNet, get_dataloader
 
 from torch.utils.data import DataLoader
-from sklearn.model_selection import train_test_split
 import cv2 
 # from PIL import Image
 
@@ -356,10 +355,10 @@ def process_attention_data(images, depth, labels, attention_img, attention_dpt, 
     for i in range(images.size(0)):
         attention_data.append({
             "image": images[i].detach().cpu().numpy(),
-            "depth_image": depth[i].cpu().numpy(),
+            "depth_image": depth[i].detach().cpu().numpy(),
             "label": labels[i].item(),
-            "attention_img": attention_img[layer_size][i].cpu().numpy(),
-            "attention_dpt": attention_dpt[layer_size][i].cpu().numpy() if attention_dpt is not None else None,
+            "attention_img": attention_img[layer_size][i].detach().cpu().numpy(),
+            "attention_dpt": attention_dpt[layer_size][i].detach().cpu().numpy() if attention_dpt is not None else None,
             "path": image_paths[i] if image_paths is not None else None
         })
     return attention_data
@@ -539,21 +538,18 @@ class Trainer:
         return total_loss / len(trainloader.dataset)
 
     @torch.no_grad()
-    def evaluate(self, testloader, attentions_choice=False):
+    def evaluate(self, testloader, attentions_choice=False, infer_mode=False):
         self.model.eval()
         total_loss = 0
         correct = 0
         attention_data_final = []
+        MutualInformation = []
 
         correct_images = []
         wrong_images = []
 
         with torch.no_grad():
             for idx, batch in enumerate(testloader):
-                # print(f"Batch {idx}")
-                # Move the batch to the device
-                # batch = [t.to(self.device) for t in batch.values()]
-                # images, depth, labels = batch
                 images = batch["image"].to(self.device)
                 depth = batch["depth"].to(self.device)
                 labels = batch["label"].to(self.device)
@@ -569,7 +565,25 @@ class Trainer:
                     
                 # Get predictions
                 if self.method in [1,2]:
-                    logits, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
+                    if infer_mode:
+                        from module import VariationalMI
+                        
+                        logits, output_img, output_dpt, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
+
+                        device = self.device
+                          
+                        ## print(f"output_img.shape:{output_img.shape}, output_dpt.shape:{output_dpt.shape}") ([16, 65, 48])
+                        dim = output_img.shape[2]
+                        mi_regresser = VariationalMI(dim).to(device)
+
+                        f_r = output_img[:, 0, :] 
+                        f_rgbd = (output_img[:, 0, :] + output_dpt[:, 0, :])/2
+
+                        mi = mi_regresser(f_r, f_rgbd)
+                        MutualInformation.append(mi)
+
+                    else:
+                        logits, _, _, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
 
                 elif self.method == 0: 
                     logits, attention_img = self.model(images, attentions_choice=True)
@@ -617,6 +631,10 @@ class Trainer:
         accuracy = correct / len(testloader.dataset)
         avg_loss = total_loss / len(testloader.dataset)
         # print(type(all_attention_maps_img))
+    
+        if infer_mode:
+            return accuracy, MutualInformation, avg_loss, attention_data_final, wrong_images, correct_images
+
         if attentions_choice:
             # return accuracy, avg_loss, attention_data_initial, attention_data_mid, attention_data_final
             return accuracy, avg_loss, attention_data_final, wrong_images, correct_images
@@ -688,44 +706,12 @@ def main():
     print(f"First 5 image paths: {image_paths[:5]}")
     print(f"First 5 depth paths: {depth_paths[:5]}")
 
-
     # データ数制限
     image_paths = image_paths[: args.max_data_size]
     depth_paths = depth_paths[: args.max_data_size]
 
     print(f"Total RGB image paths: {len(image_paths)}")
     print(f"Total depth image paths: {len(depth_paths)}")
-
-    def get_dataloader(image_paths, depth_paths, batch_size, transform, dataset_type=0, split_ratio=(0.8, 0.1, 0.1)):
-
-        # 訓練・検証・テストデータに分割
-        train_ratio, valid_ratio, test_ratio = split_ratio
-        image_train, image_temp, depth_train, depth_temp = train_test_split(image_paths, depth_paths, test_size=(valid_ratio + test_ratio), random_state=42)
-        image_valid, image_test, depth_valid, depth_test = train_test_split(image_temp, depth_temp, test_size=(test_ratio / (valid_ratio + test_ratio)), random_state=42)
-
-        # ラベル取得
-        if dataset_type==0:
-            getlabels = getlabels_WRGBD
-        elif dataset_type==1:
-            getlabels = getlabels_NYU
-        elif dataset_type==2:
-            getlabels = getlabels_TinyImageNet
-
-        train_labels, label_mapping_train = getlabels(image_train)
-        valid_labels, _ = getlabels(image_valid)
-        test_labels, label_mapping_test = getlabels(image_test)
-
-        # データセット作成
-        train_dataset = ImageDepthDataset(image_train, depth_train, train_labels, transform=transform)
-        valid_dataset = ImageDepthDataset(image_valid, depth_valid, valid_labels, transform=transform)
-        test_dataset = ImageDepthDataset(image_test, depth_test, test_labels, transform=transform)
-
-        # DataLoader 作成
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
-        valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-
-        return train_loader, valid_loader, test_loader, len(set(train_labels)), label_mapping_test
 
     dataset_type = args.dataset_type
     train_loader, valid_loader, test_loader, num_labels, label_mapping = get_dataloader(image_paths, depth_paths, args.batch_size, transform1, dataset_type)

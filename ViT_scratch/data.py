@@ -260,3 +260,35 @@ def load_datapath_TinyImageNet(dataset_path):
     image_paths, depth_paths, labels = zip(*paired_data)
 
     return list(image_paths), list(depth_paths), list(labels)
+
+def get_dataloader(image_paths, depth_paths, batch_size, transform, dataset_type=0, split_ratio=(0.8, 0.1, 0.1)):
+    from sklearn.model_selection import train_test_split
+
+    # 訓練・検証・テストデータに分割
+    train_ratio, valid_ratio, test_ratio = split_ratio
+    image_train, image_temp, depth_train, depth_temp = train_test_split(image_paths, depth_paths, test_size=(valid_ratio + test_ratio), random_state=42)
+    image_valid, image_test, depth_valid, depth_test = train_test_split(image_temp, depth_temp, test_size=(test_ratio / (valid_ratio + test_ratio)), random_state=42)
+
+    # ラベル取得
+    if dataset_type==0:
+        getlabels = getlabels_WRGBD
+    elif dataset_type==1:
+        getlabels = getlabels_NYU
+    elif dataset_type==2:
+        getlabels = getlabels_TinyImageNet
+
+    train_labels, label_mapping_train = getlabels(image_train)
+    valid_labels, _ = getlabels(image_valid)
+    test_labels, label_mapping_test = getlabels(image_test)
+
+    # データセット作成
+    train_dataset = ImageDepthDataset(image_train, depth_train, train_labels, transform=transform)
+    valid_dataset = ImageDepthDataset(image_valid, depth_valid, valid_labels, transform=transform)
+    test_dataset = ImageDepthDataset(image_test, depth_test, test_labels, transform=transform)
+
+    # DataLoader 作成
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+    return train_loader, valid_loader, test_loader, len(set(train_labels)), label_mapping_test

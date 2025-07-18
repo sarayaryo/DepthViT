@@ -1,17 +1,18 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from utils import load_experiment, VariationalMI
+from module import VariationalMI
+from utils import load_experiment
 from data import ImageDepthDataset, load_datapath_NYU, getlabels_NYU
 from torchvision import transforms
-import argparse
-from train import spearman_rank_correlation
+
+from train import spearman_rank_correlation, total_consistency, process_attention_data
 from PIL import Image
 import glob
 import os
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from torch.utils.data import DataLoader
 
 def process_attention(attention_maps, img_h, img_w):
     attention_maps = attention_maps[:, :, 0, 1:].mean(dim=1)
@@ -173,7 +174,7 @@ def RGBD_visualize_attention_NYU(model, base_path, label_mapping, image_size, ou
         label_ids, predictions, id_to_label, "attention.png", True
     )
 
-def test(model, base_path, label_mapping, image_size, device="cuda", num_images = 16): 
+def test(model, base_path, mi_regresser, label_mapping, image_size, device="cuda", num_images = 16): 
     model.eval()
 
     image_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.jpg')))
@@ -203,8 +204,10 @@ def test(model, base_path, label_mapping, image_size, device="cuda", num_images 
     depths = torch.stack([depth_transform(Image.fromarray(dpt)) for dpt in raw_depths]).to(device)
 
     model = model.to(device)
-    logits, attention_maps_img, attention_maps_dpt = model(images, depths, attentions_choice=True)
+    logits, output_img, output_dpt, attention_maps_img, attention_maps_dpt = model(images, depths, attentions_choice=True)
+    # print(f"attention_maps_img shape: {len(attention_maps_img)}, attention_maps_dpt shape: {len(attention_maps_dpt)}")
     predictions = torch.argmax(logits, dim=1)
+    
     img_h, img_w = raw_images[0].shape[:2]
 
     for i, (attn_img, attn_dpt) in enumerate(zip(attention_maps_img, attention_maps_dpt)):
@@ -219,15 +222,72 @@ def test(model, base_path, label_mapping, image_size, device="cuda", num_images 
         print(f"Spearman Rank Correlation for block {i}: {sum(score_s) / len(score_s):.4f}")
 
         output_name = f"attention_block{i}.png"
+
         show_images_with_attention(
-            i, raw_images, raw_depths, attn_img, attn_dpt,
+            raw_images, raw_depths, attn_img, attn_dpt,
             label_ids, predictions, id_to_label, output_name, False, i
         )
-        
+    attention_data_final = []
+    attention_data_final.extend(process_attention_data(images, depths, labels, attention_maps_img, attention_maps_dpt, len(attention_maps_img)-1, image_paths))
+    rs, precission_topk = total_consistency(attention_data_final)
+    print(f"total spearman rank correlation: {np.mean(rs):.4f}")
+
+    mi = mi_regresser(output_img, output_dpt)
+    print(f"Mutual Information: {mi:.4f}")
+
+def batch_test(model, batch_size, dataset_type, base_path, mi_regresser, label_mapping, device="cuda"):
+    from train import Trainer
+    from torch import nn, optim
+    from data import load_datapath_NYU, load_datapath_WRGBD, load_datapath_TinyImageNet, get_dataloader
+
+    optimizer = optim.AdamW(model.parameters(), lr=1e-2, weight_decay = 0.02)
+    loss_fn = nn.CrossEntropyLoss()
+    # method: 0=Simple, 1=Early, 2=Late
+    trainer = Trainer(
+        model=model,
+        optimizer=optimizer,
+        loss_fn=loss_fn,
+        method=2, 
+        exp_name="share-fusion_infer",
+        device=device
+    )
+    transform1 = transforms.Compose(
+        [transforms.Resize((32, 32)), transforms.ToTensor()]
+    )
+
+    if dataset_type==0:
+        load_datapath = load_datapath_WRGBD
+    elif dataset_type==1:
+        load_datapath = load_datapath_NYU
+    elif dataset_type==2:
+        load_datapath = load_datapath_TinyImageNet
+
+    image_paths, depth_paths, labels =load_datapath(base_path)
+    
+    max_num = 200
+    image_paths = image_paths[:max_num]
+    depth_paths = depth_paths[:max_num]
+    labels = labels[:max_num]
+
+    _, _, test_loader, num_labels, label_mapping = get_dataloader(image_paths, depth_paths, batch_size, transform1, dataset_type)
+    
+
+    # Evaluateだけ実行
+    accuracy, MI, avg_loss, attention_data_final, wrong_images, correct_images = trainer.evaluate(test_loader, attentions_choice=True, infer_mode=True)
+    mi_values = torch.stack(MI).cpu().numpy()
+
+    rs, precission_topk = total_consistency(attention_data_final)
+
+    print(f"Accuracy: {accuracy:.4f}, Average Loss: {avg_loss:.4f}")
+    print(f"Spearman Rank Correlation: {np.mean(rs):.4f}")
+    print(f"Mutual Information: {np.mean(mi_values):.4f}")
+
+
 def main():
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     base_path = r'..\data\nyu_data\nyu2'
+    dataset_type = 1 # 0=WRGBD, 1=NYU, 2=TinyImageNet
     experiment_name = "vit-with-10-epochs"
     map_location = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -240,7 +300,7 @@ def main():
     image_size = config['image_size']
     # RGB_visualize_attention_NYU(model, base_path, label_mapping, image_size, "attention.png", device=device)
 
-    config, model, _, _, _, label_mapping = load_experiment(
+    config, model_sharefusion, _, _, _, label_mapping = load_experiment(
         experiment_name,
         checkpoint_name='sharefusion_30epoch.pt',
         depth=True,
@@ -249,7 +309,14 @@ def main():
     image_size = config['image_size']
     # RGBD_visualize_attention_NYU(model, base_path, label_mapping, image_size, "sharefusion_attention.png", device=device)
 
-    test(model, base_path, label_mapping, image_size, device=device, num_images=3)
+    dim = config["hidden_size"]
+    mi_regresser = VariationalMI(dim).to(device)
+    
+
+    # test(model_sharefusion, base_path, mi_regresser, label_mapping, image_size, device="cuda", num_images=30)
+
+    batch_size = 16
+    batch_test(model_sharefusion, batch_size, dataset_type, base_path, mi_regresser, label_mapping, device)
 
 
 if __name__ == "__main__":
