@@ -31,6 +31,7 @@ class VariationalMI(nn.Module):
     import torch
 
 def train_and_save_vmi(f_r, f_rgbd, save_path="vmi_model.pth", dim=48, epochs=500, lr=1e-3):
+    # dim = f_r.shape[2]
     model = VariationalMI(dim).to(f_r.device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 

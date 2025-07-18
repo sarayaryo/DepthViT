@@ -543,7 +543,7 @@ class Trainer:
         total_loss = 0
         correct = 0
         attention_data_final = []
-        MutualInformation = []
+        CLS_tokens = []
 
         correct_images = []
         wrong_images = []
@@ -579,8 +579,7 @@ class Trainer:
                         f_r = output_img[:, 0, :] 
                         f_rgbd = (output_img[:, 0, :] + output_dpt[:, 0, :])/2
 
-                        mi = mi_regresser(f_r, f_rgbd)
-                        MutualInformation.append(mi)
+                        CLS_tokens.append((f_r, f_rgbd))
 
                     else:
                         logits, _, _, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
@@ -633,7 +632,7 @@ class Trainer:
         # print(type(all_attention_maps_img))
     
         if infer_mode:
-            return accuracy, MutualInformation, avg_loss, attention_data_final, wrong_images, correct_images
+            return accuracy, CLS_tokens, avg_loss, attention_data_final, wrong_images, correct_images
 
         if attentions_choice:
             # return accuracy, avg_loss, attention_data_initial, attention_data_mid, attention_data_final

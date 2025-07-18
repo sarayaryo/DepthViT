@@ -264,17 +264,22 @@ def batch_test(model, batch_size, dataset_type, base_path, mi_regresser, label_m
 
     image_paths, depth_paths, labels =load_datapath(base_path)
     
-    max_num = 200
-    image_paths = image_paths[:max_num]
-    depth_paths = depth_paths[:max_num]
-    labels = labels[:max_num]
+    # max_num = 200
+    # image_paths = image_paths[:max_num]
+    # depth_paths = depth_paths[:max_num]
+    # labels = labels[:max_num]
 
     _, _, test_loader, num_labels, label_mapping = get_dataloader(image_paths, depth_paths, batch_size, transform1, dataset_type)
     
 
     # Evaluateだけ実行
-    accuracy, MI, avg_loss, attention_data_final, wrong_images, correct_images = trainer.evaluate(test_loader, attentions_choice=True, infer_mode=True)
-    mi_values = torch.stack(MI).cpu().numpy()
+    accuracy, CLS_token, avg_loss, attention_data_final, wrong_images, correct_images = trainer.evaluate(test_loader, attentions_choice=True, infer_mode=True)
+    
+    mi_values = []
+    with torch.no_grad():
+        for i, (f_r, f_rgbd) in enumerate(CLS_token):
+            mi = mi_regresser(f_r, f_rgbd)
+            mi_values.append(mi.item())
 
     rs, precission_topk = total_consistency(attention_data_final)
 
@@ -290,6 +295,10 @@ def main():
     dataset_type = 1 # 0=WRGBD, 1=NYU, 2=TinyImageNet
     experiment_name = "vit-with-10-epochs"
     map_location = "cuda" if torch.cuda.is_available() else "cpu"
+    batch_size = 16
+
+
+    ## ----------------Visualize Attention Maps----------------
 
     config, model, _, _, _, label_mapping = load_experiment(
         experiment_name,
@@ -300,6 +309,13 @@ def main():
     image_size = config['image_size']
     # RGB_visualize_attention_NYU(model, base_path, label_mapping, image_size, "attention.png", device=device)
 
+    config, model_latefusion, _, _, _, label_mapping = load_experiment(
+        experiment_name,
+        checkpoint_name='latefusion_30epochs.pt',
+        depth=True,
+        map_location=map_location
+        )
+
     config, model_sharefusion, _, _, _, label_mapping = load_experiment(
         experiment_name,
         checkpoint_name='sharefusion_30epoch.pt',
@@ -309,14 +325,22 @@ def main():
     image_size = config['image_size']
     # RGBD_visualize_attention_NYU(model, base_path, label_mapping, image_size, "sharefusion_attention.png", device=device)
 
+
+    ## ----------------Test Accracy, Spearman, Mutual Information----------------
+
     dim = config["hidden_size"]
     mi_regresser = VariationalMI(dim).to(device)
-    
-
+    mi_regresser.load_state_dict(torch.load(r"experiments\vmi_model\late30.pth", map_location=device, weights_only=True))
+    mi_regresser.eval()
     # test(model_sharefusion, base_path, mi_regresser, label_mapping, image_size, device="cuda", num_images=30)
 
-    batch_size = 16
+    batch_test(model_latefusion, batch_size, dataset_type, base_path, mi_regresser, label_mapping, device)
+
+    mi_regresser.load_state_dict(torch.load(r"experiments\vmi_model\share30.pth", map_location=device, weights_only=True))
+    mi_regresser.eval()
     batch_test(model_sharefusion, batch_size, dataset_type, base_path, mi_regresser, label_mapping, device)
+
+    
 
 
 if __name__ == "__main__":
