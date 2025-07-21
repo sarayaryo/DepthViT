@@ -12,7 +12,7 @@ def train_and_save_vmi(f_r, f_rgbd, save_path="vmi_model.pth", dim=48, epochs=50
     for epoch in range(epochs):
         optimizer.zero_grad()
         mi = model(f_r, f_rgbd)
-        loss = -mi  # 相互情報量を最大化
+        loss = mi  # minimize Mutual Information
         loss.backward()
         optimizer.step()
         if epoch % 50 == 0:
