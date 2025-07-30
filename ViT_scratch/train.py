@@ -378,7 +378,7 @@ class Trainer:
         fusion_methods = {0: SimpleViT_loss, 1: Early_loss, 2: Late_loss}
         self.fusion_method = fusion_methods.get(method)
         self.num_layers = model.config["num_hidden_layers"]
-        self.k = model.config["spearman_k"]
+        self.k = model.config["precision_k"]
 
     def train(self, trainloader, testloader, validloader, epochs, patience, save_model_every_n_epochs=0):
         """
@@ -566,20 +566,16 @@ class Trainer:
                 # Get predictions
                 if self.method in [1,2]:
                     if infer_mode:
-                        from module import VariationalMI
-                        
                         logits, output_img, output_dpt, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
 
                         device = self.device
                           
                         ## print(f"output_img.shape:{output_img.shape}, output_dpt.shape:{output_dpt.shape}") ([16, 65, 48])
-                        dim = output_img.shape[2]
-                        mi_regresser = VariationalMI(dim).to(device)
 
-                        f_r = output_img[:, 0, :] 
-                        f_rgbd = (output_img[:, 0, :] + output_dpt[:, 0, :])/2
+                        f_r = output_img[:, 0, :].to(device)
+                        f_d = output_dpt[:, 0, :].to(device)
 
-                        CLS_tokens.append((f_r, f_rgbd))
+                        CLS_tokens.append((f_r, f_d))
 
                     else:
                         logits, _, _, attention_img, attention_dpt = self.model(images, depth, attentions_choice=True)
@@ -660,7 +656,7 @@ def parse_args():
     parser.add_argument("--proposal1", type=bool, default=False)
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--beta", type=float, default=0.5)
-    parser.add_argument("--topk", type=float, default=1.0)
+    parser.add_argument("--topk", type=float, default=0.1)
     parser.add_argument("--dataset_type", type=int, default=1)
 
     args = parser.parse_args()
@@ -728,7 +724,7 @@ def main():
     config["num_classes"] = num_labels
     config["alpha"] = args.alpha
     config["beta"] = args.beta
-    config["spearman_k"] = args.topk
+    config["precision_k"] = args.topk
     model = model_class(config)
 
     # print("After model init:")

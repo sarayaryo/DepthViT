@@ -189,6 +189,7 @@ def load_datapath_WRGBD(dataset_path):
                 image_paths.append(file_path)
             # ペア化されたデータをシャッフル
         paired_data = list(zip(image_paths, depth_paths))
+        random.seed(42)
         random.shuffle(paired_data)  # ペアのままシャッフル
         image_paths, depth_paths = zip(*paired_data)  # シャッフル後に再分割
 
@@ -223,6 +224,7 @@ def load_datapath_NYU(dataset_path):
 
     # シャッフル
     paired_data = list(zip(image_paths, depth_paths, labels))
+    random.seed(41)
     random.shuffle(paired_data)
     image_paths, depth_paths, labels = zip(*paired_data)
 
@@ -256,6 +258,7 @@ def load_datapath_TinyImageNet(dataset_path):
 
     # シャッフル
     paired_data = list(zip(image_paths, depth_paths, labels))
+    random.seed(42)
     random.shuffle(paired_data)
     image_paths, depth_paths, labels = zip(*paired_data)
 
