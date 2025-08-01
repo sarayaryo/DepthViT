@@ -27,7 +27,7 @@ def show_images_with_attention(raw_images, raw_depths, attention_maps_img, atten
     img_h, img_w = raw_images[0].shape[:2]
 
     ## figsize (640* 4, 480) == (16, 3)
-    fig = plt.figure(figsize=(160, 15))
+    fig = plt.figure(figsize=(40, 30))
     
     mask = np.concatenate([
         np.ones((img_h, img_w)),        # 1: RGB (非表示)
@@ -55,10 +55,10 @@ def show_images_with_attention(raw_images, raw_depths, attention_maps_img, atten
 
         gt = id_to_label[str(label_ids[i])]
         pred = id_to_label[str(predictions[i].item())]
-        if i == 0:
+        if True:
             ax.set_title(
                 f"gt: {gt} / pred: {pred}", 
-                fontsize=120,
+                fontsize=45,
                 pad = 4,
                 color=("green" if gt == pred else "red")
                 )
@@ -124,15 +124,19 @@ def RGB_visualize_attention_NYU(model, base_path, label_mapping, image_size, out
         plt.savefig(output)
     plt.show()
 
-def RGBD_visualize_attention_NYU(model, base_path, label_mapping, image_size, output=None, device="cuda"):
+def RGBD_visualize_attention_NYU(model, test_image_path, test_depth_path, label_mapping, image_size, output=None, device="cuda"):
     model.eval()
 
-    image_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.jpg')))
-    depth_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.png')))
+    # image_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.jpg')))
+    # depth_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.png')))
+    image_paths = test_image_path
+    depth_paths = test_depth_path
     labels, _ = getlabels_NYU(image_paths)
 
     num_images = 12
-    indices = torch.randperm(len(image_paths))[:num_images] ## if random is not desired comment out
+    indices = list(range(num_images))
+    # indices = torch.randperm(len(image_paths))[:num_images] ## if random is not desired comment out
+    
     
     raw_images = [np.asarray(Image.open(image_paths[i]).convert("RGB")) for i in indices]
     raw_depths = [np.asarray(Image.open(depth_paths[i])) for i in indices]
@@ -158,7 +162,7 @@ def RGBD_visualize_attention_NYU(model, base_path, label_mapping, image_size, ou
     img_h, img_w = raw_images[0].shape[:2]
 
     model = model.to(device)
-    logits, attention_maps_img, attention_maps_dpt = model(images, depths, attentions_choice=True)
+    logits,  _, _, attention_maps_img, attention_maps_dpt = model(images, depths, attentions_choice=True)
     predictions = torch.argmax(logits, dim=1)
 
     ## averaging in block  4*[12, 4, 65, 65] -> [12, 4, 65, 65]
@@ -171,17 +175,20 @@ def RGBD_visualize_attention_NYU(model, base_path, label_mapping, image_size, ou
 
     show_images_with_attention(
         raw_images, raw_depths, attention_maps_img, attention_maps_dpt,
-        label_ids, predictions, id_to_label, "attention.png", True
+        label_ids, predictions, id_to_label, output, False
     )
 
-def test(model, base_path, mi_regresser, label_mapping, image_size, device="cuda", num_images = 16): 
+def test(model, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, device="cuda", num_images = 16): 
     model.eval()
 
-    image_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.jpg')))
-    depth_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.png')))
+    # image_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.jpg')))
+    # depth_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.png')))
+    image_paths = test_image_path
+    depth_paths = test_depth_path
     labels, _ = getlabels_NYU(image_paths)
 
-    indices = torch.randperm(len(image_paths))[:num_images] ## if random is not desired comment out
+    indices = list(range(num_images))
+    # indices = torch.randperm(len(image_paths))[:num_images] ## if random is not desired comment out
     
     raw_images = [np.asarray(Image.open(image_paths[i]).convert("RGB")) for i in indices]
     raw_depths = [np.asarray(Image.open(depth_paths[i])) for i in indices]
@@ -221,7 +228,7 @@ def test(model, base_path, mi_regresser, label_mapping, image_size, device="cuda
         score_s = spearman_rank_correlation(attn_img, attn_dpt)
         print(f"Spearman Rank Correlation for block {i}: {sum(score_s) / len(score_s):.4f}")
 
-        output_name = f"attention_block{i}.png"
+        output_name = f"attention_image\\attention_block{i}.png"
 
         show_images_with_attention(
             raw_images, raw_depths, attn_img, attn_dpt,
@@ -232,25 +239,75 @@ def test(model, base_path, mi_regresser, label_mapping, image_size, device="cuda
     rs, precission_topk = total_consistency(attention_data_final)
     print(f"total spearman rank correlation: {np.mean(rs):.4f}")
 
-    mi = mi_regresser(output_img, output_dpt)
-    print(f"Mutual Information: {mi:.4f}")
+    output_rgbd = torch.cat((output_img, output_dpt), dim=1)  # Concatenate along feature dimension
+    # mi = mi_regresser(output_img, output_rgbd)
+    # print(f"Mutual Information: {mi:.4f}")
 
-def batch_test(model, batch_size, dataset_type, base_path, mi_regresser, label_mapping, device="cuda"):
+def batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device="cuda"):
+    
     from train import Trainer
-    from torch import nn, optim
-    from data import load_datapath_NYU, load_datapath_WRGBD, load_datapath_TinyImageNet, get_dataloader
-
+    from torch import nn, optim 
     optimizer = optim.AdamW(model.parameters(), lr=1e-2, weight_decay = 0.02)
     loss_fn = nn.CrossEntropyLoss()
-    # method: 0=Simple, 1=Early, 2=Late
     trainer = Trainer(
         model=model,
         optimizer=optimizer,
+        loss_fn=loss_fn,
+        method=0,
+        exp_name="RGB_ViT_infer",
+        device=device
+    )
+
+    # Evaluateだけ実行
+    accuracy, CLS_token, avg_loss, attention_data_final, wrong_images, correct_images = trainer.evaluate(test_loader, attentions_choice=True, infer_mode=True)
+
+    print(f"Accuracy: {accuracy:.4f}, Average Loss: {avg_loss:.4f}")
+
+
+def batch_test_fusionViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device="cuda"):
+    
+    from train import Trainer
+    from torch import nn, optim 
+
+    loss_fn = nn.CrossEntropyLoss()
+    trainer = Trainer(
+        model=model,
+        optimizer=None,
         loss_fn=loss_fn,
         method=2, 
         exp_name="share-fusion_infer",
         device=device
     )
+
+    # Evaluateだけ実行
+    accuracy, CLS_token, avg_loss, attention_data_final, wrong_images, correct_images = trainer.evaluate(test_loader, attentions_choice=True, infer_mode=True)
+    
+    mi_values = []
+    with torch.no_grad():
+        for i, (f_r, f_d) in enumerate(CLS_token):
+            f_rgbd = torch.cat((f_r, f_d), dim=1)  
+            mi = mi_regresser(f_r, f_rgbd)
+            mi_values.append(mi.item())
+
+    rs, precission_topk = total_consistency(attention_data_final)
+
+    print(f"Accuracy: {accuracy:.4f}, Average Loss: {avg_loss:.4f}")
+    print(f"Spearman Rank Correlation: {np.mean(rs):.4f}")
+    print(f"Precision at Top K: {np.mean(precission_topk):.4f}")
+    print(f"Mutual Information: {np.mean(mi_values):.4f}")
+
+
+def main(random_seed):
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    base_path = r'..\data\nyu_data\nyu2'
+    dataset_type = 1 # 0=WRGBD, 1=NYU, 2=TinyImageNet
+    experiment_name = "vit-with-10-epochs"
+    map_location = "cuda" if torch.cuda.is_available() else "cpu"
+    batch_size = 16
+
+    from data import load_datapath_NYU, load_datapath_WRGBD, load_datapath_TinyImageNet, get_dataloader
+
     transform1 = transforms.Compose(
         [transforms.Resize((32, 32)), transforms.ToTensor()]
     )
@@ -262,7 +319,7 @@ def batch_test(model, batch_size, dataset_type, base_path, mi_regresser, label_m
     elif dataset_type==2:
         load_datapath = load_datapath_TinyImageNet
 
-    image_paths, depth_paths, labels =load_datapath(base_path)
+    image_paths, depth_paths, labels =load_datapath(base_path, random_seed) 
     
     # max_num = 200
     # image_paths = image_paths[:max_num]
@@ -270,51 +327,28 @@ def batch_test(model, batch_size, dataset_type, base_path, mi_regresser, label_m
     # labels = labels[:max_num]
 
     _, _, test_loader, num_labels, label_mapping = get_dataloader(image_paths, depth_paths, batch_size, transform1, dataset_type)
-    
+    test_image_path = test_loader.dataset.image_paths
+    test_depth_path = test_loader.dataset.depth_paths
 
-    # Evaluateだけ実行
-    accuracy, CLS_token, avg_loss, attention_data_final, wrong_images, correct_images = trainer.evaluate(test_loader, attentions_choice=True, infer_mode=True)
-    
-    mi_values = []
-    with torch.no_grad():
-        for i, (f_r, f_rgbd) in enumerate(CLS_token):
-            mi = mi_regresser(f_r, f_rgbd)
-            mi_values.append(mi.item())
-
-    rs, precission_topk = total_consistency(attention_data_final)
-
-    print(f"Accuracy: {accuracy:.4f}, Average Loss: {avg_loss:.4f}")
-    print(f"Spearman Rank Correlation: {np.mean(rs):.4f}")
-    print(f"Mutual Information: {np.mean(mi_values):.4f}")
-
-
-def main():
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    base_path = r'..\data\nyu_data\nyu2'
-    dataset_type = 1 # 0=WRGBD, 1=NYU, 2=TinyImageNet
-    experiment_name = "vit-with-10-epochs"
-    map_location = "cuda" if torch.cuda.is_available() else "cpu"
-    batch_size = 16
-
-
-    ## ----------------Visualize Attention Maps----------------
+    ## ----------------Visualize Attention Maps Toataly----------------
 
     config, model, _, _, _, label_mapping = load_experiment(
         experiment_name,
-        checkpoint_name='RGB_10_model_final.pt',
+        checkpoint_name='onlyRGBViT_30epochs.pt.',
         depth=False,
         map_location=map_location
         )
     image_size = config['image_size']
-    # RGB_visualize_attention_NYU(model, base_path, label_mapping, image_size, "attention.png", device=device)
+    # RGB_visualize_attention_NYU(model, test_image_path, label_mapping, image_size, "attention_image\ViTattention.png", device=device)
 
-    config, model_latefusion, _, _, _, label_mapping = load_experiment(
-        experiment_name,
-        checkpoint_name='latefusion_30epochs.pt',
-        depth=True,
-        map_location=map_location
-        )
+    # config, model_latefusion, _, _, _, label_mapping = load_experiment(
+    #     experiment_name,
+    #     checkpoint_name='latefusion_30epochs.pt',
+    #     depth=True,
+    #     map_location=map_location
+    #     )
+
+    # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
 
     config, model_sharefusion, _, _, _, label_mapping = load_experiment(
         experiment_name,
@@ -322,27 +356,36 @@ def main():
         depth=True,
         map_location=map_location
         )
-    image_size = config['image_size']
-    # RGBD_visualize_attention_NYU(model, base_path, label_mapping, image_size, "sharefusion_attention.png", device=device)
+    # image_size = config['image_size']
+    # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
+
+    dim = config["hidden_size"]
+    from module import CLUB
+    mi_regresser = CLUB(dim, dim*2, 64).to(device)
+    mi_regresser.load_state_dict(torch.load(r"experiments\vclub_model\NYU_0.8train_seed42_dim_48_96.pth", map_location=device, weights_only=True))
+    mi_regresser.eval()
+
+    ## ----------------Visualize Attention Maps per Block----------------
+
+    # test(model_sharefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, device="cuda", num_images = 15)
 
 
     ## ----------------Test Accracy, Spearman, Mutual Information----------------
 
-    dim = config["hidden_size"]
-    mi_regresser = VariationalMI(dim).to(device)
-    mi_regresser.load_state_dict(torch.load(r"experiments\vmi_model\late30.pth", map_location=device, weights_only=True))
-    mi_regresser.eval()
-    # test(model_sharefusion, base_path, mi_regresser, label_mapping, image_size, device="cuda", num_images=30)
+    # batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+    
+    # batch_test_fusionViT(model_latefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
-    batch_test(model_latefusion, batch_size, dataset_type, base_path, mi_regresser, label_mapping, device)
-
-    mi_regresser.load_state_dict(torch.load(r"experiments\vmi_model\share30.pth", map_location=device, weights_only=True))
-    mi_regresser.eval()
-    batch_test(model_sharefusion, batch_size, dataset_type, base_path, mi_regresser, label_mapping, device)
+    batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     
 
 
 if __name__ == "__main__":
-    main()
+    random_seed = 42
+    for i in range(5):
+        print(f"Run in randomseed{random_seed}")
+        main(random_seed)
+        random_seed -= 1
+    
 
