@@ -507,7 +507,7 @@ class Trainer:
             depth = batch["depth"].to(self.device)
             labels = batch["label"].to(self.device)
 
-            check_gpu_memory(f"batch{idx}",idx)
+            # check_gpu_memory(f"batch{idx}",idx)
 
             # Zero the gradients
             self.optimizer.zero_grad()
