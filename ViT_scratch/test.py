@@ -243,7 +243,7 @@ def test(model, test_image_path, test_depth_path, mi_regresser, label_mapping, i
     # mi = mi_regresser(output_img, output_rgbd)
     # print(f"Mutual Information: {mi:.4f}")
 
-def batch_test(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device="cuda"):
+def batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device="cuda"):
     
     from train import Trainer
     from torch import nn, optim 
@@ -252,6 +252,27 @@ def batch_test(model, batch_size, dataset_type, test_loader, mi_regresser, label
     trainer = Trainer(
         model=model,
         optimizer=optimizer,
+        loss_fn=loss_fn,
+        method=0,
+        exp_name="RGB_ViT_infer",
+        device=device
+    )
+
+    # Evaluateだけ実行
+    accuracy, CLS_token, avg_loss, attention_data_final, wrong_images, correct_images = trainer.evaluate(test_loader, attentions_choice=True, infer_mode=True)
+
+    print(f"Accuracy: {accuracy:.4f}, Average Loss: {avg_loss:.4f}")
+
+
+def batch_test_fusionViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device="cuda"):
+    
+    from train import Trainer
+    from torch import nn, optim 
+
+    loss_fn = nn.CrossEntropyLoss()
+    trainer = Trainer(
+        model=model,
+        optimizer=None,
         loss_fn=loss_fn,
         method=2, 
         exp_name="share-fusion_infer",
@@ -276,7 +297,7 @@ def batch_test(model, batch_size, dataset_type, test_loader, mi_regresser, label
     print(f"Mutual Information: {np.mean(mi_values):.4f}")
 
 
-def main():
+def main(random_seed):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     base_path = r'..\data\nyu_data\nyu2'
@@ -298,7 +319,7 @@ def main():
     elif dataset_type==2:
         load_datapath = load_datapath_TinyImageNet
 
-    image_paths, depth_paths, labels =load_datapath(base_path)
+    image_paths, depth_paths, labels =load_datapath(base_path, random_seed) 
     
     # max_num = 200
     # image_paths = image_paths[:max_num]
@@ -318,14 +339,14 @@ def main():
         map_location=map_location
         )
     image_size = config['image_size']
-    RGB_visualize_attention_NYU(model, test_image_path, label_mapping, image_size, "attention_image\ViTattention.png", device=device)
+    # RGB_visualize_attention_NYU(model, test_image_path, label_mapping, image_size, "attention_image\ViTattention.png", device=device)
 
-    config, model_latefusion, _, _, _, label_mapping = load_experiment(
-        experiment_name,
-        checkpoint_name='latefusion_30epochs.pt',
-        depth=True,
-        map_location=map_location
-        )
+    # config, model_latefusion, _, _, _, label_mapping = load_experiment(
+    #     experiment_name,
+    #     checkpoint_name='latefusion_30epochs.pt',
+    #     depth=True,
+    #     map_location=map_location
+    #     )
 
     # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
 
@@ -335,7 +356,7 @@ def main():
         depth=True,
         map_location=map_location
         )
-    image_size = config['image_size']
+    # image_size = config['image_size']
     # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
 
     dim = config["hidden_size"]
@@ -351,12 +372,20 @@ def main():
 
     ## ----------------Test Accracy, Spearman, Mutual Information----------------
 
-    # batch_test(model_latefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
-    # batch_test(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+    # batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+    
+    # batch_test_fusionViT(model_latefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+
+    batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     
 
 
 if __name__ == "__main__":
-    main()
+    random_seed = 42
+    for i in range(5):
+        print(f"Run in randomseed{random_seed}")
+        main(random_seed)
+        random_seed -= 1
+    
 

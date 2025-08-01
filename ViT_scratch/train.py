@@ -56,9 +56,6 @@ def check_cpu_memory(string="", epoch=None):
 
 
 def save_attention_data(attention_data, save_path, filename_prefix, layer_name):
-    """
-    Attentionデータを指定されたディレクトリに保存します（torch形式）。
-    """
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
@@ -507,7 +504,7 @@ class Trainer:
             depth = batch["depth"].to(self.device)
             labels = batch["label"].to(self.device)
 
-            check_gpu_memory(f"batch{idx}",idx)
+            # check_gpu_memory(f"batch{idx}",idx)
 
             # Zero the gradients
             self.optimizer.zero_grad()

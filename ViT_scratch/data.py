@@ -170,7 +170,7 @@ def getlabels_TinyImageNet(folder_paths):
 
 
 # 画像ファイルのパスを取得 (RGBおよび深度画像)
-def load_datapath_WRGBD(dataset_path):
+def load_datapath_WRGBD(dataset_path, random_seed=42):
     if dataset_path=="rgbd-dataset-10k":
         image_paths = glob.glob(os.path.join(dataset_path, "train", "images", "*.png"))
         depth_paths = glob.glob(os.path.join(dataset_path, "train", "depth", "*.png"))
@@ -189,7 +189,7 @@ def load_datapath_WRGBD(dataset_path):
                 image_paths.append(file_path)
             # ペア化されたデータをシャッフル
         paired_data = list(zip(image_paths, depth_paths))
-        random.seed(42)
+        random.seed(random_seed)
         random.shuffle(paired_data)  # ペアのままシャッフル
         image_paths, depth_paths = zip(*paired_data)  # シャッフル後に再分割
 
@@ -202,7 +202,7 @@ def load_datapath_WRGBD(dataset_path):
     return image_paths, depth_paths, None
 
 
-def load_datapath_NYU(dataset_path):
+def load_datapath_NYU(dataset_path, random_seed=42):
     image_paths = []
     depth_paths = []
     labels = []
@@ -224,7 +224,7 @@ def load_datapath_NYU(dataset_path):
 
     # シャッフル
     paired_data = list(zip(image_paths, depth_paths, labels))
-    random.seed(41)
+    random.seed(random_seed)
     random.shuffle(paired_data)
     image_paths, depth_paths, labels = zip(*paired_data)
 
