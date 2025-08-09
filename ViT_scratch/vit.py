@@ -403,9 +403,9 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         shared_attention_probs_img = (1-self.alpha)*attention_probs_img + self.alpha*attention_probs_dpt
         shared_attention_probs_dpt = (1-self.beta)*attention_probs_dpt + self.beta*attention_probs_img
 
-        print(f"shared_attention_probs_img :{torch.sum(shared_attention_probs_img, dim=-1)}")
-        print(f"shared_attention_probs_dpt :{torch.sum(shared_attention_probs_dpt, dim=-1)}")
-        print(aaa)
+        # print(f"shared_attention_probs_img :{torch.sum(shared_attention_probs_img, dim=-1)}")
+        # print(f"shared_attention_probs_dpt :{torch.sum(shared_attention_probs_dpt, dim=-1)}")
+
 
         # Calculate the attention output
         attention_output_img = torch.matmul(shared_attention_probs_img, value_img)
@@ -440,7 +440,7 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         if not output_attentions:
             return (attention_output_img, None, attention_output_dpt, None)
         else:
-            # print(f"attention_probs.shape:{attention_probs.shape}")
+            # print(f"attention_probs.shape:{attention_probs_img.shape}")
             return (attention_output_img, shared_attention_probs_img, attention_output_dpt, shared_attention_probs_dpt)
 
 

@@ -1,94 +1,158 @@
-INFO:root:train epoch: 0, Train loss: 3.8356
+INFO:root:train epoch: 0, Train loss: 1.9851
 INFO:root:epoch:0
-INFO:root:before_valid:  epoch(batch)0:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 77.60%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 12.28 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 3.54 GB
-INFO:root:before_valid:  epoch(batch)0:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 52.00 MB
+INFO:root:before_valid:  epoch(batch)0:  CPUƒƒ‚ƒŠg—p—Ê: 64.00%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.12 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.69 GB
+INFO:root:before_valid:  epoch(batch)0:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 60.00 MB
 INFO:root:Batch:0
-INFO:root:test:  epoch(batch)0:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 77.60%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 12.28 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 3.54 GB
-INFO:root:test:  epoch(batch)0:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.41 MB / ï¿½mï¿½ÛÏ‚ï¿½: 52.00 MB
-INFO:root:Valid loss: 3.8186, Valid Accuracy: 0.0442
-INFO:root:Validation loss improved to 3.8186.
-INFO:root:after_valid:  epoch(batch)0:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 77.80%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 12.31 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 3.51 GB
-INFO:root:after_valid:  epoch(batch)0:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 52.00 MB
-INFO:root:train epoch: 1, Train loss: 2.9668
-INFO:root:train epoch: 2, Train loss: 2.1945
-INFO:root:train epoch: 3, Train loss: 1.5784
-INFO:root:train epoch: 4, Train loss: 1.1958
-INFO:root:train epoch: 5, Train loss: 0.9528
+INFO:root:test:  epoch(batch)0:  CPUƒƒ‚ƒŠg—p—Ê: 64.00%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.12 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.70 GB
+INFO:root:test:  epoch(batch)0:  GPUƒƒ‚ƒŠg—p—Ê: 19.28 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:100
+INFO:root:test:  epoch(batch)100:  CPUƒƒ‚ƒŠg—p—Ê: 64.10%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.15 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.67 GB
+INFO:root:test:  epoch(batch)100:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:200
+INFO:root:test:  epoch(batch)200:  CPUƒƒ‚ƒŠg—p—Ê: 64.30%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.17 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.65 GB
+INFO:root:test:  epoch(batch)200:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:300
+INFO:root:test:  epoch(batch)300:  CPUƒƒ‚ƒŠg—p—Ê: 64.90%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.27 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.55 GB
+INFO:root:test:  epoch(batch)300:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Valid loss: 1.6128, Valid Accuracy: 0.4735
+INFO:root:Validation loss improved to 1.6128.
+INFO:root:after_valid:  epoch(batch)0:  CPUƒƒ‚ƒŠg—p—Ê: 65.00%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.28 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.53 GB
+INFO:root:after_valid:  epoch(batch)0:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:train epoch: 1, Train loss: 1.5010
+INFO:root:train epoch: 2, Train loss: 1.2136
+INFO:root:train epoch: 3, Train loss: 1.0670
+INFO:root:train epoch: 4, Train loss: 0.9515
+INFO:root:train epoch: 5, Train loss: 0.9470
 INFO:root:epoch:5
-INFO:root:before_valid:  epoch(batch)5:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 82.60%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.07 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.75 GB
-INFO:root:before_valid:  epoch(batch)5:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
+INFO:root:before_valid:  epoch(batch)5:  CPUƒƒ‚ƒŠg—p—Ê: 67.10%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.61 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.21 GB
+INFO:root:before_valid:  epoch(batch)5:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 60.00 MB
 INFO:root:Batch:0
-INFO:root:test:  epoch(batch)0:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 82.60%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.07 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.75 GB
-INFO:root:test:  epoch(batch)0:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.41 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
-INFO:root:Valid loss: 0.9205, Valid Accuracy: 0.7159
-INFO:root:Validation loss improved to 0.9205.
-INFO:root:after_valid:  epoch(batch)5:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 82.70%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.07 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.74 GB
-INFO:root:after_valid:  epoch(batch)5:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
-INFO:root:train epoch: 6, Train loss: 0.8452
-INFO:root:train epoch: 7, Train loss: 0.7573
-INFO:root:train epoch: 8, Train loss: 0.6687
-INFO:root:train epoch: 9, Train loss: 0.6042
-INFO:root:train epoch: 10, Train loss: 0.6172
+INFO:root:test:  epoch(batch)0:  CPUƒƒ‚ƒŠg—p—Ê: 67.10%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.62 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.20 GB
+INFO:root:test:  epoch(batch)0:  GPUƒƒ‚ƒŠg—p—Ê: 19.28 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:100
+INFO:root:test:  epoch(batch)100:  CPUƒƒ‚ƒŠg—p—Ê: 67.30%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.65 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.17 GB
+INFO:root:test:  epoch(batch)100:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:200
+INFO:root:test:  epoch(batch)200:  CPUƒƒ‚ƒŠg—p—Ê: 67.50%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.68 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.14 GB
+INFO:root:test:  epoch(batch)200:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:300
+INFO:root:test:  epoch(batch)300:  CPUƒƒ‚ƒŠg—p—Ê: 67.40%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.66 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.16 GB
+INFO:root:test:  epoch(batch)300:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Valid loss: 0.8600, Valid Accuracy: 0.7325
+INFO:root:Validation loss improved to 0.8600.
+INFO:root:after_valid:  epoch(batch)5:  CPUƒƒ‚ƒŠg—p—Ê: 67.50%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.67 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.15 GB
+INFO:root:after_valid:  epoch(batch)5:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:train epoch: 6, Train loss: 0.8616
+INFO:root:train epoch: 7, Train loss: 0.8359
+INFO:root:train epoch: 8, Train loss: 0.8117
+INFO:root:train epoch: 9, Train loss: 0.7590
+INFO:root:train epoch: 10, Train loss: 0.7892
 INFO:root:epoch:10
-INFO:root:before_valid:  epoch(batch)10:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 82.70%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.07 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.74 GB
-INFO:root:before_valid:  epoch(batch)10:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 52.00 MB
+INFO:root:before_valid:  epoch(batch)10:  CPUƒƒ‚ƒŠg—p—Ê: 68.00%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.75 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.06 GB
+INFO:root:before_valid:  epoch(batch)10:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 62.00 MB
 INFO:root:Batch:0
-INFO:root:test:  epoch(batch)0:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 82.70%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.07 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.74 GB
-INFO:root:test:  epoch(batch)0:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.41 MB / ï¿½mï¿½ÛÏ‚ï¿½: 52.00 MB
-INFO:root:Valid loss: 0.6929, Valid Accuracy: 0.7992
-INFO:root:Validation loss improved to 0.6929.
-INFO:root:after_valid:  epoch(batch)10:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 82.70%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.08 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.74 GB
-INFO:root:after_valid:  epoch(batch)10:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 52.00 MB
-INFO:root:train epoch: 11, Train loss: 0.6333
-INFO:root:train epoch: 12, Train loss: 0.5378
-INFO:root:train epoch: 13, Train loss: 0.5037
-INFO:root:train epoch: 14, Train loss: 0.4789
-INFO:root:train epoch: 15, Train loss: 0.5284
+INFO:root:test:  epoch(batch)0:  CPUƒƒ‚ƒŠg—p—Ê: 68.00%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.76 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.06 GB
+INFO:root:test:  epoch(batch)0:  GPUƒƒ‚ƒŠg—p—Ê: 19.28 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Batch:100
+INFO:root:test:  epoch(batch)100:  CPUƒƒ‚ƒŠg—p—Ê: 67.80%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.72 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.09 GB
+INFO:root:test:  epoch(batch)100:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Batch:200
+INFO:root:test:  epoch(batch)200:  CPUƒƒ‚ƒŠg—p—Ê: 67.80%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.73 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.09 GB
+INFO:root:test:  epoch(batch)200:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Batch:300
+INFO:root:test:  epoch(batch)300:  CPUƒƒ‚ƒŠg—p—Ê: 67.90%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.74 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.08 GB
+INFO:root:test:  epoch(batch)300:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Valid loss: 0.7517, Valid Accuracy: 0.7615
+INFO:root:Validation loss improved to 0.7517.
+INFO:root:after_valid:  epoch(batch)10:  CPUƒƒ‚ƒŠg—p—Ê: 67.80%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.73 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.09 GB
+INFO:root:after_valid:  epoch(batch)10:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:train epoch: 11, Train loss: 0.7523
+INFO:root:train epoch: 12, Train loss: 0.7316
+INFO:root:train epoch: 13, Train loss: 0.6945
+INFO:root:train epoch: 14, Train loss: 0.7384
+INFO:root:train epoch: 15, Train loss: 0.7028
 INFO:root:epoch:15
-INFO:root:before_valid:  epoch(batch)15:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 85.70%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.55 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.26 GB
-INFO:root:before_valid:  epoch(batch)15:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
+INFO:root:before_valid:  epoch(batch)15:  CPUƒƒ‚ƒŠg—p—Ê: 66.90%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.59 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.23 GB
+INFO:root:before_valid:  epoch(batch)15:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 62.00 MB
 INFO:root:Batch:0
-INFO:root:test:  epoch(batch)0:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 85.70%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.55 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.26 GB
-INFO:root:test:  epoch(batch)0:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.41 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
-INFO:root:Valid loss: 0.5399, Valid Accuracy: 0.8303
-INFO:root:Validation loss improved to 0.5399.
-INFO:root:after_valid:  epoch(batch)15:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 85.30%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.50 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.32 GB
-INFO:root:after_valid:  epoch(batch)15:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
-INFO:root:train epoch: 16, Train loss: 0.4692
-INFO:root:train epoch: 17, Train loss: 0.5130
-INFO:root:train epoch: 18, Train loss: 0.4240
-INFO:root:train epoch: 19, Train loss: 0.4731
-INFO:root:train epoch: 20, Train loss: 0.4106
+INFO:root:test:  epoch(batch)0:  CPUƒƒ‚ƒŠg—p—Ê: 67.00%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.59 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.22 GB
+INFO:root:test:  epoch(batch)0:  GPUƒƒ‚ƒŠg—p—Ê: 19.28 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Batch:100
+INFO:root:test:  epoch(batch)100:  CPUƒƒ‚ƒŠg—p—Ê: 67.30%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.65 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.17 GB
+INFO:root:test:  epoch(batch)100:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Batch:200
+INFO:root:test:  epoch(batch)200:  CPUƒƒ‚ƒŠg—p—Ê: 67.10%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.62 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.20 GB
+INFO:root:test:  epoch(batch)200:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Batch:300
+INFO:root:test:  epoch(batch)300:  CPUƒƒ‚ƒŠg—p—Ê: 67.10%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.61 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.21 GB
+INFO:root:test:  epoch(batch)300:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Valid loss: 0.6290, Valid Accuracy: 0.7893
+INFO:root:Validation loss improved to 0.6290.
+INFO:root:after_valid:  epoch(batch)15:  CPUƒƒ‚ƒŠg—p—Ê: 67.00%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.60 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.21 GB
+INFO:root:after_valid:  epoch(batch)15:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:train epoch: 16, Train loss: 0.6915
+INFO:root:train epoch: 17, Train loss: 0.7110
+INFO:root:train epoch: 18, Train loss: 0.6846
+INFO:root:train epoch: 19, Train loss: 0.6761
+INFO:root:train epoch: 20, Train loss: 0.6992
 INFO:root:epoch:20
-INFO:root:before_valid:  epoch(batch)20:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 88.80%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 14.04 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 1.78 GB
-INFO:root:before_valid:  epoch(batch)20:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 52.00 MB
+INFO:root:before_valid:  epoch(batch)20:  CPUƒƒ‚ƒŠg—p—Ê: 67.50%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.67 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.14 GB
+INFO:root:before_valid:  epoch(batch)20:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 60.00 MB
 INFO:root:Batch:0
-INFO:root:test:  epoch(batch)0:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 88.80%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 14.04 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 1.78 GB
-INFO:root:test:  epoch(batch)0:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.41 MB / ï¿½mï¿½ÛÏ‚ï¿½: 52.00 MB
-INFO:root:Valid loss: 0.4334, Valid Accuracy: 0.8675
-INFO:root:Validation loss improved to 0.4334.
-INFO:root:after_valid:  epoch(batch)20:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 89.00%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 14.07 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 1.75 GB
-INFO:root:after_valid:  epoch(batch)20:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 52.00 MB
-INFO:root:train epoch: 21, Train loss: 0.4580
-INFO:root:train epoch: 22, Train loss: 0.4970
-INFO:root:train epoch: 23, Train loss: 0.3821
-INFO:root:train epoch: 24, Train loss: 0.4306
-INFO:root:train epoch: 25, Train loss: 0.5512
-INFO:root:epoch:25
-INFO:root:before_valid:  epoch(batch)25:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 86.60%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.70 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.12 GB
-INFO:root:before_valid:  epoch(batch)25:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
-INFO:root:Batch:0
-INFO:root:test:  epoch(batch)0:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 86.70%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.71 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.11 GB
-INFO:root:test:  epoch(batch)0:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.41 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
-INFO:root:Valid loss: 0.5659, Valid Accuracy: 0.8353
+INFO:root:test:  epoch(batch)0:  CPUƒƒ‚ƒŠg—p—Ê: 67.50%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.68 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.14 GB
+INFO:root:test:  epoch(batch)0:  GPUƒƒ‚ƒŠg—p—Ê: 19.28 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:100
+INFO:root:test:  epoch(batch)100:  CPUƒƒ‚ƒŠg—p—Ê: 67.30%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.65 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.17 GB
+INFO:root:test:  epoch(batch)100:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:200
+INFO:root:test:  epoch(batch)200:  CPUƒƒ‚ƒŠg—p—Ê: 67.20%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.64 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.18 GB
+INFO:root:test:  epoch(batch)200:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:300
+INFO:root:test:  epoch(batch)300:  CPUƒƒ‚ƒŠg—p—Ê: 67.40%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.66 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.16 GB
+INFO:root:test:  epoch(batch)300:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Valid loss: 0.8544, Valid Accuracy: 0.7252
 INFO:root:No improvement in validation loss for 1 epochs.
-INFO:root:after_valid:  epoch(batch)25:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 86.70%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.72 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.10 GB
-INFO:root:after_valid:  epoch(batch)25:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.16 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
-INFO:root:train epoch: 26, Train loss: 0.4388
-INFO:root:train epoch: 27, Train loss: 0.3409
-INFO:root:train epoch: 28, Train loss: 0.4788
-INFO:root:train epoch: 29, Train loss: 0.3282
+INFO:root:after_valid:  epoch(batch)20:  CPUƒƒ‚ƒŠg—p—Ê: 67.30%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.64 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.18 GB
+INFO:root:after_valid:  epoch(batch)20:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:train epoch: 21, Train loss: 0.6848
+INFO:root:train epoch: 22, Train loss: 0.6711
+INFO:root:train epoch: 23, Train loss: 0.6876
+INFO:root:train epoch: 24, Train loss: 0.6858
+INFO:root:train epoch: 25, Train loss: 0.6831
+INFO:root:epoch:25
+INFO:root:before_valid:  epoch(batch)25:  CPUƒƒ‚ƒŠg—p—Ê: 67.50%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.67 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.14 GB
+INFO:root:before_valid:  epoch(batch)25:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 62.00 MB
 INFO:root:Batch:0
-INFO:root:test:  epoch(batch)0:  CPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 86.00%, ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 15.82 GB, ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 13.60 GB, ï¿½ó‚«ƒï¿½ï¿½ï¿½ï¿½ï¿½: 2.22 GB
-INFO:root:test:  epoch(batch)0:  GPUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½: 18.41 MB / ï¿½mï¿½ÛÏ‚ï¿½: 50.00 MB
-INFO:root:Test loss: 0.4538, Accuracy: 0.8596
+INFO:root:test:  epoch(batch)0:  CPUƒƒ‚ƒŠg—p—Ê: 67.50%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.67 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.14 GB
+INFO:root:test:  epoch(batch)0:  GPUƒƒ‚ƒŠg—p—Ê: 19.28 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Batch:100
+INFO:root:test:  epoch(batch)100:  CPUƒƒ‚ƒŠg—p—Ê: 67.60%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.70 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.12 GB
+INFO:root:test:  epoch(batch)100:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Batch:200
+INFO:root:test:  epoch(batch)200:  CPUƒƒ‚ƒŠg—p—Ê: 67.60%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.69 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.13 GB
+INFO:root:test:  epoch(batch)200:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Batch:300
+INFO:root:test:  epoch(batch)300:  CPUƒƒ‚ƒŠg—p—Ê: 67.40%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.66 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.16 GB
+INFO:root:test:  epoch(batch)300:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:Valid loss: 0.4869, Valid Accuracy: 0.8499
+INFO:root:Validation loss improved to 0.4869.
+INFO:root:after_valid:  epoch(batch)25:  CPUƒƒ‚ƒŠg—p—Ê: 67.40%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.67 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.15 GB
+INFO:root:after_valid:  epoch(batch)25:  GPUƒƒ‚ƒŠg—p—Ê: 19.03 MB / Šm•ÛÏ‚İ: 62.00 MB
+INFO:root:train epoch: 26, Train loss: 0.6543
+INFO:root:train epoch: 27, Train loss: 0.6649
+INFO:root:train epoch: 28, Train loss: 0.6390
+INFO:root:train epoch: 29, Train loss: 0.6463
+INFO:root:Batch:0
+INFO:root:test:  epoch(batch)0:  CPUƒƒ‚ƒŠg—p—Ê: 67.40%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.66 GB, ‹ó‚«ƒƒ‚ƒŠ: 5.16 GB
+INFO:root:test:  epoch(batch)0:  GPUƒƒ‚ƒŠg—p—Ê: 19.28 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:100
+INFO:root:test:  epoch(batch)100:  CPUƒƒ‚ƒŠg—p—Ê: 69.30%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 10.96 GB, ‹ó‚«ƒƒ‚ƒŠ: 4.86 GB
+INFO:root:test:  epoch(batch)100:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:200
+INFO:root:test:  epoch(batch)200:  CPUƒƒ‚ƒŠg—p—Ê: 70.80%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 11.20 GB, ‹ó‚«ƒƒ‚ƒŠ: 4.62 GB
+INFO:root:test:  epoch(batch)200:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Batch:300
+INFO:root:test:  epoch(batch)300:  CPUƒƒ‚ƒŠg—p—Ê: 72.70%, ‘Sƒƒ‚ƒŠ: 15.82 GB, g—p’†ƒƒ‚ƒŠ: 11.50 GB, ‹ó‚«ƒƒ‚ƒŠ: 4.32 GB
+INFO:root:test:  epoch(batch)300:  GPUƒƒ‚ƒŠg—p—Ê: 19.73 MB / Šm•ÛÏ‚İ: 60.00 MB
+INFO:root:Test loss: 0.7217, Accuracy: 0.7990, Spearman score: 1.0000, Precision top10.0% score: 1.0000
+INFO:root:amount of pair:324416
