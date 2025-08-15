@@ -777,7 +777,7 @@ class LateFusion(nn.Module):
         self.encoder_rgb_depth = Encoder_RGB_Depth(config)
 
         # Create a linear layer to project the encoder's output to the number of classes
-        self.classifier = nn.Linear(self.hidden_size, self.num_classes)
+        self.classifier = nn.Linear(self.hidden_size*2, self.num_classes)
         # Initialize the weights
         self.apply(self._init_weights)
 
@@ -804,7 +804,7 @@ class LateFusion(nn.Module):
             )
             
         # Fusion (simple addition here, but can be concatenation or weighted sum)
-        fusion_output = encoder_output_rgb + encoder_output_depth
+        fusion_output = torch.cat(encoder_output_rgb, encoder_output_depth)
         
         # Classification using [CLS] token
         logits = self.classifier(fusion_output[:, 0, :])

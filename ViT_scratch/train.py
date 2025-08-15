@@ -642,7 +642,7 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--max_data_size", type=int, default=100000)
-    parser.add_argument("--lr", type=float, default=1e-2)
+    parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--save_model_every", type=int, default=10)
     parser.add_argument("--method", type=int, default=0)
