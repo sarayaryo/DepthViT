@@ -300,9 +300,8 @@ def batch_test_fusionViT(model, batch_size, dataset_type, test_loader, mi_regres
 def main(random_seed):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    base_path = r'..\data\nyu_data\nyu2'
-    dataset_type = 1 # 0=WRGBD, 1=NYU, 2=TinyImageNet
-    experiment_name = "vit-with-10-epochs"
+    
+    dataset_type = 0 # 0=WRGBD, 1=NYU, 2=TinyImageNet
     map_location = "cuda" if torch.cuda.is_available() else "cpu"
     batch_size = 16
 
@@ -314,8 +313,10 @@ def main(random_seed):
 
     if dataset_type==0:
         load_datapath = load_datapath_WRGBD
+        base_path = r'..\data\rgbd-dataset-10k'
     elif dataset_type==1:
         load_datapath = load_datapath_NYU
+        base_path = r'..\data\nyu_data\nyu2'
     elif dataset_type==2:
         load_datapath = load_datapath_TinyImageNet
 
@@ -324,7 +325,6 @@ def main(random_seed):
     # max_num = 200
     # image_paths = image_paths[:max_num]
     # depth_paths = depth_paths[:max_num]
-    # labels = labels[:max_num]
 
     _, _, test_loader, num_labels, label_mapping = get_dataloader(image_paths, depth_paths, batch_size, transform1, dataset_type)
     test_image_path = test_loader.dataset.image_paths
@@ -332,12 +332,12 @@ def main(random_seed):
 
     ## ----------------Visualize Attention Maps Toataly----------------
 
-    config, model, _, _, _, label_mapping = load_experiment(
-        experiment_name,
-        checkpoint_name='vit_30epoch.pt.',
-        depth=False,
-        map_location=map_location
-        )
+    # config, model, _, _, _, label_mapping = load_experiment(
+    #     experiment_name,
+    #     checkpoint_name='vit_30epoch.pt.',
+    #     depth=False,
+    #     map_location=map_location
+    #     )
     # image_size = config['image_size']
     # # RGB_visualize_attention_NYU(model, test_image_path, label_mapping, image_size, "attention_image\ViTattention.png", device=device)
 
@@ -349,13 +349,13 @@ def main(random_seed):
     #     )
 
     # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
-
-    # config, model_sharefusion, _, _, _, label_mapping = load_experiment(
-    #     experiment_name,
-    #     checkpoint_name='sharefusion_a0.25_b0.25_30epoch.pt',
-    #     depth=True,
-    #     map_location=map_location
-    #     )
+    experiment_name = "WRGBD_sharefusion_a0.25_b0.25"
+    config, model_sharefusion, _, _, _, label_mapping = load_experiment(
+        experiment_name,
+        checkpoint_name="model_final.pt",
+        depth=True,
+        map_location=map_location
+        )
     # image_size = config['image_size']
     # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
 
@@ -372,11 +372,11 @@ def main(random_seed):
 
     ## ----------------Test Accracy, Spearman, Mutual Information----------------
 
-    batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+    # batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
     
     # batch_test_fusionViT(model_latefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
-    # batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+    batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     
 

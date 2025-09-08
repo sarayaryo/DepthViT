@@ -804,7 +804,8 @@ class LateFusion(nn.Module):
             )
             
         # Fusion (simple addition here, but can be concatenation or weighted sum)
-        fusion_output = torch.cat(encoder_output_rgb, encoder_output_depth)
+        fusion_output = torch.cat([encoder_output_rgb, encoder_output_depth], dim=-1)
+
         
         # Classification using [CLS] token
         logits = self.classifier(fusion_output[:, 0, :])

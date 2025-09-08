@@ -732,7 +732,11 @@ def main():
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay = args.weight_decay)
     loss_fn = nn.CrossEntropyLoss()
     trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device)
-    logging.basicConfig(filename='training.log', level=logging.INFO)
+    
+    log_dir = os.path.join("experiments", args.exp_name)
+    os.makedirs(log_dir, exist_ok=True)
+    log_path = os.path.join(log_dir, "training.log")
+    logging.basicConfig(filename=log_path, level=logging.INFO)
 
     trainer.train(
         train_loader,
