@@ -21,13 +21,16 @@ def process_attention(attention_maps, img_h, img_w):
     attention_maps = F.interpolate(attention_maps.unsqueeze(1), size=(img_h, img_w), mode='bilinear', align_corners=False).squeeze(1)
     return attention_maps
 
-def show_images_with_attention(raw_images, raw_depths, attention_maps_img, attention_maps_dpt, label_ids, predictions, id_to_label, output=None, show=True, i=0):
+def show_images_with_attention(raw_images, raw_depths, attention_maps_img, attention_maps_dpt, label_ids, predictions, id_to_label, output=None, show=False, score_s=None):
 
     num_images = len(raw_images)
     img_h, img_w = raw_images[0].shape[:2]
 
     ## figsize (640* 4, 480) == (16, 3)
     fig = plt.figure(figsize=(40, 30))
+
+    if score_s is None:
+        score_s = [0.0] * num_images
     
     mask = np.concatenate([
         np.ones((img_h, img_w)),        # 1: RGB (非表示)
@@ -57,7 +60,7 @@ def show_images_with_attention(raw_images, raw_depths, attention_maps_img, atten
         pred = id_to_label[str(predictions[i].item())]
         if True:
             ax.set_title(
-                f"gt: {gt} / pred: {pred}", 
+                f"gt: {gt} / pred: {pred}/ {score_s[i]:.2f}", 
                 fontsize=45,
                 pad = 4,
                 color=("green" if gt == pred else "red")
@@ -172,10 +175,11 @@ def RGBD_visualize_attention_NYU(model, test_image_path, test_depth_path, label_
     attention_maps_img = process_attention(attention_maps_img, img_h, img_w)
     attention_maps_dpt = process_attention(attention_maps_dpt, img_h, img_w)
 
+    score_s = spearman_rank_correlation(attention_maps_img, attention_maps_dpt)
 
     show_images_with_attention(
         raw_images, raw_depths, attention_maps_img, attention_maps_dpt,
-        label_ids, predictions, id_to_label, output, False
+        label_ids, predictions, id_to_label, output, score_s=score_s
     )
 
 def test(model, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, device="cuda", num_images = 16): 
@@ -232,7 +236,7 @@ def test(model, test_image_path, test_depth_path, mi_regresser, label_mapping, i
 
         show_images_with_attention(
             raw_images, raw_depths, attn_img, attn_dpt,
-            label_ids, predictions, id_to_label, output_name, False, i
+            label_ids, predictions, id_to_label, output_name, False, i, score_s
         )
     attention_data_final = []
     attention_data_final.extend(process_attention_data(images, depths, labels, attention_maps_img, attention_maps_dpt, len(attention_maps_img)-1, image_paths))
@@ -301,7 +305,7 @@ def main(random_seed):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     
-    dataset_type = 0 # 0=WRGBD, 1=NYU, 2=TinyImageNet
+    dataset_type = 1 # 0=WRGBD, 1=NYU, 2=TinyImageNet
     map_location = "cuda" if torch.cuda.is_available() else "cpu"
     batch_size = 16
 
@@ -349,15 +353,28 @@ def main(random_seed):
     #     )
 
     # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
-    experiment_name = "WRGBD_sharefusion_a0.25_b0.25"
+    experiment_name = "NYU_sharefusion_a0.5_b0.5"
+    
     config, model_sharefusion, _, _, _, label_mapping = load_experiment(
         experiment_name,
         checkpoint_name="model_final.pt",
         depth=True,
         map_location=map_location
         )
-    # image_size = config['image_size']
-    # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
+    image_size = config['image_size']
+    
+    RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
+
+    experiment_name = "NYU_latefusion"
+    config, model_latefusion, _, _, _, label_mapping = load_experiment(
+        experiment_name,
+        checkpoint_name="model_final.pt",
+        depth=True,
+        map_location=map_location
+        )
+    image_size = config['image_size']
+    
+    RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
 
     dim = config["hidden_size"]
     from module import CLUB
@@ -376,14 +393,14 @@ def main(random_seed):
     
     # batch_test_fusionViT(model_latefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
-    batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+    # batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     
 
 
 if __name__ == "__main__":
-    random_seed = 42
-    for i in range(5):
+    random_seed = 54
+    for i in range(1):
         print(f"Run in randomseed{random_seed}")
         main(random_seed)
         random_seed -= 1
