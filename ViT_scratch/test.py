@@ -353,28 +353,38 @@ def main(random_seed):
     #     )
 
     # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
-    experiment_name = "NYU_sharefusion_a0.5_b0.5"
+    # experiment_name = "NYU_sharefusion_a0.5_b0.5"
     
-    config, model_sharefusion, _, _, _, label_mapping = load_experiment(
-        experiment_name,
-        checkpoint_name="model_final.pt",
-        depth=True,
-        map_location=map_location
-        )
-    image_size = config['image_size']
+    # config, model_sharefusion, _, _, _, label_mapping = load_experiment(
+    #     experiment_name,
+    #     checkpoint_name="model_final.pt",
+    #     depth=True,
+    #     map_location=map_location
+    #     )
+    # image_size = config['image_size']
     
-    RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
+    # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
 
-    experiment_name = "NYU_latefusion"
-    config, model_latefusion, _, _, _, label_mapping = load_experiment(
+    # experiment_name = "NYU_latefusion"
+    # config, model_latefusion, _, _, _, label_mapping = load_experiment(
+    #     experiment_name,
+    #     checkpoint_name="model_final.pt",
+    #     depth=True,
+    #     map_location=map_location
+    #     )
+    # image_size = config['image_size']
+    
+    # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
+
+    experiment_name = "WRGBD_ARfusion_a0.5_b0.5"
+    config, model_ARfusion, _, _, _, label_mapping = load_experiment(
         experiment_name,
         checkpoint_name="model_final.pt",
         depth=True,
         map_location=map_location
         )
     image_size = config['image_size']
-    
-    RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
+    RGBD_visualize_attention_NYU(model_ARfusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\ARfusion_attention.png", device=device)
 
     dim = config["hidden_size"]
     from module import CLUB

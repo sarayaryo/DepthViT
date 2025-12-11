@@ -2,6 +2,7 @@ import math
 import torch
 from torch import nn
 import torch
+from new_vit_encoder import RGB_Depth_Agreement_Refined
 
 
 def print_memory_status(label=""):
@@ -508,10 +509,13 @@ class Block_RGB_Depth(nn.Module):
 
     def __init__(self, config):
         super().__init__()
-        self.use_faster_attention = config.get("use_faster_attention", False)
+        self.use_faster_attention = config.get("use_faster_attention", True)
         self.use_method1 = config.get("use_method1", False)
-        if self.use_method1: 
+        if config.get("use_method3", False):
+            self.attention = RGB_Depth_Agreement_Refined(config)
+        elif self.use_method1: 
             self.attention = RGB_Depth_CrossMultiHeadAttention(config)
+        
         elif self.use_faster_attention:
             self.attention = FasterMultiHeadAttention(config)
         else:

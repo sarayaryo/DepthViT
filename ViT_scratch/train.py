@@ -183,7 +183,8 @@ config = {
     "num_channels_forDepth": 1,
     "qkv_bias": True,
     "use_faster_attention": True,
-    "use_method1": True
+    "use_method1": True,  ## share-fusion(late-fusion)
+    "use_method3": True ## agreement-refined
 }
 # These are not hard constraints, but are used to prevent misconfigurations
 assert config["hidden_size"] % config["num_attention_heads"] == 0
@@ -365,7 +366,7 @@ class Trainer:
     """
     The simple trainer.
     """
-    def __init__(self, model, optimizer, loss_fn, method, exp_name, device):
+    def __init__(self, model, optimizer, loss_fn, method, exp_name, device, scheduler=None):
         self.model = model.to(device)
         self.optimizer = optimizer
         self.method = method
@@ -376,6 +377,7 @@ class Trainer:
         self.fusion_method = fusion_methods.get(method)
         self.num_layers = model.config["num_hidden_layers"]
         self.k = model.config["precision_k"]
+        self.scheduler = scheduler
 
     def train(self, trainloader, testloader, validloader, epochs, patience, save_model_every_n_epochs=0):
         """
@@ -383,8 +385,7 @@ class Trainer:
         """
         # Keep track of the losses and accuracies
         train_losses, test_losses, valid_losses, accuracies, valid_accuracies = [], [], [], [], []
-        # 学習率スケジューラの設定
-        # scheduler = StepLR(self.optimizer, step_size=10, gamma=0.1)  # 10エポックごとに学習率を0.1倍に減少
+
         best_valid_loss = float("inf")
         # Train the model
         torch.cuda.empty_cache()
@@ -392,7 +393,7 @@ class Trainer:
             # print(f"train epoch: {i}")
             train_loss = self.train_epoch(trainloader)
             print(f"train epoch: {i}, Train loss: {train_loss:.4f}")
-            logging.info(f"train epoch: {i}, Train loss: {train_loss:.4f}")
+            logging.info(f"train epoch: {i}, Train loss: {train_loss:.4f}, lr: {self.optimizer.param_groups[0]['lr']:.5f}")
 
 
             if i%5 == 0:
@@ -433,7 +434,8 @@ class Trainer:
                 check_gpu_memory("after_valid",i)
 
             train_losses.append(train_loss)
-            # scheduler.step()
+            if getattr(self, "scheduler", None) is not None:
+                self.scheduler.step()
         
             # print(f"attention_data_final.shape:{attention_data_final[1]}")
             
@@ -495,6 +497,12 @@ class Trainer:
         """
         self.model.train()
         total_loss = 0
+        if hasattr(self.model, 'encoder_rgb_depth'):
+            for i, block in enumerate(self.model.encoder_rgb_depth.blocks):
+                if hasattr(block.attention, 'get_alpha_beta'):
+                    alpha, beta = block.attention.get_alpha_beta()
+                    logging.info(f"Block {i}: alpha={alpha.item():.4f}, beta={beta.item():.4f}")
+        
         for idx, batch in enumerate(trainloader):
 
             # batch = [ [sub_t.to(self.device) for sub_t in t] for t in batch.values()]
@@ -731,7 +739,10 @@ def main():
     # model = ViTForClassfication(config)
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay = args.weight_decay)
     loss_fn = nn.CrossEntropyLoss()
-    trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device)
+
+    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10], gamma=0.1)
+    trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device, scheduler=scheduler)
+    
     
     log_dir = os.path.join("experiments", args.exp_name)
     os.makedirs(log_dir, exist_ok=True)
