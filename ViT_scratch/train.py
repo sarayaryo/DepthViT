@@ -184,7 +184,8 @@ config = {
     "qkv_bias": True,
     "use_faster_attention": True,
     "use_method1": True,  ## share-fusion(late-fusion)
-    "use_method3": True ## agreement-refined
+    "use_method3": False, ## agreement-refined
+    "learnable_alpha_beta": False,
 }
 # These are not hard constraints, but are used to prevent misconfigurations
 assert config["hidden_size"] % config["num_attention_heads"] == 0
@@ -766,3 +767,4 @@ if __name__ == "__main__":
     end_time = time.time()  # 終了時刻を記録
     execution_time = end_time - start_time  # 実行時間を計算
     print(f"Time: {execution_time:.4f} seconds")
+    logging.info(f"Time: {execution_time:.4f} seconds")

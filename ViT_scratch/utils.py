@@ -44,7 +44,7 @@ def save_checkpoint(experiment_name, model, epoch, base_dir="experiments"):
     torch.save(model.state_dict(), cpfile)
 
 
-def load_experiment(experiment_name, checkpoint_name="model_final.pt", base_dir="experiments", depth=False, map_location=None):
+def load_experiment(experiment_name, checkpoint_name="model_final.pt", base_dir="experiments", depth=False, map_location=None, override_config=None):
     outdir = os.path.join(base_dir, experiment_name)
     # Load the config
     configfile = os.path.join(outdir, 'config.json')
@@ -62,6 +62,9 @@ def load_experiment(experiment_name, checkpoint_name="model_final.pt", base_dir=
     label_file = os.path.join(outdir, 'label_mapping.json')
     with open(label_file, 'r', encoding='utf-8') as f:
         label_mapping = json.load(f)
+
+    if override_config:
+        config.update(override_config)
 
     # Load the model
     model = ViTForClassfication(config)

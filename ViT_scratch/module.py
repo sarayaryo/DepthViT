@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
 class VariationalMI(nn.Module):
     def __init__(self, dim):
@@ -119,3 +120,192 @@ class FeatureExtractor(nn.Module):
 
     def forward(self, x):
         return self.net(x)
+
+import numpy as np
+import torch
+from scipy.stats import spearmanr
+
+def _to_numpy(x):
+    """torch.Tensor / np.ndarray を np.ndarray に統一"""
+    if torch.is_tensor(x):
+        return x.detach().cpu().numpy()
+    return np.asarray(x)
+
+def _extract_attention_view(att, view="patch_patch", head_reduce="mean"):
+    """
+    attention を「評価したい視点」に変換して返す。
+    返り値は np.ndarray で shape は:
+      - view="patch_patch": (B, N, N)  ※N=64
+      - view="cls_patch"  : (B, N)     ※N=64
+    入力 att は (B,H,T,T) または (H,T,T) のどちらでもOK。
+    """
+    att = _to_numpy(att)
+
+    # (H,T,T) -> (1,H,T,T) に揃える
+    if att.ndim == 3:
+        att = att[None, ...]  # (1,H,T,T)
+    assert att.ndim == 4, f"attention must be 4D (B,H,T,T) or 3D (H,T,T), got {att.shape}"
+
+    B, H, T, _ = att.shape
+
+    # 視点の抽出
+    if view == "patch_patch":
+        # patch↔patch (CLS除外)
+        att = att[:, :, 1:, 1:]      # (B,H,64,64)
+    elif view == "cls_patch":
+        # CLS→patch (CLS行, patch列)
+        att = att[:, :, 0, 1:]       # (B,H,64)
+    else:
+        raise ValueError(f"Unknown view={view}")
+
+    # head方向の集約
+    if head_reduce == "mean":
+        att = att.mean(axis=1)       # (B,64,64) or (B,64)
+    elif head_reduce == "none":
+        # ヘッド別で評価したいなら使える
+        pass
+    else:
+        raise ValueError(f"Unknown head_reduce={head_reduce}")
+
+    return att
+
+def spearman_rank_correlation(attention_img, attention_dpt, view="patch_patch"):
+    """
+    Spearmanをバッチごとに返す。
+    入力は (B,H,T,T) でも (H,T,T) でもOK（np/torch両方OK）。
+    view:
+      - "patch_patch": patch↔patch（CLS除外）
+      - "cls_patch"  : CLS→patch
+    """
+    img = _extract_attention_view(attention_img, view=view, head_reduce="mean")
+    dpt = _extract_attention_view(attention_dpt, view=view, head_reduce="mean")
+
+    assert img.shape == dpt.shape, f"shape mismatch: {img.shape} vs {dpt.shape}"
+
+    rs_batch = []
+    for x, y in zip(img, dpt):
+        # x,y は (64,64) か (64,)
+        coeff, _ = spearmanr(x.reshape(-1), y.reshape(-1))
+        rs_batch.append(coeff)
+    return rs_batch
+
+def precision_top_k(attention_img, attention_dpt, k=1.0, view="patch_patch"):
+    """
+    top-k% の index 一致率（バッチごと）を返す。
+    view は spearman と同じ。
+    """
+    img = _extract_attention_view(attention_img, view=view, head_reduce="mean")
+    dpt = _extract_attention_view(attention_dpt, view=view, head_reduce="mean")
+
+    assert img.shape == dpt.shape, f"shape mismatch: {img.shape} vs {dpt.shape}"
+
+    precisions_batch = []
+    for x, y in zip(img, dpt):
+        x_flat = x.reshape(-1)
+        y_flat = y.reshape(-1)
+
+        top_k = max(1, int(len(x_flat) * k))
+
+        x_idx = np.argsort(x_flat)[::-1][:top_k]
+        y_idx = np.argsort(y_flat)[::-1][:top_k]
+
+        intersection = len(set(x_idx) & set(y_idx))
+        precisions_batch.append(intersection / top_k)
+
+    return precisions_batch
+
+def total_consistency(attention_data, k=1.0, view="patch_patch"):
+    """
+    attention_data: list of dict
+      entry["attention_img"], entry["attention_dpt"] は (H,T,T) or (B,H,T,T) を想定
+      ※あなたの現状は (H,65,65) が入っているはず
+    view:
+      - "patch_patch" : 旧 total_consistency と同じ（CLS除外のpatch↔patch）
+      - "cls_patch"   : CLS視点（CLS→patch）
+    """
+    rs = []
+    precisions = []
+
+    for entry in attention_data:
+        att_img = entry["attention_img"]
+        att_dpt = entry["attention_dpt"]
+
+        rs_batch = spearman_rank_correlation(att_img, att_dpt, view=view)
+        if view == "patch_patch":
+            precision_batch = precision_top_k(att_img, att_dpt, k=k, view=view)
+        else:
+            precision_batch, _, _ = precision_top_k_mass(
+                att_img, att_dpt, mass=0.8, view=view
+            )
+
+        rs.extend(rs_batch)
+        precisions.extend(precision_batch)
+
+    return rs, precisions
+
+# 互換ラッパ（名前を残したい場合）
+def total_consistency_patch(attention_data, k=0.3):
+    return total_consistency(attention_data, k=k, view="patch_patch")
+
+def total_consistency_CLS(attention_data, k=0.3):
+    return total_consistency(attention_data, k=k, view="cls_patch")
+
+def _auto_topn_from_mass(att_vec, mass=0.8):
+    """
+    att_vec: (N,) の attention（CLS→patch など）
+    mass: 例 0.8（累積80%）
+    return: top_n（最小で1以上）
+    """
+    v = np.asarray(att_vec).reshape(-1)
+
+    # 負やNaNがあると壊れるので保険（softmax後なら通常不要）
+    v = np.nan_to_num(v, nan=0.0, posinf=0.0, neginf=0.0)
+    v = np.clip(v, 0.0, None)
+
+    s = v.sum()
+    if s <= 0:
+        return 1  # 全部0なら仕方ないので1
+
+    idx = np.argsort(v)[::-1]
+    sorted_v = v[idx]
+    cum = np.cumsum(sorted_v) / s
+
+    top_n = int(np.searchsorted(cum, mass, side="left") + 1)
+    return max(1, min(top_n, len(v)))
+
+
+def precision_top_k_mass(attention_img, attention_dpt, mass=0.8, view="cls_patch"):
+    """
+    CLS→patch attention の累積質量 mass を満たす最小 top_n を各サンプルで決め、
+    その top_n の index 一致率を返す。
+
+    return:
+      precisions_batch: list[float]
+      ks_batch: list[float]  # 参考：実際のk(割合)
+      topn_batch: list[int]  # 参考：実際のtop_n
+    """
+    img = _extract_attention_view(attention_img, view=view, head_reduce="mean")  # (B,64)
+    dpt = _extract_attention_view(attention_dpt, view=view, head_reduce="mean")  # (B,64)
+    assert img.shape == dpt.shape, f"shape mismatch: {img.shape} vs {dpt.shape}"
+
+    precisions_batch = []
+    ks_batch = []
+    topn_batch = []
+
+    for x, y in zip(img, dpt):
+        # top_n は「片方だけ」で決めると偏るので、両方で決めて max を採用（頑健）
+        n_x = _auto_topn_from_mass(x, mass=mass)
+        n_y = _auto_topn_from_mass(y, mass=mass)
+        top_n = max(n_x, n_y)
+
+        x_idx = np.argsort(x)[::-1][:top_n]
+        y_idx = np.argsort(y)[::-1][:top_n]
+
+        inter = len(set(x_idx) & set(y_idx))
+        precisions_batch.append(inter / top_n)
+
+        topn_batch.append(top_n)
+        ks_batch.append(top_n / len(x))
+
+    return precisions_batch, ks_batch, topn_batch
+

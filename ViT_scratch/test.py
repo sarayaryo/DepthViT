@@ -1,12 +1,14 @@
 import torch
 import torch.nn.functional as F
-from module import VariationalMI
+from module import VariationalMI, total_consistency_CLS, total_consistency_patch
 from utils import load_experiment
 from data import ImageDepthDataset, load_datapath_NYU, getlabels_NYU
 from torchvision import transforms
 
 from train import spearman_rank_correlation, total_consistency, process_attention_data
 from PIL import Image
+from train import Trainer
+from torch import nn, optim
 import glob
 import os
 import numpy as np
@@ -127,7 +129,7 @@ def RGB_visualize_attention_NYU(model, base_path, label_mapping, image_size, out
         plt.savefig(output)
     plt.show()
 
-def RGBD_visualize_attention_NYU(model, test_image_path, test_depth_path, label_mapping, image_size, output=None, device="cuda"):
+def RGBD_visualize_attention_NYU(model, test_image_path, test_depth_path, label_mapping, image_size, output=None, test_loader=None, device="cuda"):
     model.eval()
 
     # image_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.jpg')))
@@ -249,7 +251,7 @@ def test(model, test_image_path, test_depth_path, mi_regresser, label_mapping, i
 
 def batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device="cuda"):
     
-    from train import Trainer
+    
     from torch import nn, optim 
     optimizer = optim.AdamW(model.parameters(), lr=1e-2, weight_decay = 0.02)
     loss_fn = nn.CrossEntropyLoss()
@@ -270,8 +272,7 @@ def batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, l
 
 def batch_test_fusionViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device="cuda"):
     
-    from train import Trainer
-    from torch import nn, optim 
+     
 
     loss_fn = nn.CrossEntropyLoss()
     trainer = Trainer(
@@ -293,19 +294,25 @@ def batch_test_fusionViT(model, batch_size, dataset_type, test_loader, mi_regres
             mi = mi_regresser(f_r, f_rgbd)
             mi_values.append(mi.item())
 
-    rs, precission_topk = total_consistency(attention_data_final)
+    rs, precission_topk = total_consistency_patch(attention_data_final)
+    rs2, precission_topk2 = total_consistency_CLS(attention_data_final)
 
     print(f"Accuracy: {accuracy:.4f}, Average Loss: {avg_loss:.4f}")
-    print(f"Spearman Rank Correlation: {np.mean(rs):.4f}")
+    print(f"Spearman Rank Correlation(patch): {np.mean(rs):.4f}")
+    print(f"Spearman Rank Correlation(CLS): {np.mean(rs2):.4f}")
     print(f"Precision at Top K: {np.mean(precission_topk):.4f}")
+    print(f"Precision at Top K (CLS): {np.mean(precission_topk2):.4f}")
     print(f"Mutual Information: {np.mean(mi_values):.4f}")
 
 
-def main(random_seed):
+def main(random_seed, infer_model=2):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     
     dataset_type = 1 # 0=WRGBD, 1=NYU, 2=TinyImageNet
+
+    # infer_model = 1 # 0=vit, 1=late-fusion, 2=share-fusion, 3=AR-fusion
+
     map_location = "cuda" if torch.cuda.is_available() else "cpu"
     batch_size = 16
 
@@ -334,6 +341,21 @@ def main(random_seed):
     test_image_path = test_loader.dataset.image_paths
     test_depth_path = test_loader.dataset.depth_paths
 
+    
+
+    config,_ , _, _, _, _ = load_experiment(
+    experiment_name="NYU_latefusion",
+    checkpoint_name="model_final.pt",
+    depth=True,
+    map_location=map_location
+    )
+    dim = config["hidden_size"]
+    from module import CLUB
+    mi_regresser = CLUB(dim, dim*2, 64).to(device)
+    mi_regresser.load_state_dict(torch.load(r"experiments\vclub_model\NYU_0.8train_seed42_dim_48_96.pth", map_location=device, weights_only=True))
+    mi_regresser.eval()
+
+
     ## ----------------Visualize Attention Maps Toataly----------------
 
     # config, model, _, _, _, label_mapping = load_experiment(
@@ -353,7 +375,7 @@ def main(random_seed):
     #     )
 
     # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
-    # experiment_name = "NYU_sharefusion_a0.5_b0.5"
+    experiment_name = "NYU_sharefusion_a0.5_b0.5"
     
     # config, model_sharefusion, _, _, _, label_mapping = load_experiment(
     #     experiment_name,
@@ -362,48 +384,88 @@ def main(random_seed):
     #     map_location=map_location
     #     )
     # image_size = config['image_size']
-    
-    # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
-
-    # experiment_name = "NYU_latefusion"
-    # config, model_latefusion, _, _, _, label_mapping = load_experiment(
-    #     experiment_name,
-    #     checkpoint_name="model_final.pt",
-    #     depth=True,
-    #     map_location=map_location
-    #     )
-    # image_size = config['image_size']
-    
-    # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
-
-    experiment_name = "WRGBD_ARfusion_a0.5_b0.5"
-    config, model_ARfusion, _, _, _, label_mapping = load_experiment(
-        experiment_name,
-        checkpoint_name="model_final.pt",
-        depth=True,
-        map_location=map_location
-        )
-    image_size = config['image_size']
-    RGBD_visualize_attention_NYU(model_ARfusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\ARfusion_attention.png", device=device)
-
-    dim = config["hidden_size"]
-    from module import CLUB
-    mi_regresser = CLUB(dim, dim*2, 64).to(device)
-    mi_regresser.load_state_dict(torch.load(r"experiments\vclub_model\NYU_0.8train_seed42_dim_48_96.pth", map_location=device, weights_only=True))
-    mi_regresser.eval()
-
-    ## ----------------Visualize Attention Maps per Block----------------
-
-    # test(model_sharefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, device="cuda", num_images = 15)
 
 
-    ## ----------------Test Accracy, Spearman, Mutual Information----------------
-
-    # batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
-    
-    # batch_test_fusionViT(model_latefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     # batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+    
+    # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
+    if infer_model==0:
+        experiment_name = "vit-with-10-epochs"
+        config, model, _, _, _, label_mapping = load_experiment(
+            experiment_name,
+            checkpoint_name="vit_30epoch.pt",
+            depth=False,
+            map_location=map_location
+            )
+        image_size = config['image_size']
+        RGB_visualize_attention_NYU(model, test_image_path, label_mapping, image_size, "attention_image\ViT_attention.png", device=device)
+        batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+
+    if infer_model==1:
+        experiment_name = "NYU_latefusion"
+        config, model_latefusion, _, _, _, label_mapping = load_experiment(
+            experiment_name,
+            checkpoint_name="model_final.pt",
+            depth=True,
+            map_location=map_location
+            )
+        image_size = config['image_size']
+        RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
+        batch_test_fusionViT(model_latefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+
+    if infer_model==2:
+        experiment_name = "NYU_sharefusion_a0.5_b0.5"
+        config, model_sharefusion, _, _, _, label_mapping = load_experiment(
+            experiment_name,
+            checkpoint_name="model_final.pt",
+            depth=True,
+            map_location=map_location,
+
+            )
+        image_size = config['image_size']
+        RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_alearn_blearn_attention.png", test_loader, device=device)
+        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+
+
+    if infer_model==2.5:
+        experiment_name = "NYU_sharefusion_alearn_blearn"
+        config, model_sharefusion, _, _, _, label_mapping = load_experiment(
+            experiment_name,
+            checkpoint_name="model_final.pt",
+            depth=True,
+            map_location=map_location,
+            override_config={"learnable_alpha_beta": True}
+            )
+        image_size = config['image_size']
+        RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_alearn_blearn_attention.png", test_loader, device=device)
+        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+
+    if infer_model==3:
+        experiment_name = "NYU_ARfusion_a0.5_b0.5"
+        config, model_ARfusion, _, _, _, label_mapping = load_experiment(
+            experiment_name,
+            checkpoint_name="model_16.pt",
+            depth=True,
+            map_location=map_location,
+            override_config={"learnable_alpha_beta": True}
+            )
+        image_size = config['image_size']
+        RGBD_visualize_attention_NYU(model_ARfusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\ARfusion_a0.5_b0.5_attention.png", test_loader, device=device)
+        batch_test_fusionViT(model_ARfusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+
+    # ## ----------------Visualize Attention Maps per Block----------------
+
+    # # test(model_sharefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, device="cuda", num_images = 15)
+
+
+    # ## ----------------Test Accracy, Spearman, Mutual Information----------------
+
+    # # batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+    
+    
+
+    
 
     
 
@@ -412,7 +474,16 @@ if __name__ == "__main__":
     random_seed = 54
     for i in range(1):
         print(f"Run in randomseed{random_seed}")
-        main(random_seed)
+        # print("=== ViT ===")
+        # main(random_seed, 0)
+        print("=== Late Fusion ===")
+        main(random_seed, 1)
+        print("=== Share Fusion ===")
+        main(random_seed, 2)
+        print("=== Share Fusion (Learnable α, β) ===")
+        main(random_seed, 2.5)
+        print("=== Agreement Refined Fusion ===")
+        main(random_seed, 3)
         random_seed -= 1
     
 

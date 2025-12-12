@@ -333,6 +333,20 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         self.alpha = config["alpha"]
         self.beta = config["beta"]
 
+        self.learnable_alpha_beta = bool(config.get("learnable_alpha_beta", False))
+        if self.learnable_alpha_beta:
+            self.alpha_raw = nn.Parameter(torch.tensor(0.0))
+            self.beta_raw = nn.Parameter(torch.tensor(0.0))
+        else:
+            self.alpha_raw = None
+            self.beta_raw = None
+    
+    def get_alpha_beta(self):
+        """Sigmoid関数で0-1の範囲に制約"""
+        alpha_raw = torch.sigmoid(self.alpha_raw)
+        beta_raw = torch.sigmoid(self.beta_raw)
+        return alpha_raw, beta_raw
+
     def forward(self, img, dpt, output_attentions=False):
         # Project the query, key, and value
         # (batch_size, sequence_length, hidden_size) -> (batch_size, sequence_length, all_head_size * 3)
@@ -400,9 +414,16 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
         attention_probs_dpt = nn.functional.softmax(attention_scores_dpt, dim=-1)
         attention_probs_dpt = self.attn_dropout(attention_probs_dpt)
 
-        ## Share-Fusion (probs is how atteentioned to each other)
-        shared_attention_probs_img = (1-self.alpha)*attention_probs_img + self.alpha*attention_probs_dpt
-        shared_attention_probs_dpt = (1-self.beta)*attention_probs_dpt + self.beta*attention_probs_img
+        if not self.learnable_alpha_beta:
+            ## Share-Fusion (probs is how atteentioned to each other)
+            shared_attention_probs_img = (1-self.alpha)*attention_probs_img + self.alpha*attention_probs_dpt
+            shared_attention_probs_dpt = (1-self.beta)*attention_probs_dpt + self.beta*attention_probs_img
+
+        else:
+            ## Share-Fusion ++
+            alpha_raw, beta_raw = self.get_alpha_beta()
+            shared_attention_probs_img = (1-self.alpha_raw)*attention_probs_img + self.alpha_raw*attention_probs_dpt
+            shared_attention_probs_dpt = (1-self.beta_raw)*attention_probs_dpt + self.beta_raw*attention_probs_img
 
         # print(f"shared_attention_probs_img :{torch.sum(shared_attention_probs_img, dim=-1)}")
         # print(f"shared_attention_probs_dpt :{torch.sum(shared_attention_probs_dpt, dim=-1)}")
@@ -514,6 +535,7 @@ class Block_RGB_Depth(nn.Module):
         if config.get("use_method3", False):
             self.attention = RGB_Depth_Agreement_Refined(config)
         elif self.use_method1: 
+            
             self.attention = RGB_Depth_CrossMultiHeadAttention(config)
         
         elif self.use_faster_attention:
@@ -523,6 +545,7 @@ class Block_RGB_Depth(nn.Module):
         self.layernorm_1 = nn.LayerNorm(config["hidden_size"])
         self.mlp = MLP(config)
         self.layernorm_2 = nn.LayerNorm(config["hidden_size"])
+        
 
     def forward(self, img, dpt, output_attentions=False):
         # Self-attention
