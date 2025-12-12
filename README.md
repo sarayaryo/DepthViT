@@ -22,7 +22,7 @@ $ python train.py --method 2 --dataset rod_sample --batch_size 4 --epochs 3 --ma
   3-3. use TinyImageNet
     python train.py --method 2 --dataset_type 2 --alpha 0.5 --beta 0.5 --dataset rgbd_tinyimagenet --batch_size 16 --epochs 30 --max_data_size 20000000
 
-python train.py --method 2 --dataset_type 1 --alpha 0.0 --beta 0.0 --dataset nyu_data/nyu2 --batch_size 16 --epochs 30 --max_data_size 20000000
+python train.py --method 2 --dataset_type 1 --exp_name NYU_*** --alpha 0.0 --beta 0.0 --dataset nyu_data/nyu2 --batch_size 16 --epochs 30 --max_data_size 20000000 --lr 1e-3
 
 W-RGBD
 python train.py --method 2 --dataset_type 0 --exp_name WRGBD_sharefusion --alpha 0.5 --beta 0.5 --dataset rgbd-dataset-10k --batch_size 16 --epochs 30 --max_data_size 2000000000
