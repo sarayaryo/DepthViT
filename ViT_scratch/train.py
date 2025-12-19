@@ -461,8 +461,8 @@ class Trainer:
         save_sample_list(correct_images, "correct_images.csv")
 
         if self.method in [1,2]:
-            print(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top{self.k*100}% score: {np.mean(precision_top_k):.4f}")
-            logging.info(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top{self.k*100}% score: {np.mean(precision_top_k):.4f}")
+            print(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top Attn80% score: {np.mean(precision_top_k):.4f}")
+            logging.info(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top Attn80% score: {np.mean(precision_top_k):.4f}")
             print(f"amount of pair:{len(rs)}")
             logging.info(f"amount of pair:{len(rs)}")
         else:
@@ -498,9 +498,8 @@ class Trainer:
         """
         self.model.train()
         total_loss = 0
-        if hasattr(self.model, 'encoder_rgb_depth'):
+        if self.model.config.get("learnable_alpha_beta", False):
             for i, block in enumerate(self.model.encoder_rgb_depth.blocks):
-                if hasattr(block.attention, 'get_alpha_beta'):
                     alpha, beta = block.attention.get_alpha_beta()
                     logging.info(f"Block {i}: alpha={alpha.item():.4f}, beta={beta.item():.4f}")
         

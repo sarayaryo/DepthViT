@@ -16,12 +16,13 @@ $ python train.py --method 2 --dataset rod_sample --batch_size 4 --epochs 3 --ma
 3.  run_actual
 
 | 3-1. use WRGBD
-    python train.py --method 2 --dataset_type 0 --alpha 0.5 --beta 0.5 --dataset rgbd-dataset-10k --batch_size 16 --epochs 30 --max_data_size 20000000
+    python train.py --method 0 --exp_name WRGBD_ViT --dataset_type 0 --alpha 0.5 --beta 0.5 --dataset rgbd-dataset-10k --batch_size 16 --epochs 30 --max_data_size 20000000  
 　3-2. use NYUv2
     python train.py --method 2 --dataset_type 1 --alpha 0.5 --beta 0.5 --dataset nyu_data_sample --batch_size 16 --epochs 30 --max_data_size 20000000
   3-3. use TinyImageNet
     python train.py --method 2 --dataset_type 2 --alpha 0.5 --beta 0.5 --dataset rgbd_tinyimagenet --batch_size 16 --epochs 30 --max_data_size 20000000
 
+### 追記　スケジューラ導入　必ず　--lr 1e-3　を追記
 python train.py --method 2 --dataset_type 1 --exp_name NYU_*** --alpha 0.0 --beta 0.0 --dataset nyu_data/nyu2 --batch_size 16 --epochs 30 --max_data_size 20000000 --lr 1e-3
 
 W-RGBD
