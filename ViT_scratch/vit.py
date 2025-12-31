@@ -421,7 +421,7 @@ class RGB_Depth_CrossMultiHeadAttention(nn.Module):
 
         else:
             ## Share-Fusion ++
-            print(aaa)
+            
             alpha_raw, beta_raw = self.get_alpha_beta()
             shared_attention_probs_img = (1-alpha_raw)*attention_probs_img + alpha_raw*attention_probs_dpt
             shared_attention_probs_dpt = (1-beta_raw)*attention_probs_dpt + beta_raw*attention_probs_img

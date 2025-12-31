@@ -7,6 +7,7 @@
     "image_size": 32,
     "initializer_range": 0.02,
     "intermediate_size": 192,
+    "learnable_alpha_beta": true,
     "num_attention_heads": 4,
     "num_channels": 3,
     "num_channels_forDepth": 1,

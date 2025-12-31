@@ -15,6 +15,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
+from print_alpha_beta import print_alpha_beta
 
 def process_attention(attention_maps, img_h, img_w):
     attention_maps = attention_maps[:, :, 0, 1:].mean(dim=1)
@@ -76,11 +77,11 @@ def show_images_with_attention(raw_images, raw_depths, attention_maps_img, atten
         plt.show()
 
 
-def RGB_visualize_attention_NYU(model, base_path, label_mapping, image_size, output=None, device="cuda"):
+def RGB_visualize_attention_NYU(model, test_image_path, label_mapping, image_size, output=None, test_loader=None, device="cuda"):
     from PIL import Image
     model.eval()
 
-    image_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.jpg')))
+    image_paths = test_image_path
     labels, _ = getlabels_NYU(image_paths)
 
     num_images = 30
@@ -127,7 +128,7 @@ def RGB_visualize_attention_NYU(model, base_path, label_mapping, image_size, out
             color=("green" if gt == pred else "red"))
     if output is not None:
         plt.savefig(output)
-    plt.show()
+    # plt.show()
 
 def RGBD_visualize_attention_NYU(model, test_image_path, test_depth_path, label_mapping, image_size, output=None, test_loader=None, device="cuda"):
     model.eval()
@@ -184,7 +185,7 @@ def RGBD_visualize_attention_NYU(model, test_image_path, test_depth_path, label_
         label_ids, predictions, id_to_label, output, score_s=score_s
     )
 
-def test(model, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, device="cuda", num_images = 16): 
+def layer_attention(model, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, exp_name="", device="cuda", num_images = 16): 
     model.eval()
 
     # image_paths = sorted(glob.glob(os.path.join(base_path, '*', '*.jpg')))
@@ -234,11 +235,11 @@ def test(model, test_image_path, test_depth_path, mi_regresser, label_mapping, i
         score_s = spearman_rank_correlation(attn_img, attn_dpt)
         print(f"Spearman Rank Correlation for block {i}: {sum(score_s) / len(score_s):.4f}")
 
-        output_name = f"attention_image\\attention_block{i}.png"
+        output_name = f"attention_image\\{exp_name}_attention_block{i}.png"
 
         show_images_with_attention(
             raw_images, raw_depths, attn_img, attn_dpt,
-            label_ids, predictions, id_to_label, output_name, False, i, score_s
+            label_ids, predictions, id_to_label, output_name, False, score_s
         )
     attention_data_final = []
     attention_data_final.extend(process_attention_data(images, depths, labels, attention_maps_img, attention_maps_dpt, len(attention_maps_img)-1, image_paths))
@@ -358,38 +359,6 @@ def main(random_seed, infer_model=2):
 
     ## ----------------Visualize Attention Maps Toataly----------------
 
-    # config, model, _, _, _, label_mapping = load_experiment(
-    #     experiment_name,
-    #     checkpoint_name='vit_30epoch.pt.',
-    #     depth=False,
-    #     map_location=map_location
-    #     )
-    # image_size = config['image_size']
-    # # RGB_visualize_attention_NYU(model, test_image_path, label_mapping, image_size, "attention_image\ViTattention.png", device=device)
-
-    # config, model_latefusion, _, _, _, label_mapping = load_experiment(
-    #     experiment_name,
-    #     checkpoint_name='latefusion_30epochs.pt',
-    #     depth=True,
-    #     map_location=map_location
-    #     )
-
-    # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\latefusion_attention.png", device=device)
-    experiment_name = "NYU_sharefusion_a0.5_b0.5"
-    
-    # config, model_sharefusion, _, _, _, label_mapping = load_experiment(
-    #     experiment_name,
-    #     checkpoint_name="model_final.pt",
-    #     depth=True,
-    #     map_location=map_location
-    #     )
-    # image_size = config['image_size']
-
-
-
-    # batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
-    
-    # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, "attention_image\sharefusion_attention.png", device=device)
     if infer_model==0:
         experiment_name = "NYU_ViT"
         config, model, _, _, _, label_mapping = load_experiment(
@@ -399,7 +368,7 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
-        RGB_visualize_attention_NYU(model, test_image_path, label_mapping, image_size, "attention_image\ViT_attention.png", device=device)
+        # RGB_visualize_attention_NYU(model, test_image_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", device=device)
         batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     if infer_model==1:
@@ -411,7 +380,7 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
-        RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention.png", device=device)
+        # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", device=device)
         batch_test_fusionViT(model_latefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     
@@ -424,7 +393,7 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
-        RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention.png", test_loader, device=device)
+        # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
         batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
     
     if infer_model==2.2:
@@ -436,11 +405,11 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
-        RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention.png", test_loader, device=device)
+        # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
         batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     if infer_model==2:
-        experiment_name = "NYU_sharefusion_a0.5_b0.5"
+        experiment_name = "NYU_sharefusion_a0.5_b0.5" 
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -449,7 +418,7 @@ def main(random_seed, infer_model=2):
 
             )
         image_size = config['image_size']
-        RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention.png", test_loader, device=device)
+        # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
         batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
     
     if infer_model==2.3:
@@ -461,7 +430,7 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
-        RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention.png", test_loader, device=device)
+        # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
         batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
 
@@ -475,21 +444,26 @@ def main(random_seed, infer_model=2):
             override_config={"learnable_alpha_beta": True}
             )
         image_size = config['image_size']
-        RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention.png", test_loader, device=device)
-        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        print_alpha_beta(model_sharefusion)
+        # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
+        # batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        layer_attention(model_sharefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name,device=device, num_images = 12)
+
 
     if infer_model==3:
-        experiment_name = "NYU_ARfusion_a0.5_b0.5"
+        experiment_name = "NYU_ARfusion_alearn_blearn"
         config, model_ARfusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
-            checkpoint_name="model_16.pt",
+            checkpoint_name="model_final.pt",
             depth=True,
             map_location=map_location,
             override_config={"learnable_alpha_beta": True}
             )
         image_size = config['image_size']
-        RGBD_visualize_attention_NYU(model_ARfusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention.png", test_loader, device=device)
-        batch_test_fusionViT(model_ARfusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        print_alpha_beta(model_ARfusion)
+        # RGBD_visualize_attention_NYU(model_ARfusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
+        # batch_test_fusionViT(model_ARfusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        layer_attention(model_ARfusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name, device=device, num_images = 12)
 
     # ## ----------------Visualize Attention Maps per Block----------------
 
@@ -500,29 +474,23 @@ def main(random_seed, infer_model=2):
 
     # # batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
     
-    
-
-    
-
-    
-
 
 if __name__ == "__main__":
-    random_seed = 54
-    for i in range(5):
+    random_seed = 64
+    for i in range(1):
         print(f"NYU Run in randomseed{random_seed}")
-        print("=== ViT ===")
-        main(random_seed, 0)
-        print("=== Late Fusion ===")
-        main(random_seed, 1)
-        print("=== sharefusion_a0.0_b0.5 ===")
-        main(random_seed, 2.1)
-        print("=== sharefusion_a0.5_b0.0 ===")
-        main(random_seed, 2.2)
-        print("=== sharefusion_a0.5_b0.5 ===")
-        main(random_seed, 2)
-        print("=== Share Fusion_a0.25_b0.25 ===")
-        main(random_seed, 2.3)
+        # print("=== ViT ===")
+        # main(random_seed, 0)
+        # print("=== Late Fusion ===")
+        # main(random_seed, 1)
+        # print("=== sharefusion_a0.0_b0.5 ===")
+        # main(random_seed, 2.1)
+        # print("=== sharefusion_a0.5_b0.0 ===")
+        # main(random_seed, 2.2)
+        # print("=== sharefusion_a0.5_b0.5 ===")
+        # main(random_seed, 2)
+        # print("=== Share Fusion_a0.25_b0.25 ===")
+        # main(random_seed, 2.3)
         print("=== Share Fusion (Learnable α, β) ===")
         main(random_seed, 2.5)
         print("=== Agreement Refined Fusion ===")
