@@ -493,8 +493,8 @@ if __name__ == "__main__":
         # main(random_seed, 2.3)
         print("=== Share Fusion (Learnable α, β) ===")
         main(random_seed, 2.5)
-        print("=== Agreement Refined Fusion ===")
-        main(random_seed, 3)
+        # print("=== Agreement Refined Fusion ===")
+        # main(random_seed, 3)
         random_seed -= 1
     
 
