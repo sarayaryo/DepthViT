@@ -203,19 +203,23 @@ def layer_attention(model, test_image_path, test_depth_path, mi_regresser, label
     label_ids = [labels[i] for i in indices]
     id_to_label = label_mapping 
 
-    test_transform = transforms.Compose([
-        transforms.Resize((image_size, image_size)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
-    depth_transform = transforms.Compose([
-        transforms.Resize((image_size, image_size)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,))
+    # test_transform = transforms.Compose([
+    #     transforms.Resize((image_size, image_size)),
+    #     transforms.ToTensor(),
+    #     # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    # ])
+    # depth_transform = transforms.Compose([
+    #     transforms.Resize((image_size, image_size)),
+    #     transforms.ToTensor(),
+    #     # transforms.Normalize((0.5,), (0.5,))
+    # ])
+    transform1 = transforms.Compose([
+        transforms.Resize((32, 32)), 
+        transforms.ToTensor()
     ])
 
-    images = torch.stack([test_transform(Image.fromarray(img)) for img in raw_images]).to(device)
-    depths = torch.stack([depth_transform(Image.fromarray(dpt)) for dpt in raw_depths]).to(device)
+    images = torch.stack([transform1(Image.fromarray(img)) for img in raw_images]).to(device)
+    depths = torch.stack([transform1(Image.fromarray(dpt)) for dpt in raw_depths]).to(device)
 
     model = model.to(device)
     logits, output_img, output_dpt, attention_maps_img, attention_maps_dpt = model(images, depths, attentions_choice=True)
