@@ -741,8 +741,8 @@ def main():
     loss_fn = nn.CrossEntropyLoss()
 
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10], gamma=0.1)
-    # trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device, scheduler=scheduler)
-    trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device)
+    trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device, scheduler=scheduler)
+    # trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device)
     
     
     log_dir = os.path.join("experiments", args.exp_name)

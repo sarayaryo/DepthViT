@@ -203,16 +203,6 @@ def layer_attention(model, test_image_path, test_depth_path, mi_regresser, label
     label_ids = [labels[i] for i in indices]
     id_to_label = label_mapping 
 
-    # test_transform = transforms.Compose([
-    #     transforms.Resize((image_size, image_size)),
-    #     transforms.ToTensor(),
-    #     # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    # ])
-    # depth_transform = transforms.Compose([
-    #     transforms.Resize((image_size, image_size)),
-    #     transforms.ToTensor(),
-    #     # transforms.Normalize((0.5,), (0.5,))
-    # ])
     transform1 = transforms.Compose([
         transforms.Resize((32, 32)), 
         transforms.ToTensor()
@@ -277,8 +267,7 @@ def batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, l
 
 def batch_test_fusionViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device="cuda"):
     
-     
-
+    
     loss_fn = nn.CrossEntropyLoss()
     trainer = Trainer(
         model=model,
@@ -314,7 +303,7 @@ def main(random_seed, infer_model=2):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     
-    dataset_type = 1 # 0=WRGBD, 1=NYU, 2=TinyImageNet
+    dataset_type = 0 # 0=WRGBD, 1=NYU, 2=TinyImageNet
 
     # infer_model = 1 # 0=vit, 1=late-fusion, 2=share-fusion, 3=AR-fusion
 
@@ -328,12 +317,15 @@ def main(random_seed, infer_model=2):
     )
 
     if dataset_type==0:
+        name = "WRGBD"
         load_datapath = load_datapath_WRGBD
         base_path = r'..\data\rgbd-dataset-10k'
     elif dataset_type==1:
+        name = "NYU"
         load_datapath = load_datapath_NYU
         base_path = r'..\data\nyu_data\nyu2'
     elif dataset_type==2:
+        name = "TinyImageNet"
         load_datapath = load_datapath_TinyImageNet
 
     image_paths, depth_paths, labels =load_datapath(base_path, random_seed) 
@@ -364,7 +356,7 @@ def main(random_seed, infer_model=2):
     ## ----------------Visualize Attention Maps Toataly----------------
 
     if infer_model==0:
-        experiment_name = "NYU_ViT"
+        experiment_name = name + "_ViT"
         config, model, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -376,7 +368,7 @@ def main(random_seed, infer_model=2):
         batch_test_ViT(model, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     if infer_model==1:
-        experiment_name = "NYU_latefusion"
+        experiment_name = name + "_latefusion"
         config, model_latefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -389,7 +381,7 @@ def main(random_seed, infer_model=2):
 
     
     if infer_model==2.1:
-        experiment_name = "NYU_sharefusion_a0.0_b0.5"
+        experiment_name = name + "_sharefusion_a0.0_b0.5"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -401,7 +393,7 @@ def main(random_seed, infer_model=2):
         batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
     
     if infer_model==2.2:
-        experiment_name = "NYU_sharefusion_a0.5_b0.0"
+        experiment_name = name + "_sharefusion_a0.5_b0.0"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -413,7 +405,7 @@ def main(random_seed, infer_model=2):
         batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     if infer_model==2:
-        experiment_name = "NYU_sharefusion_a0.5_b0.5" 
+        experiment_name = name + "_sharefusion_a0.5_b0.5" 
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -426,7 +418,7 @@ def main(random_seed, infer_model=2):
         batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
     
     if infer_model==2.3:
-        experiment_name = "NYU_sharefusion_a0.25_b0.25"
+        experiment_name = name + "_sharefusion_a0.25_b0.25"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -439,7 +431,7 @@ def main(random_seed, infer_model=2):
 
 
     if infer_model==2.5:
-        experiment_name = "NYU_sharefusion_alearn_blearn"
+        experiment_name = name + "_sharefusion_alearn_blearn"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -450,12 +442,12 @@ def main(random_seed, infer_model=2):
         image_size = config['image_size']
         print_alpha_beta(model_sharefusion)
         # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
-        # batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
-        layer_attention(model_sharefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name,device=device, num_images = 12)
+        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        # layer_attention(model_sharefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name,device=device, num_images = 12)
 
 
     if infer_model==3:
-        experiment_name = "NYU_ARfusion_alearn_blearn"
+        experiment_name = name + "_ARfusion_alearn_blearn"
         config, model_ARfusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -480,7 +472,8 @@ def main(random_seed, infer_model=2):
     
 
 if __name__ == "__main__":
-    random_seed = 64
+    
+    random_seed = 62
     for i in range(1):
         print(f"NYU Run in randomseed{random_seed}")
         # print("=== ViT ===")
@@ -495,10 +488,10 @@ if __name__ == "__main__":
         # main(random_seed, 2)
         # print("=== Share Fusion_a0.25_b0.25 ===")
         # main(random_seed, 2.3)
-        print("=== Share Fusion (Learnable α, β) ===")
-        main(random_seed, 2.5)
-        # print("=== Agreement Refined Fusion ===")
-        # main(random_seed, 3)
+        # print("=== Share Fusion (Learnable α, β) ===")
+        # main(random_seed, 2.5)
+        print("=== Agreement Refined Fusion ===")
+        main(random_seed, 3)
         random_seed -= 1
     
 
