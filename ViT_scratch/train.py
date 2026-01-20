@@ -185,7 +185,7 @@ config = {
     "use_faster_attention": True,
     "use_method1": True,  ## share-fusion(late-fusion)
     "use_method3": False, ## agreement-refined
-    "learnable_alpha_beta": False,
+    "learnable_alpha_beta": True,
 }
 # These are not hard constraints, but are used to prevent misconfigurations
 assert config["hidden_size"] % config["num_attention_heads"] == 0

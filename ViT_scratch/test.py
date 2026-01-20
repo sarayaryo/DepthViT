@@ -303,7 +303,7 @@ def main(random_seed, infer_model=2):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     
-    dataset_type = 0 # 0=WRGBD, 1=NYU, 2=TinyImageNet
+    dataset_type = 1 # 0=WRGBD, 1=NYU, 2=TinyImageNet
 
     # infer_model = 1 # 0=vit, 1=late-fusion, 2=share-fusion, 3=AR-fusion
 
@@ -351,12 +351,14 @@ def main(random_seed, infer_model=2):
     mi_regresser = CLUB(dim, dim*2, 64).to(device)
     mi_regresser.load_state_dict(torch.load(r"experiments\vclub_model\NYU_0.8train_seed42_dim_48_96.pth", map_location=device, weights_only=True))
     mi_regresser.eval()
+    scheduler = True
 
 
     ## ----------------Visualize Attention Maps Toataly----------------
 
     if infer_model==0:
         experiment_name = name + "_ViT"
+        if scheduler: experiment_name += "_lr1e-3"
         config, model, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -369,6 +371,7 @@ def main(random_seed, infer_model=2):
 
     if infer_model==1:
         experiment_name = name + "_latefusion"
+        if scheduler: experiment_name += "_lr1e-3"    
         config, model_latefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -382,6 +385,7 @@ def main(random_seed, infer_model=2):
     
     if infer_model==2.1:
         experiment_name = name + "_sharefusion_a0.0_b0.5"
+        if scheduler: experiment_name += "_lr1e-3"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -394,6 +398,7 @@ def main(random_seed, infer_model=2):
     
     if infer_model==2.2:
         experiment_name = name + "_sharefusion_a0.5_b0.0"
+        if scheduler: experiment_name += "_lr1e-3"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -405,7 +410,8 @@ def main(random_seed, infer_model=2):
         batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
 
     if infer_model==2:
-        experiment_name = name + "_sharefusion_a0.5_b0.5" 
+        experiment_name = name + "_sharefusion_a0.5_b0.5"
+        if scheduler: experiment_name += "_lr1e-3"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -419,6 +425,7 @@ def main(random_seed, infer_model=2):
     
     if infer_model==2.3:
         experiment_name = name + "_sharefusion_a0.25_b0.25"
+        if scheduler: experiment_name += "_lr1e-3"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
             checkpoint_name="model_final.pt",
@@ -432,9 +439,13 @@ def main(random_seed, infer_model=2):
 
     if infer_model==2.5:
         experiment_name = name + "_sharefusion_alearn_blearn"
+
+        checkpoint_name="model_final.pt"
+
+        if scheduler: experiment_name += "_lr1e-3_revise"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
-            checkpoint_name="model_final.pt",
+            checkpoint_name=checkpoint_name,
             depth=True,
             map_location=map_location,
             override_config={"learnable_alpha_beta": True}
@@ -448,9 +459,14 @@ def main(random_seed, infer_model=2):
 
     if infer_model==3:
         experiment_name = name + "_ARfusion_alearn_blearn"
+
+        if scheduler: checkpoint_name = "model_16.pt"
+        else: checkpoint_name="model_final.pt"
+
+        if scheduler: experiment_name += "_lr1e-3"
         config, model_ARfusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
-            checkpoint_name="model_final.pt",
+            checkpoint_name=checkpoint_name,
             depth=True,
             map_location=map_location,
             override_config={"learnable_alpha_beta": True}
@@ -458,8 +474,8 @@ def main(random_seed, infer_model=2):
         image_size = config['image_size']
         print_alpha_beta(model_ARfusion)
         # RGBD_visualize_attention_NYU(model_ARfusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
-        # batch_test_fusionViT(model_ARfusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
-        layer_attention(model_ARfusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name, device=device, num_images = 12)
+        batch_test_fusionViT(model_ARfusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        # layer_attention(model_ARfusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name, device=device, num_images = 12)
 
     # ## ----------------Visualize Attention Maps per Block----------------
 
@@ -474,7 +490,7 @@ def main(random_seed, infer_model=2):
 if __name__ == "__main__":
     
     random_seed = 62
-    for i in range(1):
+    for i in range(5):
         print(f"NYU Run in randomseed{random_seed}")
         # print("=== ViT ===")
         # main(random_seed, 0)
@@ -488,10 +504,10 @@ if __name__ == "__main__":
         # main(random_seed, 2)
         # print("=== Share Fusion_a0.25_b0.25 ===")
         # main(random_seed, 2.3)
-        # print("=== Share Fusion (Learnable α, β) ===")
-        # main(random_seed, 2.5)
-        print("=== Agreement Refined Fusion ===")
-        main(random_seed, 3)
+        print("=== Share Fusion (Learnable α, β) ===")
+        main(random_seed, 2.5)
+        # print("=== Agreement Refined Fusion ===")
+        # main(random_seed, 3)
         random_seed -= 1
     
 

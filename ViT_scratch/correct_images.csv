@@ -21,6 +21,7 @@ index,path,label,pred
 19,../data/nyu_data/nyu2/living_room_0022_out\98.jpg,17,17
 20,../data/nyu_data/nyu2/dining_room_0001b_out\9.jpg,9,9
 21,../data/nyu_data/nyu2/study_room_0005b_out\31.jpg,24,24
+22,../data/nyu_data/nyu2/nyu_office_1_out\48.jpg,18,18
 23,../data/nyu_data/nyu2/kitchen_0035a_out\38.jpg,15,15
 24,../data/nyu_data/nyu2/bedroom_0004_out\200.jpg,2,2
 25,../data/nyu_data/nyu2/kitchen_0011a_out\191.jpg,15,15
@@ -35,7 +36,6 @@ index,path,label,pred
 34,../data/nyu_data/nyu2/dining_room_0012_out\248.jpg,9,9
 35,../data/nyu_data/nyu2/bathroom_0055_out\17.jpg,1,1
 36,../data/nyu_data/nyu2/furniture_store_0001d_out\7.jpg,12,12
-37,../data/nyu_data/nyu2/dining_room_0034_out\104.jpg,9,9
 38,../data/nyu_data/nyu2/bedroom_0029_out\88.jpg,2,2
 39,../data/nyu_data/nyu2/furniture_store_0002a_out\334.jpg,12,12
 40,../data/nyu_data/nyu2/furniture_store_0002a_out\268.jpg,12,12
@@ -59,7 +59,6 @@ index,path,label,pred
 58,../data/nyu_data/nyu2/kitchen_0010_out\6.jpg,15,15
 59,../data/nyu_data/nyu2/living_room_0040_out\366.jpg,17,17
 60,../data/nyu_data/nyu2/home_office_0005_out\128.jpg,13,13
-61,../data/nyu_data/nyu2/living_room_0058_out\386.jpg,17,17
 62,../data/nyu_data/nyu2/living_room_0046b_out\16.jpg,17,17
 63,../data/nyu_data/nyu2/furniture_store_0001d_out\198.jpg,12,12
 64,../data/nyu_data/nyu2/bedroom_0021_out\137.jpg,2,2
@@ -383,7 +382,6 @@ index,path,label,pred
 382,../data/nyu_data/nyu2/living_room_0047b_out\271.jpg,17,17
 383,../data/nyu_data/nyu2/playroom_0003_out\292.jpg,20,20
 384,../data/nyu_data/nyu2/living_room_0035_out\137.jpg,17,17
-385,../data/nyu_data/nyu2/living_room_0055_out\205.jpg,17,17
 386,../data/nyu_data/nyu2/bedroom_0113_out\96.jpg,2,2
 387,../data/nyu_data/nyu2/playroom_0006_out\175.jpg,20,20
 388,../data/nyu_data/nyu2/living_room_0086b_out\4.jpg,17,17
@@ -393,7 +391,6 @@ index,path,label,pred
 392,../data/nyu_data/nyu2/furniture_store_0002a_out\139.jpg,12,12
 393,../data/nyu_data/nyu2/kitchen_0003_out\76.jpg,15,15
 394,../data/nyu_data/nyu2/bedroom_0071_out\198.jpg,2,2
-395,../data/nyu_data/nyu2/kitchen_0029c_out\202.jpg,15,15
 396,../data/nyu_data/nyu2/playroom_0003_out\208.jpg,20,20
 397,../data/nyu_data/nyu2/kitchen_0033_out\29.jpg,15,15
 398,../data/nyu_data/nyu2/reception_room_0002_out\73.jpg,22,22
@@ -401,7 +398,6 @@ index,path,label,pred
 400,../data/nyu_data/nyu2/dining_room_0037_out\142.jpg,9,9
 401,../data/nyu_data/nyu2/bookstore_0001d_out\400.jpg,3,3
 402,../data/nyu_data/nyu2/living_room_0029_out\104.jpg,17,17
-403,../data/nyu_data/nyu2/living_room_0029_out\10.jpg,17,17
 404,../data/nyu_data/nyu2/bedroom_0040_out\116.jpg,2,2
 405,../data/nyu_data/nyu2/office_0026_out\172.jpg,19,19
 406,../data/nyu_data/nyu2/bathroom_0013_out\32.jpg,1,1
@@ -557,6 +553,7 @@ index,path,label,pred
 556,../data/nyu_data/nyu2/kitchen_0031_out\226.jpg,15,15
 557,../data/nyu_data/nyu2/kitchen_0043_out\193.jpg,15,15
 558,../data/nyu_data/nyu2/bedroom_0107_out\11.jpg,2,2
+559,../data/nyu_data/nyu2/bedroom_0040_out\60.jpg,2,2
 560,../data/nyu_data/nyu2/living_room_0011_out\121.jpg,17,17
 561,../data/nyu_data/nyu2/basement_0001a_out\11.jpg,0,0
 562,../data/nyu_data/nyu2/dining_room_0004_out\7.jpg,9,9
@@ -595,7 +592,6 @@ index,path,label,pred
 595,../data/nyu_data/nyu2/nyu_office_0_out\524.jpg,18,18
 596,../data/nyu_data/nyu2/kitchen_0052_out\222.jpg,15,15
 597,../data/nyu_data/nyu2/bookstore_0001d_out\402.jpg,3,3
-598,../data/nyu_data/nyu2/kitchen_0059_out\113.jpg,15,15
 599,../data/nyu_data/nyu2/cafe_0001a_out\71.jpg,4,4
 600,../data/nyu_data/nyu2/kitchen_0052_out\254.jpg,15,15
 601,../data/nyu_data/nyu2/dining_room_0037_out\32.jpg,9,9
@@ -769,12 +765,12 @@ index,path,label,pred
 769,../data/nyu_data/nyu2/cafe_0001c_out\31.jpg,4,4
 770,../data/nyu_data/nyu2/bedroom_0076a_out\30.jpg,2,2
 771,../data/nyu_data/nyu2/dining_room_0016_out\302.jpg,9,9
+772,../data/nyu_data/nyu2/bedroom_0096_out\100.jpg,2,2
 773,../data/nyu_data/nyu2/living_room_0078_out\111.jpg,17,17
 774,../data/nyu_data/nyu2/office_0018_out\35.jpg,19,19
 775,../data/nyu_data/nyu2/office_0026_out\186.jpg,19,19
 776,../data/nyu_data/nyu2/home_office_0004_out\42.jpg,13,13
 777,../data/nyu_data/nyu2/study_room_0005a_out\81.jpg,24,24
-778,../data/nyu_data/nyu2/kitchen_0045a_out\238.jpg,15,15
 779,../data/nyu_data/nyu2/bookstore_0001j_out\101.jpg,3,3
 780,../data/nyu_data/nyu2/living_room_0047b_out\88.jpg,17,17
 781,../data/nyu_data/nyu2/conference_room_0002_out\23.jpg,7,7
@@ -874,7 +870,6 @@ index,path,label,pred
 875,../data/nyu_data/nyu2/bookstore_0001j_out\92.jpg,3,3
 876,../data/nyu_data/nyu2/dining_room_0031_out\560.jpg,9,9
 877,../data/nyu_data/nyu2/living_room_0010_out\9.jpg,17,17
-878,../data/nyu_data/nyu2/living_room_0046b_out\109.jpg,17,17
 879,../data/nyu_data/nyu2/office_0004_out\37.jpg,19,19
 880,../data/nyu_data/nyu2/bedroom_0025_out\12.jpg,2,2
 881,../data/nyu_data/nyu2/office_0026_out\72.jpg,19,19
@@ -925,6 +920,7 @@ index,path,label,pred
 926,../data/nyu_data/nyu2/living_room_0058_out\310.jpg,17,17
 927,../data/nyu_data/nyu2/living_room_0069b_out\16.jpg,17,17
 928,../data/nyu_data/nyu2/kitchen_0051_out\60.jpg,15,15
+929,../data/nyu_data/nyu2/bedroom_0020_out\53.jpg,2,2
 930,../data/nyu_data/nyu2/furniture_store_0002d_out\43.jpg,12,12
 931,../data/nyu_data/nyu2/living_room_0067_out\77.jpg,17,17
 932,../data/nyu_data/nyu2/bedroom_0025_out\135.jpg,2,2
@@ -936,7 +932,6 @@ index,path,label,pred
 938,../data/nyu_data/nyu2/living_room_0047b_out\234.jpg,17,17
 939,../data/nyu_data/nyu2/kitchen_0019b_out\48.jpg,15,15
 940,../data/nyu_data/nyu2/furniture_store_0001c_out\44.jpg,12,12
-941,../data/nyu_data/nyu2/bedroom_0104_out\130.jpg,2,2
 942,../data/nyu_data/nyu2/bookstore_0001g_out\276.jpg,3,3
 943,../data/nyu_data/nyu2/kitchen_0060_out\71.jpg,15,15
 944,../data/nyu_data/nyu2/dining_room_0033_out\125.jpg,9,9
@@ -961,7 +956,6 @@ index,path,label,pred
 963,../data/nyu_data/nyu2/kitchen_0050_out\85.jpg,15,15
 964,../data/nyu_data/nyu2/nyu_office_1_out\90.jpg,18,18
 965,../data/nyu_data/nyu2/home_office_0005_out\181.jpg,13,13
-966,../data/nyu_data/nyu2/reception_room_0001a_out\85.jpg,22,22
 967,../data/nyu_data/nyu2/bedroom_0034_out\64.jpg,2,2
 968,../data/nyu_data/nyu2/bedroom_0078_out\93.jpg,2,2
 969,../data/nyu_data/nyu2/kitchen_0019a_out\159.jpg,15,15
@@ -1066,7 +1060,6 @@ index,path,label,pred
 1068,../data/nyu_data/nyu2/office_0026_out\189.jpg,19,19
 1069,../data/nyu_data/nyu2/living_room_0058_out\4.jpg,17,17
 1070,../data/nyu_data/nyu2/living_room_0067_out\49.jpg,17,17
-1071,../data/nyu_data/nyu2/kitchen_0006_out\37.jpg,15,15
 1072,../data/nyu_data/nyu2/kitchen_0028a_out\238.jpg,15,15
 1073,../data/nyu_data/nyu2/office_kitchen_0003_out\115.jpg,19,19
 1074,../data/nyu_data/nyu2/kitchen_0011a_out\100.jpg,15,15
@@ -1124,7 +1117,6 @@ index,path,label,pred
 1127,../data/nyu_data/nyu2/bookstore_0001g_out\259.jpg,3,3
 1128,../data/nyu_data/nyu2/living_room_0019_out\277.jpg,17,17
 1129,../data/nyu_data/nyu2/bedroom_0052_out\239.jpg,2,2
-1130,../data/nyu_data/nyu2/kitchen_0006_out\31.jpg,15,15
 1131,../data/nyu_data/nyu2/kitchen_0043_out\156.jpg,15,15
 1132,../data/nyu_data/nyu2/bookstore_0001d_out\160.jpg,3,3
 1133,../data/nyu_data/nyu2/bookstore_0001d_out\422.jpg,3,3
@@ -1176,7 +1168,6 @@ index,path,label,pred
 1180,../data/nyu_data/nyu2/bedroom_0038_out\17.jpg,2,2
 1181,../data/nyu_data/nyu2/living_room_0020_out\271.jpg,17,17
 1182,../data/nyu_data/nyu2/laundry_room_0001_out\77.jpg,16,16
-1183,../data/nyu_data/nyu2/dining_room_0028_out\169.jpg,9,9
 1184,../data/nyu_data/nyu2/living_room_0069b_out\42.jpg,17,17
 1185,../data/nyu_data/nyu2/bookstore_0001j_out\63.jpg,3,3
 1186,../data/nyu_data/nyu2/living_room_0004_out\223.jpg,17,17
@@ -1184,7 +1175,6 @@ index,path,label,pred
 1188,../data/nyu_data/nyu2/bathroom_0041_out\19.jpg,1,1
 1189,../data/nyu_data/nyu2/bedroom_0063_out\98.jpg,2,2
 1190,../data/nyu_data/nyu2/living_room_0067_out\132.jpg,17,17
-1191,../data/nyu_data/nyu2/classroom_0012_out\1.jpg,5,5
 1192,../data/nyu_data/nyu2/bedroom_0025_out\121.jpg,2,2
 1193,../data/nyu_data/nyu2/bedroom_0069_out\90.jpg,2,2
 1194,../data/nyu_data/nyu2/reception_room_0002_out\54.jpg,22,22
@@ -1220,7 +1210,6 @@ index,path,label,pred
 1224,../data/nyu_data/nyu2/living_room_0082_out\32.jpg,17,17
 1225,../data/nyu_data/nyu2/kitchen_0043_out\105.jpg,15,15
 1226,../data/nyu_data/nyu2/kitchen_0053_out\85.jpg,15,15
-1227,../data/nyu_data/nyu2/cafe_0001c_out\44.jpg,4,4
 1228,../data/nyu_data/nyu2/office_0021_out\10.jpg,19,19
 1229,../data/nyu_data/nyu2/kitchen_0028a_out\23.jpg,15,15
 1230,../data/nyu_data/nyu2/living_room_0063_out\144.jpg,17,17
@@ -1301,7 +1290,6 @@ index,path,label,pred
 1305,../data/nyu_data/nyu2/kitchen_0050_out\237.jpg,15,15
 1306,../data/nyu_data/nyu2/dining_room_0016_out\184.jpg,9,9
 1307,../data/nyu_data/nyu2/bedroom_0028_out\108.jpg,2,2
-1308,../data/nyu_data/nyu2/living_room_0047b_out\6.jpg,17,17
 1309,../data/nyu_data/nyu2/office_0026_out\267.jpg,19,19
 1310,../data/nyu_data/nyu2/foyer_0002_out\3.jpg,11,11
 1311,../data/nyu_data/nyu2/basement_0001b_out\63.jpg,0,0
@@ -1360,7 +1348,6 @@ index,path,label,pred
 1364,../data/nyu_data/nyu2/kitchen_0035b_out\117.jpg,15,15
 1365,../data/nyu_data/nyu2/kitchen_0017_out\86.jpg,15,15
 1366,../data/nyu_data/nyu2/bookstore_0001f_out\122.jpg,3,3
-1367,../data/nyu_data/nyu2/nyu_office_1_out\65.jpg,18,18
 1368,../data/nyu_data/nyu2/bookstore_0001d_out\446.jpg,3,3
 1369,../data/nyu_data/nyu2/bathroom_0007_out\49.jpg,1,1
 1370,../data/nyu_data/nyu2/kitchen_0035b_out\162.jpg,15,15
@@ -1373,7 +1360,6 @@ index,path,label,pred
 1377,../data/nyu_data/nyu2/office_kitchen_0001a_out\63.jpg,19,19
 1378,../data/nyu_data/nyu2/bedroom_0056b_out\5.jpg,2,2
 1379,../data/nyu_data/nyu2/bedroom_0040_out\79.jpg,2,2
-1380,../data/nyu_data/nyu2/nyu_office_0_out\243.jpg,18,18
 1381,../data/nyu_data/nyu2/home_storage_0001_out\103.jpg,13,13
 1382,../data/nyu_data/nyu2/living_room_0022_out\458.jpg,17,17
 1383,../data/nyu_data/nyu2/kitchen_0019a_out\119.jpg,15,15
@@ -1422,6 +1408,7 @@ index,path,label,pred
 1426,../data/nyu_data/nyu2/kitchen_0028a_out\204.jpg,15,15
 1427,../data/nyu_data/nyu2/dining_room_0029_out\49.jpg,9,9
 1428,../data/nyu_data/nyu2/living_room_0068_out\2.jpg,17,17
+1429,../data/nyu_data/nyu2/office_0004_out\118.jpg,19,19
 1430,../data/nyu_data/nyu2/kitchen_0019a_out\166.jpg,15,15
 1431,../data/nyu_data/nyu2/furniture_store_0002a_out\277.jpg,12,12
 1432,../data/nyu_data/nyu2/bedroom_0106_out\71.jpg,2,2
@@ -1509,7 +1496,6 @@ index,path,label,pred
 1514,../data/nyu_data/nyu2/office_0004_out\7.jpg,19,19
 1515,../data/nyu_data/nyu2/bedroom_0015_out\107.jpg,2,2
 1516,../data/nyu_data/nyu2/furniture_store_0002a_out\553.jpg,12,12
-1517,../data/nyu_data/nyu2/nyu_office_0_out\237.jpg,18,18
 1518,../data/nyu_data/nyu2/living_room_0083_out\86.jpg,17,17
 1519,../data/nyu_data/nyu2/living_room_0012_out\16.jpg,17,17
 1520,../data/nyu_data/nyu2/study_room_0004_out\148.jpg,24,24
@@ -1518,7 +1504,6 @@ index,path,label,pred
 1523,../data/nyu_data/nyu2/bedroom_0016_out\121.jpg,2,2
 1524,../data/nyu_data/nyu2/kitchen_0050_out\150.jpg,15,15
 1525,../data/nyu_data/nyu2/bedroom_0019_out\9.jpg,2,2
-1526,../data/nyu_data/nyu2/dining_room_0029_out\206.jpg,9,9
 1527,../data/nyu_data/nyu2/basement_0001b_out\49.jpg,0,0
 1528,../data/nyu_data/nyu2/bedroom_0033_out\150.jpg,2,2
 1529,../data/nyu_data/nyu2/bedroom_0074_out\150.jpg,2,2
@@ -1788,7 +1773,6 @@ index,path,label,pred
 1793,../data/nyu_data/nyu2/furniture_store_0001f_out\33.jpg,12,12
 1794,../data/nyu_data/nyu2/classroom_0022_out\162.jpg,5,5
 1795,../data/nyu_data/nyu2/kitchen_0047_out\17.jpg,15,15
-1796,../data/nyu_data/nyu2/bedroom_0053_out\128.jpg,2,2
 1797,../data/nyu_data/nyu2/dining_room_0007_out\155.jpg,9,9
 1798,../data/nyu_data/nyu2/reception_room_0002_out\22.jpg,22,22
 1799,../data/nyu_data/nyu2/living_room_0012_out\265.jpg,17,17
@@ -2004,7 +1988,6 @@ index,path,label,pred
 2010,../data/nyu_data/nyu2/bedroom_0082_out\43.jpg,2,2
 2011,../data/nyu_data/nyu2/living_room_0047b_out\3.jpg,17,17
 2012,../data/nyu_data/nyu2/bedroom_0096_out\82.jpg,2,2
-2013,../data/nyu_data/nyu2/kitchen_0006_out\46.jpg,15,15
 2014,../data/nyu_data/nyu2/home_office_0005_out\142.jpg,13,13
 2015,../data/nyu_data/nyu2/bedroom_0086_out\72.jpg,2,2
 2016,../data/nyu_data/nyu2/living_room_0042b_out\44.jpg,17,17
@@ -2016,7 +1999,6 @@ index,path,label,pred
 2022,../data/nyu_data/nyu2/dining_room_0015_out\286.jpg,9,9
 2023,../data/nyu_data/nyu2/bedroom_0140_out\233.jpg,2,2
 2024,../data/nyu_data/nyu2/bedroom_0132_out\5.jpg,2,2
-2025,../data/nyu_data/nyu2/office_0009_out\106.jpg,19,19
 2026,../data/nyu_data/nyu2/bathroom_0019_out\97.jpg,1,1
 2027,../data/nyu_data/nyu2/living_room_0033_out\85.jpg,17,17
 2028,../data/nyu_data/nyu2/kitchen_0035b_out\410.jpg,15,15
@@ -2088,6 +2070,7 @@ index,path,label,pred
 2094,../data/nyu_data/nyu2/foyer_0002_out\45.jpg,11,11
 2095,../data/nyu_data/nyu2/kitchen_0037_out\59.jpg,15,15
 2096,../data/nyu_data/nyu2/study_room_0004_out\305.jpg,24,24
+2097,../data/nyu_data/nyu2/bookstore_0001e_out\27.jpg,3,3
 2098,../data/nyu_data/nyu2/bathroom_0030_out\66.jpg,1,1
 2099,../data/nyu_data/nyu2/dining_room_0024_out\153.jpg,9,9
 2100,../data/nyu_data/nyu2/kitchen_0011a_out\43.jpg,15,15
@@ -2111,6 +2094,7 @@ index,path,label,pred
 2118,../data/nyu_data/nyu2/bedroom_0050_out\180.jpg,2,2
 2119,../data/nyu_data/nyu2/dining_room_0008_out\6.jpg,9,9
 2120,../data/nyu_data/nyu2/dining_room_0037_out\81.jpg,9,9
+2121,../data/nyu_data/nyu2/bedroom_0071_out\240.jpg,2,2
 2122,../data/nyu_data/nyu2/bathroom_0001_out\6.jpg,1,1
 2123,../data/nyu_data/nyu2/reception_room_0001b_out\161.jpg,22,22
 2124,../data/nyu_data/nyu2/playroom_0002_out\43.jpg,20,20
@@ -2145,7 +2129,6 @@ index,path,label,pred
 2153,../data/nyu_data/nyu2/kitchen_0051_out\152.jpg,15,15
 2154,../data/nyu_data/nyu2/bedroom_0021_out\138.jpg,2,2
 2155,../data/nyu_data/nyu2/bedroom_0078_out\150.jpg,2,2
-2156,../data/nyu_data/nyu2/basement_0001a_out\141.jpg,0,0
 2157,../data/nyu_data/nyu2/dining_room_0007_out\175.jpg,9,9
 2158,../data/nyu_data/nyu2/bedroom_0138_out\20.jpg,2,2
 2159,../data/nyu_data/nyu2/living_room_0040_out\379.jpg,17,17
@@ -2253,6 +2236,7 @@ index,path,label,pred
 2261,../data/nyu_data/nyu2/bathroom_0041_out\35.jpg,1,1
 2262,../data/nyu_data/nyu2/kitchen_0043_out\339.jpg,15,15
 2263,../data/nyu_data/nyu2/office_0024_out\28.jpg,19,19
+2264,../data/nyu_data/nyu2/bedroom_0080_out\43.jpg,2,2
 2265,../data/nyu_data/nyu2/office_0025_out\9.jpg,19,19
 2266,../data/nyu_data/nyu2/living_room_0019_out\332.jpg,17,17
 2267,../data/nyu_data/nyu2/living_room_0046b_out\147.jpg,17,17
@@ -2315,7 +2299,6 @@ index,path,label,pred
 2324,../data/nyu_data/nyu2/dining_room_0012_out\175.jpg,9,9
 2325,../data/nyu_data/nyu2/living_room_0018_out\287.jpg,17,17
 2326,../data/nyu_data/nyu2/living_room_0038_out\2.jpg,17,17
-2327,../data/nyu_data/nyu2/bathroom_0055_out\76.jpg,1,1
 2329,../data/nyu_data/nyu2/classroom_0006_out\162.jpg,5,5
 2330,../data/nyu_data/nyu2/kitchen_0059_out\132.jpg,15,15
 2331,../data/nyu_data/nyu2/bedroom_0026_out\78.jpg,2,2
@@ -2423,7 +2406,6 @@ index,path,label,pred
 2433,../data/nyu_data/nyu2/home_office_0006_out\14.jpg,13,13
 2434,../data/nyu_data/nyu2/living_room_0020_out\146.jpg,17,17
 2435,../data/nyu_data/nyu2/kitchen_0003_out\207.jpg,15,15
-2436,../data/nyu_data/nyu2/nyu_office_0_out\242.jpg,18,18
 2437,../data/nyu_data/nyu2/bookstore_0001f_out\82.jpg,3,3
 2438,../data/nyu_data/nyu2/student_lounge_0001_out\368.jpg,23,23
 2439,../data/nyu_data/nyu2/bookstore_0001j_out\369.jpg,3,3
@@ -2453,6 +2435,7 @@ index,path,label,pred
 2463,../data/nyu_data/nyu2/bathroom_0007_out\52.jpg,1,1
 2464,../data/nyu_data/nyu2/bedroom_0019_out\52.jpg,2,2
 2465,../data/nyu_data/nyu2/bookstore_0001i_out\188.jpg,3,3
+2466,../data/nyu_data/nyu2/classroom_0012_out\2.jpg,5,5
 2467,../data/nyu_data/nyu2/bedroom_0107_out\53.jpg,2,2
 2468,../data/nyu_data/nyu2/bedroom_0063_out\27.jpg,2,2
 2469,../data/nyu_data/nyu2/living_room_0042a_out\15.jpg,17,17
@@ -2547,14 +2530,12 @@ index,path,label,pred
 2558,../data/nyu_data/nyu2/furniture_store_0001d_out\403.jpg,12,12
 2559,../data/nyu_data/nyu2/kitchen_0011a_out\96.jpg,15,15
 2560,../data/nyu_data/nyu2/bedroom_0140_out\177.jpg,2,2
-2561,../data/nyu_data/nyu2/kitchen_0045a_out\241.jpg,15,15
 2562,../data/nyu_data/nyu2/dining_room_0015_out\257.jpg,9,9
 2563,../data/nyu_data/nyu2/office_0004_out\86.jpg,19,19
 2564,../data/nyu_data/nyu2/dining_room_0012_out\135.jpg,9,9
 2565,../data/nyu_data/nyu2/dining_room_0008_out\151.jpg,9,9
 2566,../data/nyu_data/nyu2/living_room_0046a_out\21.jpg,17,17
 2567,../data/nyu_data/nyu2/classroom_0010_out\18.jpg,5,5
-2568,../data/nyu_data/nyu2/kitchen_0035b_out\461.jpg,15,15
 2569,../data/nyu_data/nyu2/furniture_store_0001a_out\62.jpg,12,12
 2570,../data/nyu_data/nyu2/bedroom_0063_out\47.jpg,2,2
 2571,../data/nyu_data/nyu2/kitchen_0035b_out\318.jpg,15,15
@@ -2576,7 +2557,6 @@ index,path,label,pred
 2588,../data/nyu_data/nyu2/kitchen_0049_out\245.jpg,15,15
 2589,../data/nyu_data/nyu2/kitchen_0053_out\253.jpg,15,15
 2590,../data/nyu_data/nyu2/living_room_0040_out\336.jpg,17,17
-2591,../data/nyu_data/nyu2/living_room_0018_out\98.jpg,17,17
 2592,../data/nyu_data/nyu2/living_room_0022_out\442.jpg,17,17
 2593,../data/nyu_data/nyu2/living_room_0046b_out\83.jpg,17,17
 2594,../data/nyu_data/nyu2/home_office_0007_out\87.jpg,13,13
@@ -2597,7 +2577,6 @@ index,path,label,pred
 2609,../data/nyu_data/nyu2/bedroom_0136_out\185.jpg,2,2
 2610,../data/nyu_data/nyu2/dining_room_0013_out\40.jpg,9,9
 2611,../data/nyu_data/nyu2/home_office_0008_out\138.jpg,13,13
-2612,../data/nyu_data/nyu2/nyu_office_1_out\46.jpg,18,18
 2613,../data/nyu_data/nyu2/kitchen_0041_out\20.jpg,15,15
 2614,../data/nyu_data/nyu2/playroom_0004_out\65.jpg,20,20
 2615,../data/nyu_data/nyu2/kitchen_0028a_out\70.jpg,15,15
@@ -2645,6 +2624,7 @@ index,path,label,pred
 2657,../data/nyu_data/nyu2/kitchen_0035b_out\171.jpg,15,15
 2658,../data/nyu_data/nyu2/bookstore_0001f_out\186.jpg,3,3
 2659,../data/nyu_data/nyu2/kitchen_0050_out\172.jpg,15,15
+2660,../data/nyu_data/nyu2/kitchen_0019a_out\9.jpg,15,15
 2661,../data/nyu_data/nyu2/office_0026_out\234.jpg,19,19
 2662,../data/nyu_data/nyu2/bedroom_0019_out\24.jpg,2,2
 2663,../data/nyu_data/nyu2/bookstore_0001h_out\108.jpg,3,3
@@ -2682,7 +2662,6 @@ index,path,label,pred
 2695,../data/nyu_data/nyu2/bedroom_0017_out\26.jpg,2,2
 2696,../data/nyu_data/nyu2/office_kitchen_0001a_out\39.jpg,19,19
 2697,../data/nyu_data/nyu2/bedroom_0015_out\36.jpg,2,2
-2698,../data/nyu_data/nyu2/nyu_office_0_out\77.jpg,18,18
 2699,../data/nyu_data/nyu2/living_room_0083_out\113.jpg,17,17
 2700,../data/nyu_data/nyu2/bookstore_0001e_out\250.jpg,3,3
 2701,../data/nyu_data/nyu2/bedroom_0004_out\82.jpg,2,2
@@ -2695,7 +2674,6 @@ index,path,label,pred
 2708,../data/nyu_data/nyu2/excercise_room_0001_out\175.jpg,10,10
 2709,../data/nyu_data/nyu2/kitchen_0053_out\170.jpg,15,15
 2710,../data/nyu_data/nyu2/bookstore_0001f_out\546.jpg,3,3
-2711,../data/nyu_data/nyu2/kitchen_0011b_out\7.jpg,15,15
 2712,../data/nyu_data/nyu2/dining_room_0016_out\219.jpg,9,9
 2713,../data/nyu_data/nyu2/living_room_0022_out\612.jpg,17,17
 2714,../data/nyu_data/nyu2/living_room_0012_out\125.jpg,17,17
@@ -2707,6 +2685,7 @@ index,path,label,pred
 2720,../data/nyu_data/nyu2/living_room_0020_out\185.jpg,17,17
 2721,../data/nyu_data/nyu2/living_room_0042b_out\85.jpg,17,17
 2722,../data/nyu_data/nyu2/office_0024_out\19.jpg,19,19
+2723,../data/nyu_data/nyu2/cafe_0001c_out\43.jpg,4,4
 2724,../data/nyu_data/nyu2/bathroom_0045a_out\87.jpg,1,1
 2725,../data/nyu_data/nyu2/dining_room_0012_out\144.jpg,9,9
 2726,../data/nyu_data/nyu2/bookstore_0001j_out\312.jpg,3,3
@@ -2714,6 +2693,7 @@ index,path,label,pred
 2728,../data/nyu_data/nyu2/home_office_0005_out\68.jpg,13,13
 2729,../data/nyu_data/nyu2/furniture_store_0001a_out\75.jpg,12,12
 2730,../data/nyu_data/nyu2/living_room_0010_out\258.jpg,17,17
+2731,../data/nyu_data/nyu2/furniture_store_0001b_out\111.jpg,12,12
 2732,../data/nyu_data/nyu2/living_room_0086b_out\66.jpg,17,17
 2733,../data/nyu_data/nyu2/home_office_0011_out\48.jpg,13,13
 2734,../data/nyu_data/nyu2/playroom_0003_out\126.jpg,20,20
@@ -2730,7 +2710,6 @@ index,path,label,pred
 2745,../data/nyu_data/nyu2/bedroom_0004_out\93.jpg,2,2
 2746,../data/nyu_data/nyu2/dining_room_0012_out\268.jpg,9,9
 2747,../data/nyu_data/nyu2/living_room_0046b_out\73.jpg,17,17
-2748,../data/nyu_data/nyu2/bedroom_0040_out\68.jpg,2,2
 2749,../data/nyu_data/nyu2/bedroom_0019_out\136.jpg,2,2
 2750,../data/nyu_data/nyu2/kitchen_0048_out\43.jpg,15,15
 2751,../data/nyu_data/nyu2/bedroom_0081_out\22.jpg,2,2
@@ -2750,6 +2729,7 @@ index,path,label,pred
 2765,../data/nyu_data/nyu2/basement_0001a_out\75.jpg,0,0
 2766,../data/nyu_data/nyu2/living_room_0078_out\114.jpg,17,17
 2767,../data/nyu_data/nyu2/kitchen_0060_out\240.jpg,15,15
+2768,../data/nyu_data/nyu2/playroom_0006_out\60.jpg,20,20
 2769,../data/nyu_data/nyu2/basement_0001a_out\152.jpg,0,0
 2770,../data/nyu_data/nyu2/home_office_0007_out\39.jpg,13,13
 2771,../data/nyu_data/nyu2/playroom_0006_out\189.jpg,20,20
@@ -2793,7 +2773,6 @@ index,path,label,pred
 2809,../data/nyu_data/nyu2/living_room_0039_out\265.jpg,17,17
 2810,../data/nyu_data/nyu2/living_room_0005_out\17.jpg,17,17
 2811,../data/nyu_data/nyu2/kitchen_0017_out\159.jpg,15,15
-2812,../data/nyu_data/nyu2/kitchen_0045a_out\245.jpg,15,15
 2813,../data/nyu_data/nyu2/furniture_store_0001d_out\219.jpg,12,12
 2814,../data/nyu_data/nyu2/living_room_0005_out\51.jpg,17,17
 2815,../data/nyu_data/nyu2/bedroom_0004_out\27.jpg,2,2
@@ -2818,7 +2797,6 @@ index,path,label,pred
 2834,../data/nyu_data/nyu2/living_room_0037_out\45.jpg,17,17
 2835,../data/nyu_data/nyu2/bedroom_0078_out\51.jpg,2,2
 2836,../data/nyu_data/nyu2/bookstore_0001f_out\368.jpg,3,3
-2837,../data/nyu_data/nyu2/dining_room_0034_out\177.jpg,9,9
 2838,../data/nyu_data/nyu2/bedroom_0071_out\132.jpg,2,2
 2839,../data/nyu_data/nyu2/dining_room_0037_out\245.jpg,9,9
 2840,../data/nyu_data/nyu2/living_room_0082_out\87.jpg,17,17
@@ -2915,7 +2893,6 @@ index,path,label,pred
 2931,../data/nyu_data/nyu2/dining_room_0023_out\221.jpg,9,9
 2932,../data/nyu_data/nyu2/bedroom_0104_out\168.jpg,2,2
 2933,../data/nyu_data/nyu2/bathroom_0007_out\140.jpg,1,1
-2934,../data/nyu_data/nyu2/study_0006_out\1.jpg,24,24
 2935,../data/nyu_data/nyu2/living_room_0012_out\108.jpg,17,17
 2936,../data/nyu_data/nyu2/bedroom_0052_out\126.jpg,2,2
 2937,../data/nyu_data/nyu2/bathroom_0013_out\35.jpg,1,1
@@ -3131,6 +3108,7 @@ index,path,label,pred
 3147,../data/nyu_data/nyu2/kitchen_0050_out\29.jpg,15,15
 3148,../data/nyu_data/nyu2/office_0021_out\74.jpg,19,19
 3149,../data/nyu_data/nyu2/cafe_0001c_out\11.jpg,4,4
+3150,../data/nyu_data/nyu2/playroom_0002_out\147.jpg,20,20
 3151,../data/nyu_data/nyu2/living_room_0063_out\81.jpg,17,17
 3152,../data/nyu_data/nyu2/bedroom_0098_out\72.jpg,2,2
 3153,../data/nyu_data/nyu2/bedroom_0004_out\127.jpg,2,2
@@ -3180,6 +3158,7 @@ index,path,label,pred
 3197,../data/nyu_data/nyu2/bathroom_0001_out\8.jpg,1,1
 3198,../data/nyu_data/nyu2/living_room_0012_out\92.jpg,17,17
 3199,../data/nyu_data/nyu2/bedroom_0086_out\157.jpg,2,2
+3200,../data/nyu_data/nyu2/living_room_0020_out\207.jpg,17,17
 3201,../data/nyu_data/nyu2/bedroom_0029_out\76.jpg,2,2
 3202,../data/nyu_data/nyu2/dining_room_0012_out\239.jpg,9,9
 3203,../data/nyu_data/nyu2/kitchen_0019a_out\35.jpg,15,15
@@ -3215,6 +3194,7 @@ index,path,label,pred
 3233,../data/nyu_data/nyu2/kitchen_0048_out\48.jpg,15,15
 3234,../data/nyu_data/nyu2/bedroom_0041_out\17.jpg,2,2
 3235,../data/nyu_data/nyu2/classroom_0004_out\71.jpg,5,5
+3236,../data/nyu_data/nyu2/dining_room_0029_out\144.jpg,9,9
 3237,../data/nyu_data/nyu2/dining_room_0033_out\26.jpg,9,9
 3238,../data/nyu_data/nyu2/dining_room_0014_out\22.jpg,9,9
 3239,../data/nyu_data/nyu2/bedroom_0140_out\51.jpg,2,2
@@ -3322,7 +3302,6 @@ index,path,label,pred
 3341,../data/nyu_data/nyu2/classroom_0003_out\109.jpg,5,5
 3342,../data/nyu_data/nyu2/bedroom_0060_out\119.jpg,2,2
 3343,../data/nyu_data/nyu2/bedroom_0107_out\4.jpg,2,2
-3344,../data/nyu_data/nyu2/bedroom_0081_out\53.jpg,2,2
 3345,../data/nyu_data/nyu2/bedroom_0086_out\90.jpg,2,2
 3346,../data/nyu_data/nyu2/furniture_store_0002c_out\39.jpg,12,12
 3347,../data/nyu_data/nyu2/bedroom_0090_out\41.jpg,2,2
@@ -3346,7 +3325,6 @@ index,path,label,pred
 3365,../data/nyu_data/nyu2/living_room_0010_out\214.jpg,17,17
 3366,../data/nyu_data/nyu2/living_room_0029_out\131.jpg,17,17
 3367,../data/nyu_data/nyu2/living_room_0062_out\66.jpg,17,17
-3368,../data/nyu_data/nyu2/nyu_office_0_out\62.jpg,18,18
 3369,../data/nyu_data/nyu2/bookstore_0001j_out\85.jpg,3,3
 3370,../data/nyu_data/nyu2/furniture_store_0002a_out\578.jpg,12,12
 3371,../data/nyu_data/nyu2/bedroom_0062_out\141.jpg,2,2
@@ -3386,7 +3364,6 @@ index,path,label,pred
 3405,../data/nyu_data/nyu2/living_room_0012_out\224.jpg,17,17
 3406,../data/nyu_data/nyu2/bookstore_0001h_out\72.jpg,3,3
 3407,../data/nyu_data/nyu2/dining_room_0016_out\123.jpg,9,9
-3408,../data/nyu_data/nyu2/nyu_office_0_out\312.jpg,18,18
 3409,../data/nyu_data/nyu2/bathroom_0042_out\47.jpg,1,1
 3410,../data/nyu_data/nyu2/bookstore_0001g_out\153.jpg,3,3
 3411,../data/nyu_data/nyu2/home_office_0008_out\12.jpg,13,13
@@ -3402,7 +3379,6 @@ index,path,label,pred
 3421,../data/nyu_data/nyu2/dining_room_0033_out\215.jpg,9,9
 3422,../data/nyu_data/nyu2/kitchen_0008_out\49.jpg,15,15
 3423,../data/nyu_data/nyu2/dining_room_0031_out\394.jpg,9,9
-3424,../data/nyu_data/nyu2/nyu_office_0_out\295.jpg,18,18
 3425,../data/nyu_data/nyu2/bedroom_0059_out\50.jpg,2,2
 3426,../data/nyu_data/nyu2/dinette_0001_out\30.jpg,8,8
 3427,../data/nyu_data/nyu2/home_office_0011_out\27.jpg,13,13
@@ -3431,7 +3407,6 @@ index,path,label,pred
 3451,../data/nyu_data/nyu2/bedroom_0019_out\109.jpg,2,2
 3452,../data/nyu_data/nyu2/dining_room_0016_out\282.jpg,9,9
 3453,../data/nyu_data/nyu2/bedroom_0081_out\52.jpg,2,2
-3454,../data/nyu_data/nyu2/living_room_0069a_out\82.jpg,17,17
 3455,../data/nyu_data/nyu2/living_room_0047b_out\273.jpg,17,17
 3456,../data/nyu_data/nyu2/reception_room_0004_out\111.jpg,22,22
 3457,../data/nyu_data/nyu2/classroom_0016_out\23.jpg,5,5
@@ -3456,7 +3431,6 @@ index,path,label,pred
 3476,../data/nyu_data/nyu2/bathroom_0013_out\105.jpg,1,1
 3477,../data/nyu_data/nyu2/kitchen_0003_out\7.jpg,15,15
 3478,../data/nyu_data/nyu2/kitchen_0019a_out\298.jpg,15,15
-3479,../data/nyu_data/nyu2/kitchen_0029c_out\204.jpg,15,15
 3480,../data/nyu_data/nyu2/bedroom_0004_out\22.jpg,2,2
 3481,../data/nyu_data/nyu2/bedroom_0136_out\161.jpg,2,2
 3482,../data/nyu_data/nyu2/bedroom_0050_out\172.jpg,2,2
@@ -3495,7 +3469,6 @@ index,path,label,pred
 3515,../data/nyu_data/nyu2/furniture_store_0001b_out\97.jpg,12,12
 3516,../data/nyu_data/nyu2/kitchen_0035b_out\382.jpg,15,15
 3517,../data/nyu_data/nyu2/dining_room_0013_out\106.jpg,9,9
-3518,../data/nyu_data/nyu2/nyu_office_0_out\236.jpg,18,18
 3519,../data/nyu_data/nyu2/nyu_office_1_out\89.jpg,18,18
 3520,../data/nyu_data/nyu2/living_room_0068_out\52.jpg,17,17
 3521,../data/nyu_data/nyu2/bathroom_0013_out\11.jpg,1,1
@@ -3533,6 +3506,7 @@ index,path,label,pred
 3553,../data/nyu_data/nyu2/classroom_0010_out\96.jpg,5,5
 3554,../data/nyu_data/nyu2/bookstore_0001h_out\65.jpg,3,3
 3555,../data/nyu_data/nyu2/living_room_0040_out\280.jpg,17,17
+3556,../data/nyu_data/nyu2/bathroom_0016_out\34.jpg,1,1
 3557,../data/nyu_data/nyu2/bedroom_0040_out\72.jpg,2,2
 3558,../data/nyu_data/nyu2/bedroom_0140_out\27.jpg,2,2
 3559,../data/nyu_data/nyu2/kitchen_0003_out\32.jpg,15,15
@@ -3562,7 +3536,6 @@ index,path,label,pred
 3583,../data/nyu_data/nyu2/bedroom_0059_out\135.jpg,2,2
 3584,../data/nyu_data/nyu2/bookstore_0001j_out\380.jpg,3,3
 3585,../data/nyu_data/nyu2/bedroom_0050_out\187.jpg,2,2
-3586,../data/nyu_data/nyu2/dining_room_0002_out\4.jpg,9,9
 3587,../data/nyu_data/nyu2/living_room_0019_out\214.jpg,17,17
 3588,../data/nyu_data/nyu2/home_office_0008_out\85.jpg,13,13
 3589,../data/nyu_data/nyu2/living_room_0046b_out\28.jpg,17,17
@@ -3621,7 +3594,6 @@ index,path,label,pred
 3642,../data/nyu_data/nyu2/bookstore_0001f_out\154.jpg,3,3
 3643,../data/nyu_data/nyu2/bookstore_0001j_out\94.jpg,3,3
 3644,../data/nyu_data/nyu2/office_0009_out\109.jpg,19,19
-3645,../data/nyu_data/nyu2/kitchen_0019a_out\12.jpg,15,15
 3646,../data/nyu_data/nyu2/dining_room_0001b_out\276.jpg,9,9
 3647,../data/nyu_data/nyu2/bedroom_0079_out\11.jpg,2,2
 3648,../data/nyu_data/nyu2/living_room_0010_out\24.jpg,17,17
@@ -3633,7 +3605,6 @@ index,path,label,pred
 3654,../data/nyu_data/nyu2/home_office_0006_out\158.jpg,13,13
 3655,../data/nyu_data/nyu2/study_room_0005b_out\15.jpg,24,24
 3656,../data/nyu_data/nyu2/study_room_0004_out\63.jpg,24,24
-3657,../data/nyu_data/nyu2/laundry_room_0001_out\3.jpg,16,16
 3658,../data/nyu_data/nyu2/kitchen_0050_out\106.jpg,15,15
 3659,../data/nyu_data/nyu2/living_room_0063_out\145.jpg,17,17
 3660,../data/nyu_data/nyu2/study_room_0005b_out\19.jpg,24,24
@@ -3658,6 +3629,7 @@ index,path,label,pred
 3679,../data/nyu_data/nyu2/living_room_0022_out\114.jpg,17,17
 3680,../data/nyu_data/nyu2/bedroom_0025_out\41.jpg,2,2
 3681,../data/nyu_data/nyu2/living_room_0046b_out\92.jpg,17,17
+3682,../data/nyu_data/nyu2/nyu_office_0_out\583.jpg,18,18
 3683,../data/nyu_data/nyu2/bookstore_0001g_out\167.jpg,3,3
 3684,../data/nyu_data/nyu2/living_room_0062_out\127.jpg,17,17
 3685,../data/nyu_data/nyu2/dining_room_0031_out\40.jpg,9,9
@@ -3688,7 +3660,6 @@ index,path,label,pred
 3710,../data/nyu_data/nyu2/bookstore_0001d_out\270.jpg,3,3
 3711,../data/nyu_data/nyu2/living_room_0039_out\23.jpg,17,17
 3712,../data/nyu_data/nyu2/living_room_0018_out\182.jpg,17,17
-3713,../data/nyu_data/nyu2/living_room_0019_out\207.jpg,17,17
 3714,../data/nyu_data/nyu2/kitchen_0028a_out\247.jpg,15,15
 3715,../data/nyu_data/nyu2/living_room_0022_out\410.jpg,17,17
 3716,../data/nyu_data/nyu2/living_room_0035_out\27.jpg,17,17
@@ -3729,7 +3700,6 @@ index,path,label,pred
 3751,../data/nyu_data/nyu2/kitchen_0060_out\87.jpg,15,15
 3752,../data/nyu_data/nyu2/student_lounge_0001_out\84.jpg,23,23
 3753,../data/nyu_data/nyu2/bedroom_0019_out\225.jpg,2,2
-3754,../data/nyu_data/nyu2/bedroom_0078_out\20.jpg,2,2
 3755,../data/nyu_data/nyu2/playroom_0002_out\207.jpg,20,20
 3756,../data/nyu_data/nyu2/computer_lab_0002_out\45.jpg,6,6
 3757,../data/nyu_data/nyu2/kitchen_0028a_out\252.jpg,15,15
@@ -3904,7 +3874,6 @@ index,path,label,pred
 3926,../data/nyu_data/nyu2/bedroom_0047_out\70.jpg,2,2
 3927,../data/nyu_data/nyu2/bedroom_0017_out\136.jpg,2,2
 3928,../data/nyu_data/nyu2/bookstore_0001j_out\250.jpg,3,3
-3929,../data/nyu_data/nyu2/kitchen_0031_out\29.jpg,15,15
 3930,../data/nyu_data/nyu2/home_office_0011_out\114.jpg,13,13
 3931,../data/nyu_data/nyu2/bedroom_0004_out\131.jpg,2,2
 3932,../data/nyu_data/nyu2/study_room_0004_out\204.jpg,24,24
@@ -3976,7 +3945,6 @@ index,path,label,pred
 3998,../data/nyu_data/nyu2/dining_room_0013_out\103.jpg,9,9
 3999,../data/nyu_data/nyu2/kitchen_0016_out\66.jpg,15,15
 4000,../data/nyu_data/nyu2/playroom_0004_out\130.jpg,20,20
-4001,../data/nyu_data/nyu2/dining_room_0029_out\14.jpg,9,9
 4002,../data/nyu_data/nyu2/furniture_store_0001e_out\20.jpg,12,12
 4003,../data/nyu_data/nyu2/dining_room_0031_out\553.jpg,9,9
 4004,../data/nyu_data/nyu2/reception_room_0001b_out\118.jpg,22,22
@@ -4041,7 +4009,6 @@ index,path,label,pred
 4063,../data/nyu_data/nyu2/living_room_0069a_out\62.jpg,17,17
 4064,../data/nyu_data/nyu2/dining_room_0001b_out\4.jpg,9,9
 4065,../data/nyu_data/nyu2/bookstore_0001f_out\14.jpg,3,3
-4066,../data/nyu_data/nyu2/living_room_0047b_out\7.jpg,17,17
 4067,../data/nyu_data/nyu2/bedroom_0066_out\8.jpg,2,2
 4068,../data/nyu_data/nyu2/living_room_0022_out\281.jpg,17,17
 4069,../data/nyu_data/nyu2/nyu_office_0_out\134.jpg,18,18
@@ -4109,7 +4076,6 @@ index,path,label,pred
 4131,../data/nyu_data/nyu2/kitchen_0060_out\25.jpg,15,15
 4132,../data/nyu_data/nyu2/bookstore_0001f_out\339.jpg,3,3
 4133,../data/nyu_data/nyu2/dining_room_0034_out\300.jpg,9,9
-4134,../data/nyu_data/nyu2/kitchen_0037_out\140.jpg,15,15
 4135,../data/nyu_data/nyu2/living_room_0083_out\48.jpg,17,17
 4136,../data/nyu_data/nyu2/bedroom_0047_out\59.jpg,2,2
 4137,../data/nyu_data/nyu2/bedroom_0019_out\162.jpg,2,2
@@ -4274,7 +4240,6 @@ index,path,label,pred
 4296,../data/nyu_data/nyu2/kitchen_0051_out\265.jpg,15,15
 4297,../data/nyu_data/nyu2/bedroom_0017_out\34.jpg,2,2
 4298,../data/nyu_data/nyu2/bathroom_0007_out\115.jpg,1,1
-4299,../data/nyu_data/nyu2/dining_room_0002_out\9.jpg,9,9
 4300,../data/nyu_data/nyu2/dining_room_0024_out\233.jpg,9,9
 4301,../data/nyu_data/nyu2/kitchen_0048_out\248.jpg,15,15
 4302,../data/nyu_data/nyu2/living_room_0019_out\90.jpg,17,17
@@ -4285,6 +4250,7 @@ index,path,label,pred
 4307,../data/nyu_data/nyu2/kitchen_0031_out\83.jpg,15,15
 4308,../data/nyu_data/nyu2/dining_room_0031_out\120.jpg,9,9
 4309,../data/nyu_data/nyu2/kitchen_0028a_out\200.jpg,15,15
+4310,../data/nyu_data/nyu2/bedroom_0010_out\63.jpg,2,2
 4311,../data/nyu_data/nyu2/bedroom_0076a_out\118.jpg,2,2
 4312,../data/nyu_data/nyu2/kitchen_0051_out\100.jpg,15,15
 4313,../data/nyu_data/nyu2/living_room_0019_out\52.jpg,17,17
@@ -4336,7 +4302,6 @@ index,path,label,pred
 4360,../data/nyu_data/nyu2/bedroom_0076a_out\101.jpg,2,2
 4361,../data/nyu_data/nyu2/living_room_0020_out\130.jpg,17,17
 4362,../data/nyu_data/nyu2/bedroom_0080_out\82.jpg,2,2
-4363,../data/nyu_data/nyu2/bedroom_0074_out\85.jpg,2,2
 4364,../data/nyu_data/nyu2/office_0011_out\51.jpg,19,19
 4365,../data/nyu_data/nyu2/living_room_0012_out\220.jpg,17,17
 4366,../data/nyu_data/nyu2/kitchen_0035b_out\115.jpg,15,15
@@ -4382,7 +4347,6 @@ index,path,label,pred
 4406,../data/nyu_data/nyu2/bathroom_0001_out\29.jpg,1,1
 4407,../data/nyu_data/nyu2/bedroom_0026_out\70.jpg,2,2
 4408,../data/nyu_data/nyu2/kitchen_0050_out\167.jpg,15,15
-4409,../data/nyu_data/nyu2/kitchen_0048_out\129.jpg,15,15
 4410,../data/nyu_data/nyu2/bedroom_0066_out\88.jpg,2,2
 4411,../data/nyu_data/nyu2/living_room_0058_out\210.jpg,17,17
 4412,../data/nyu_data/nyu2/kitchen_0035b_out\457.jpg,15,15
@@ -4400,6 +4364,7 @@ index,path,label,pred
 4424,../data/nyu_data/nyu2/bookstore_0001j_out\364.jpg,3,3
 4425,../data/nyu_data/nyu2/living_room_0004_out\11.jpg,17,17
 4426,../data/nyu_data/nyu2/dining_room_0019_out\193.jpg,9,9
+4427,../data/nyu_data/nyu2/dining_room_0012_out\2.jpg,9,9
 4428,../data/nyu_data/nyu2/living_room_0086a_out\19.jpg,17,17
 4429,../data/nyu_data/nyu2/dining_room_0008_out\190.jpg,9,9
 4430,../data/nyu_data/nyu2/living_room_0020_out\117.jpg,17,17
@@ -4408,7 +4373,6 @@ index,path,label,pred
 4433,../data/nyu_data/nyu2/dining_room_0010_out\124.jpg,9,9
 4434,../data/nyu_data/nyu2/living_room_0004_out\44.jpg,17,17
 4435,../data/nyu_data/nyu2/bedroom_0097_out\43.jpg,2,2
-4436,../data/nyu_data/nyu2/furniture_store_0001b_out\116.jpg,12,12
 4437,../data/nyu_data/nyu2/bedroom_0074_out\50.jpg,2,2
 4438,../data/nyu_data/nyu2/bedroom_0025_out\82.jpg,2,2
 4439,../data/nyu_data/nyu2/reception_room_0002_out\61.jpg,22,22
@@ -4584,7 +4548,6 @@ index,path,label,pred
 4609,../data/nyu_data/nyu2/bookstore_0001f_out\323.jpg,3,3
 4610,../data/nyu_data/nyu2/kitchen_0053_out\55.jpg,15,15
 4611,../data/nyu_data/nyu2/dining_room_0007_out\159.jpg,9,9
-4612,../data/nyu_data/nyu2/office_0009_out\120.jpg,19,19
 4613,../data/nyu_data/nyu2/bathroom_0019_out\45.jpg,1,1
 4614,../data/nyu_data/nyu2/bedroom_0140_out\254.jpg,2,2
 4615,../data/nyu_data/nyu2/living_room_0046b_out\58.jpg,17,17
@@ -4606,7 +4569,6 @@ index,path,label,pred
 4631,../data/nyu_data/nyu2/conference_room_0001_out\15.jpg,7,7
 4632,../data/nyu_data/nyu2/living_room_0069a_out\86.jpg,17,17
 4633,../data/nyu_data/nyu2/bedroom_0012_out\42.jpg,2,2
-4634,../data/nyu_data/nyu2/bedroom_0081_out\18.jpg,2,2
 4635,../data/nyu_data/nyu2/living_room_0029_out\40.jpg,17,17
 4636,../data/nyu_data/nyu2/study_room_0004_out\219.jpg,24,24
 4637,../data/nyu_data/nyu2/bedroom_0047_out\68.jpg,2,2
@@ -4709,10 +4671,8 @@ index,path,label,pred
 4734,../data/nyu_data/nyu2/bedroom_0072_out\192.jpg,2,2
 4735,../data/nyu_data/nyu2/dining_room_0033_out\9.jpg,9,9
 4736,../data/nyu_data/nyu2/kitchen_0043_out\335.jpg,15,15
-4737,../data/nyu_data/nyu2/living_room_0069b_out\1.jpg,17,17
 4738,../data/nyu_data/nyu2/dining_room_0023_out\22.jpg,9,9
 4739,../data/nyu_data/nyu2/student_lounge_0001_out\143.jpg,23,23
-4740,../data/nyu_data/nyu2/living_room_0082_out\60.jpg,17,17
 4741,../data/nyu_data/nyu2/bedroom_0063_out\55.jpg,2,2
 4742,../data/nyu_data/nyu2/dining_room_0012_out\236.jpg,9,9
 4743,../data/nyu_data/nyu2/furniture_store_0002a_out\65.jpg,12,12
@@ -4801,7 +4761,6 @@ index,path,label,pred
 4826,../data/nyu_data/nyu2/kitchen_0045b_out\73.jpg,15,15
 4827,../data/nyu_data/nyu2/bedroom_0072_out\136.jpg,2,2
 4828,../data/nyu_data/nyu2/bedroom_0136_out\188.jpg,2,2
-4829,../data/nyu_data/nyu2/office_0019_out\12.jpg,19,19
 4830,../data/nyu_data/nyu2/living_room_0020_out\293.jpg,17,17
 4831,../data/nyu_data/nyu2/office_0004_out\143.jpg,19,19
 4832,../data/nyu_data/nyu2/furniture_store_0001d_out\326.jpg,12,12
@@ -4815,7 +4774,6 @@ index,path,label,pred
 4840,../data/nyu_data/nyu2/kitchen_0003_out\231.jpg,15,15
 4841,../data/nyu_data/nyu2/living_room_0058_out\147.jpg,17,17
 4842,../data/nyu_data/nyu2/bedroom_0140_out\94.jpg,2,2
-4843,../data/nyu_data/nyu2/kitchen_0051_out\492.jpg,15,15
 4844,../data/nyu_data/nyu2/bedroom_0106_out\46.jpg,2,2
 4845,../data/nyu_data/nyu2/furniture_store_0001b_out\105.jpg,12,12
 4846,../data/nyu_data/nyu2/furniture_store_0002b_out\245.jpg,12,12
@@ -4938,7 +4896,6 @@ index,path,label,pred
 4963,../data/nyu_data/nyu2/living_room_0010_out\230.jpg,17,17
 4964,../data/nyu_data/nyu2/bedroom_0059_out\8.jpg,2,2
 4965,../data/nyu_data/nyu2/bedroom_0016_out\252.jpg,2,2
-4966,../data/nyu_data/nyu2/bathroom_0048_out\56.jpg,1,1
 4967,../data/nyu_data/nyu2/office_0006_out\2.jpg,19,19
 4968,../data/nyu_data/nyu2/furniture_store_0001e_out\31.jpg,12,12
 4969,../data/nyu_data/nyu2/bedroom_0080_out\72.jpg,2,2
@@ -5027,6 +4984,7 @@ index,path,label,pred
 5052,../data/nyu_data/nyu2/kitchen_0048_out\264.jpg,15,15
 5053,../data/nyu_data/nyu2/living_room_0018_out\32.jpg,17,17
 5054,../data/nyu_data/nyu2/living_room_0037_out\13.jpg,17,17
+5055,../data/nyu_data/nyu2/furniture_store_0001d_out\254.jpg,12,12
 5056,../data/nyu_data/nyu2/bedroom_0012_out\48.jpg,2,2
 5057,../data/nyu_data/nyu2/student_lounge_0001_out\89.jpg,23,23
 5058,../data/nyu_data/nyu2/furniture_store_0002b_out\73.jpg,12,12
