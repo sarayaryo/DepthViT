@@ -194,6 +194,37 @@ assert config["image_size"] % config["patch_size"] == 0
 
 label_mapping = {}
 
+# EarlyFusion
+class Early_loss:
+    def __init__(self, model, images, depth, labels, loss_fn) -> None:
+        self.model = model
+        self.loss_fn = loss_fn
+        self.images = images
+        self.depth = depth
+        self.labels = labels
+
+    def calculate_loss(self):
+        preds = self.model(self.images, self.depth)[0]
+        loss = self.loss_fn(preds, self.labels)
+        # loss2 = self.loss_fn(self.model(self.depth, Isdepth=True)[0], self.labels)
+        return loss
+    
+# LateFusion
+class Late_loss:
+    def __init__(self, model, images, depth, labels, loss_fn) -> None:
+        self.model = model
+        self.loss_fn = loss_fn
+        self.images = images
+        self.depth = depth
+        self.labels = labels
+
+    def calculate_loss(self):
+        # Get predictions from the model
+        preds = self.model(self.images, self.depth)[0]  # logits
+        # Compute loss
+        loss = self.loss_fn(preds, self.labels)
+
+        return loss
 # Image only ViT
 class SimpleViT_loss:
     def __init__(self, model, images, depth, labels, loss_fn) -> None:
