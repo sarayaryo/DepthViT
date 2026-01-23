@@ -96,7 +96,3 @@ def main():
     dim=f_r_all.shape[1]
     print(f"Feature dimension: {dim}")
     train_and_save_vclub(f_r_all, f_rgbd_all, save_path=r"experiments\vclub_model\NYU_0.8train_seed42_dim_48_96.pth", dim=f_r_all.shape[1], epochs=500, lr=1e-5)
-    
-
-if __name__ == "__main__":
-    main()
