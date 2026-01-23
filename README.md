@@ -29,3 +29,8 @@ W-RGBD
 python train.py --method 2 --dataset_type 0 --exp_name WRGBD_sharefusion --alpha 0.5 --beta 0.5 --dataset rgbd-dataset-10k --batch_size 16 --epochs 30 --max_data_size 2000000000
 
 if config["use_method1"] is True separately learning RGB, Depth encoder and layer
+
+"""
+"use_method3": False, ## agreement-refined
+"learnable_alpha_beta": True,
+"""

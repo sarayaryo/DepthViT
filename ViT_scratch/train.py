@@ -94,7 +94,7 @@ def check_device_availability(device):
 def spearman_rank_correlation(attention_img, attention_dpt):
     """
     Computes Spearman's rank correlation coefficient batch-wise.
-
+    
     :param attention_img: torch.Tensor or np.ndarray, shape (batch, head, 65, 65)
     :param attention_dpt: torch.Tensor or np.ndarray, shape (batch, head, 65, 65)
     :return: list of Spearman's rho per entry
