@@ -16,6 +16,7 @@ import math
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from print_alpha_beta import print_alpha_beta
+from train_CMI import ConditionalCLUB, process_attention_data_forCMI
 
 def apply_mass_filter(att_map, mass=0.8):
     """
@@ -466,12 +467,17 @@ def batch_test_fusionViT(model, batch_size, dataset_type, test_loader, mi_regres
     # Evaluateだけ実行
     accuracy, CLS_token, avg_loss, attention_data_final, wrong_images, correct_images = trainer.evaluate(test_loader, attentions_choice=True, infer_mode=True)
     
-    mi_values = []
-    with torch.no_grad():
-        for i, (f_r, f_d) in enumerate(CLS_token):
-            f_rgbd = torch.cat((f_r, f_d), dim=1)  
-            mi = mi_regresser(f_r, f_rgbd)
-            mi_values.append(mi.item())
+    # # MI
+    # mi_values = []
+    # with torch.no_grad():
+    #     for i, (f_r, f_d) in enumerate(CLS_token):
+    #         f_rgbd = torch.cat((f_r, f_d), dim=1)  
+    #         mi = mi_regresser(f_r, f_rgbd)
+    #         mi_values.append(mi.item())
+
+    # CMI
+    f_r, f_d, labels = process_attention_data_forCMI(attention_data_final, device)
+    CMI_value = mi_regresser.calculate_cmi(f_r, f_d, labels)
 
     rs, precission_topk = total_consistency_patch(attention_data_final)
     rs2, precission_topk2 = total_consistency_CLS(attention_data_final)
@@ -481,7 +487,8 @@ def batch_test_fusionViT(model, batch_size, dataset_type, test_loader, mi_regres
     print(f"Spearman Rank Correlation(CLS): {np.mean(rs2):.4f}")
     print(f"Precision at Top K: {np.mean(precission_topk):.4f}")
     print(f"Precision at Top K (CLS): {np.mean(precission_topk2):.4f}")
-    print(f"Mutual Information: {np.mean(mi_values):.4f}")
+    # print(f"Mutual Information: {np.mean(mi_values):.4f}")
+    print(f"Conditional Mutual Information: {CMI_value:.4f}")
 
 
 def main(random_seed, infer_model=2):
@@ -508,7 +515,7 @@ def main(random_seed, infer_model=2):
     elif dataset_type==1:
         name = "NYU"
         load_datapath = load_datapath_NYU
-        base_path = r'..\data\nyu_data\nyu2'
+        base_path = r'../data/nyu_data/nyu2'
     elif dataset_type==2:
         name = "TinyImageNet"
         load_datapath = load_datapath_TinyImageNet
@@ -523,7 +530,6 @@ def main(random_seed, infer_model=2):
     test_image_path = test_loader.dataset.image_paths
     test_depth_path = test_loader.dataset.depth_paths
 
-    
 
     config,_ , _, _, _, _ = load_experiment(
     experiment_name="NYU_latefusion",
@@ -532,10 +538,29 @@ def main(random_seed, infer_model=2):
     map_location=map_location
     )
     dim = config["hidden_size"]
-    from module import CLUB
-    mi_regresser = CLUB(dim, dim*2, 64).to(device)
-    mi_regresser.load_state_dict(torch.load(r"experiments\vclub_model\NYU_0.8train_seed42_dim_48_96.pth", map_location=device, weights_only=True))
-    mi_regresser.eval()
+
+    ## Mutual Information Regressor Load
+    # from module import CLUB
+    # mi_regresser = CLUB(dim, dim*2, 64).to(device)
+    # mi_regresser.load_state_dict(torch.load(r"experiments\vclub_model\NYU_0.8train_seed42_dim_48_96.pth", map_location=device, weights_only=True))
+    # mi_regresser.eval()
+
+    ## Conditional MI Regressor Load
+    def CMI_model_load(model_path, device):
+        checkpoint = torch.load(model_path, map_location=device, weights_only=True)
+        config = checkpoint['config']
+        
+        mi_regresser = ConditionalCLUB(
+            x_dim=config['x_dim'], 
+            y_dim=config['y_dim'], 
+            num_classes=config['num_classes'], 
+            hidden_size=config['hidden_size']
+        ).to(device)
+        mi_regresser.load_state_dict(checkpoint['model_state_dict'])
+        mi_regresser.eval()
+        return mi_regresser
+    
+
     scheduler = True
     scheduler = False
 
@@ -565,11 +590,14 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+        CMI_regresser = CMI_model_load(CMI_model_path, device)
+
         # layer_attention(model_latefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name, device=device, num_images = 12)
         # RGBD_visualize_attention_NYU(model_latefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", device=device)
-        # batch_test_fusionViT(model_latefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
-        top_N_attention(model_latefusion, test_image_path, test_depth_path, label_mapping, output=f"attention_image\{experiment_name}_topN_attention_seed{random_seed}.png", device=device)
-
+        batch_test_fusionViT(model_latefusion, batch_size, dataset_type, test_loader, CMI_regresser, label_mapping, device)
+        # top_N_attention(model_latefusion, test_image_path, test_depth_path, label_mapping, output=f"attention_image\{experiment_name}_topN_attention_seed{random_seed}.png", device=device)
+        
     
     if infer_model==2.1:
         experiment_name = name + "_sharefusion_a0.0_b0.5"
@@ -581,9 +609,12 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+        CMI_regresser = CMI_model_load(CMI_model_path, device)
+
         # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
-        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
-    
+        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, CMI_regresser, label_mapping, device)
+
     if infer_model==2.2:
         experiment_name = name + "_sharefusion_a0.5_b0.0"
         if scheduler: experiment_name += "_lr1e-3"
@@ -594,8 +625,11 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+        CMI_regresser = CMI_model_load(CMI_model_path, device)
+
         # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
-        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, CMI_regresser, label_mapping, device)
 
     if infer_model==2:
         experiment_name = name + "_sharefusion_a0.5_b0.5"
@@ -608,10 +642,13 @@ def main(random_seed, infer_model=2):
 
             )
         image_size = config['image_size']
-        RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+        CMI_regresser = CMI_model_load(CMI_model_path, device)
+
+        # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
         # layer_attention(model_sharefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name, device=device, num_images = 12)
-        # batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
-        top_N_attention(model_sharefusion, test_image_path, test_depth_path, label_mapping, output=f"attention_image\{experiment_name}_topN_attention_seed{random_seed}.png", device=device)
+        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, CMI_regresser, label_mapping, device)
+        # top_N_attention(model_sharefusion, test_image_path, test_depth_path, label_mapping, output=f"attention_image\{experiment_name}_topN_attention_seed{random_seed}.png", device=device)
     
     if infer_model==2.3:
         experiment_name = name + "_sharefusion_a0.25_b0.25"
@@ -623,8 +660,11 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+        CMI_regresser = CMI_model_load(CMI_model_path, device)
+
         # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
-        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, CMI_regresser, label_mapping, device)
 
 
     if infer_model==2.5:
@@ -641,9 +681,12 @@ def main(random_seed, infer_model=2):
             override_config={"learnable_alpha_beta": True}
             )
         image_size = config['image_size']
-        print_alpha_beta(model_sharefusion)
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+        CMI_regresser = CMI_model_load(CMI_model_path, device)
+
+        # print_alpha_beta(model_sharefusion)
         # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
-        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        batch_test_fusionViT(model_sharefusion, batch_size, dataset_type, test_loader, CMI_regresser, label_mapping, device)
         # layer_attention(model_sharefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name,device=device, num_images = 12)
 
 
@@ -662,13 +705,15 @@ def main(random_seed, infer_model=2):
             override_config={"learnable_alpha_beta": True}
             )
         image_size = config['image_size']
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+        CMI_regresser = CMI_model_load(CMI_model_path, device)
 
         # print(a)
         # print_alpha_beta(model_ARfusion)
         # RGBD_visualize_attention_NYU(model_ARfusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
-        # batch_test_fusionViT(model_ARfusion, batch_size, dataset_type, test_loader, mi_regresser, label_mapping, device)
+        batch_test_fusionViT(model_ARfusion, batch_size, dataset_type, test_loader, CMI_regresser, label_mapping, device)
         # layer_attention(model_ARfusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name, device=device, num_images = 12)
-        top_N_attention(model_ARfusion, test_image_path, test_depth_path, label_mapping, output=f"attention_image\{experiment_name}_topN_attention_seed{random_seed}.png", device=device)
+        # top_N_attention(model_ARfusion, test_image_path, test_depth_path, label_mapping, output=f"attention_image\{experiment_name}_topN_attention_seed{random_seed}.png", device=device)
 
     # ## ----------------Visualize Attention Maps per Block----------------
 
@@ -682,23 +727,23 @@ def main(random_seed, infer_model=2):
 
 if __name__ == "__main__":
     
-    random_seed = 57
+    random_seed = 62
     for i in range(1):
         print(f"NYU Run in randomseed{random_seed}")
         # print("=== ViT ===")
         # main(random_seed, 0)
         print("=== Late Fusion ===")
         main(random_seed, 1)
-        # print("=== sharefusion_a0.0_b0.5 ===")
-        # main(random_seed, 2.1)
-        # print("=== sharefusion_a0.5_b0.0 ===")
-        # main(random_seed, 2.2)
+        print("=== sharefusion_a0.0_b0.5 ===")
+        main(random_seed, 2.1)
+        print("=== sharefusion_a0.5_b0.0 ===")
+        main(random_seed, 2.2)
         print("=== sharefusion_a0.5_b0.5 ===")
         main(random_seed, 2)
-        # print("=== Share Fusion_a0.25_b0.25 ===")
-        # main(random_seed, 2.3)
-        # print("=== Share Fusion (Learnable α, β) ===")
-        # main(random_seed, 2.5)
+        print("=== Share Fusion_a0.25_b0.25 ===")
+        main(random_seed, 2.3)
+        print("=== Share Fusion (Learnable α, β) ===")
+        main(random_seed, 2.5)
         print("=== Agreement Refined Fusion ===")
         main(random_seed, 3)
         random_seed -= 1
