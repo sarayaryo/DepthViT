@@ -479,14 +479,14 @@ def batch_test_fusionViT(model, batch_size, dataset_type, test_loader, mi_regres
     f_r, f_d, labels = process_attention_data_forCMI(attention_data_final, device)
     CMI_value = mi_regresser.calculate_cmi(f_r, f_d, labels)
 
-    rs, precission_topk = total_consistency_patch(attention_data_final)
-    rs2, precission_topk2 = total_consistency_CLS(attention_data_final)
+    # rs, precission_topk = total_consistency_patch(attention_data_final)
+    # rs2, precission_topk2 = total_consistency_CLS(attention_data_final)
 
     print(f"Accuracy: {accuracy:.4f}, Average Loss: {avg_loss:.4f}")
-    print(f"Spearman Rank Correlation(patch): {np.mean(rs):.4f}")
-    print(f"Spearman Rank Correlation(CLS): {np.mean(rs2):.4f}")
-    print(f"Precision at Top K: {np.mean(precission_topk):.4f}")
-    print(f"Precision at Top K (CLS): {np.mean(precission_topk2):.4f}")
+    # print(f"Spearman Rank Correlation(patch): {np.mean(rs):.4f}")
+    # print(f"Spearman Rank Correlation(CLS): {np.mean(rs2):.4f}")
+    # print(f"Precision at Top K: {np.mean(precission_topk):.4f}")
+    # print(f"Precision at Top K (CLS): {np.mean(precission_topk2):.4f}")
     # print(f"Mutual Information: {np.mean(mi_values):.4f}")
     print(f"Conditional Mutual Information: {CMI_value:.4f}")
 
@@ -562,7 +562,7 @@ def main(random_seed, infer_model=2):
     
 
     scheduler = True
-    scheduler = False
+    # scheduler = False
 
 
     ## ----------------Visualize Attention Maps Toataly----------------
@@ -582,6 +582,8 @@ def main(random_seed, infer_model=2):
 
     if infer_model==1:
         experiment_name = name + "_latefusion"
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+
         if scheduler: experiment_name += "_lr1e-3"    
         config, model_latefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
@@ -590,7 +592,7 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
-        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+
         CMI_regresser = CMI_model_load(CMI_model_path, device)
 
         # layer_attention(model_latefusion, test_image_path, test_depth_path, mi_regresser, label_mapping, image_size, experiment_name, device=device, num_images = 12)
@@ -601,6 +603,8 @@ def main(random_seed, infer_model=2):
     
     if infer_model==2.1:
         experiment_name = name + "_sharefusion_a0.0_b0.5"
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+        
         if scheduler: experiment_name += "_lr1e-3"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
@@ -609,7 +613,7 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
-        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+
         CMI_regresser = CMI_model_load(CMI_model_path, device)
 
         # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
@@ -617,6 +621,8 @@ def main(random_seed, infer_model=2):
 
     if infer_model==2.2:
         experiment_name = name + "_sharefusion_a0.5_b0.0"
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+
         if scheduler: experiment_name += "_lr1e-3"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
@@ -625,7 +631,6 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
-        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
         CMI_regresser = CMI_model_load(CMI_model_path, device)
 
         # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
@@ -633,6 +638,8 @@ def main(random_seed, infer_model=2):
 
     if infer_model==2:
         experiment_name = name + "_sharefusion_a0.5_b0.5"
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+
         if scheduler: experiment_name += "_lr1e-3"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
@@ -642,7 +649,6 @@ def main(random_seed, infer_model=2):
 
             )
         image_size = config['image_size']
-        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
         CMI_regresser = CMI_model_load(CMI_model_path, device)
 
         # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
@@ -652,6 +658,8 @@ def main(random_seed, infer_model=2):
     
     if infer_model==2.3:
         experiment_name = name + "_sharefusion_a0.25_b0.25"
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
+
         if scheduler: experiment_name += "_lr1e-3"
         config, model_sharefusion, _, _, _, label_mapping = load_experiment(
             experiment_name,
@@ -660,7 +668,6 @@ def main(random_seed, infer_model=2):
             map_location=map_location
             )
         image_size = config['image_size']
-        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
         CMI_regresser = CMI_model_load(CMI_model_path, device)
 
         # RGBD_visualize_attention_NYU(model_sharefusion, test_image_path, test_depth_path, label_mapping, image_size, f"attention_image\{experiment_name}_attention_seed{random_seed}.png", test_loader, device=device)
@@ -669,6 +676,7 @@ def main(random_seed, infer_model=2):
 
     if infer_model==2.5:
         experiment_name = name + "_sharefusion_alearn_blearn"
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
 
         checkpoint_name="model_final.pt"
 
@@ -681,7 +689,6 @@ def main(random_seed, infer_model=2):
             override_config={"learnable_alpha_beta": True}
             )
         image_size = config['image_size']
-        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
         CMI_regresser = CMI_model_load(CMI_model_path, device)
 
         # print_alpha_beta(model_sharefusion)
@@ -692,6 +699,7 @@ def main(random_seed, infer_model=2):
 
     if infer_model==3:
         experiment_name = name + "_ARfusion_alearn_blearn"
+        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
 
         if scheduler: checkpoint_name = "model_16.pt"
         else: checkpoint_name="model_final.pt"
@@ -705,7 +713,6 @@ def main(random_seed, infer_model=2):
             override_config={"learnable_alpha_beta": True}
             )
         image_size = config['image_size']
-        CMI_model_path = os.path.join("vclub_model", f"{experiment_name}_CMI_dim_65.pth")
         CMI_regresser = CMI_model_load(CMI_model_path, device)
 
         # print(a)
@@ -728,7 +735,7 @@ def main(random_seed, infer_model=2):
 if __name__ == "__main__":
     
     random_seed = 62
-    for i in range(1):
+    for i in range(5):
         print(f"NYU Run in randomseed{random_seed}")
         # print("=== ViT ===")
         # main(random_seed, 0)
