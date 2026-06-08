@@ -457,8 +457,10 @@ class Trainer:
         test_losses.append(test_loss)
         accuracies.append(accuracy)
 
-        save_sample_list(wrong_images, "wrong_images.csv")
-        save_sample_list(correct_images, "correct_images.csv")
+        csv_dir = os.path.join("experiments", self.exp_name)
+        os.makedirs(csv_dir, exist_ok=True)
+        save_sample_list(wrong_images, os.path.join(csv_dir, "wrong_images.csv"))
+        save_sample_list(correct_images, os.path.join(csv_dir, "correct_images.csv"))
 
         if self.method in [1,2]:
             print(f"Test loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Spearman score: {np.mean(rs):.4f}, Precision top Attn80% score: {np.mean(precision_top_k):.4f}")
