@@ -8,6 +8,7 @@ import torchvision.transforms as transforms
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader, Dataset
 from PIL import Image
+import numpy as np
 
 def prepare_data(batch_size=4, num_workers=2, train_sample_size=None, test_sample_size=None):
     train_transform = transforms.Compose(
@@ -49,19 +50,21 @@ def prepare_data(batch_size=4, num_workers=2, train_sample_size=None, test_sampl
     return trainloader, testloader, classes
 
 class ImageDepthDataset(Dataset):
-    def __init__(self, image_paths, depth_paths, labels, transform=None):
+    def __init__(self, image_paths, depth_paths, labels, transform=None, depth_bitshift_decode=False):
         """
         Args:
             image_paths (list of str): 画像ファイルへのパスリスト。
             depth_paths (list of str): 深度画像ファイルへのパスリスト。
             labels (list of int): 各画像のラベル。
             transform (callable, optional): 画像に適用する変換。
+            depth_bitshift_decode (bool): SUN RGB-D用ビットシフトデコード
         """
         self.image_paths = image_paths
         self.depth_paths = depth_paths
         # print(f"self.labels:{labels}")
         self.labels = [torch.tensor(label, dtype=torch.long) for label in labels]
         self.transform = transform
+        self.depth_bitshift_decode = depth_bitshift_decode
 
 
     def __len__(self):
@@ -78,7 +81,17 @@ class ImageDepthDataset(Dataset):
         image = Image.open(self.image_paths[idx]).convert("RGB")
         
         # 深度情報をロード
-        depth = Image.open(self.depth_paths[idx]).convert("L")  # 深度はグレースケール（L）で読み込み
+        if self.depth_bitshift_decode:
+            raw = np.array(Image.open(self.depth_paths[idx]))
+            decoded = ((raw.astype(np.uint32) >> 3) | (raw.astype(np.uint32) << 13)) & 0xFFFF
+            max_val = decoded.max()
+            if max_val > 0:
+                decoded = (decoded / max_val * 255).astype(np.uint8)
+            else:
+                decoded = decoded.astype(np.uint8)
+            depth = Image.fromarray(decoded, mode="L")
+        else:
+            depth = Image.open(self.depth_paths[idx]).convert("L")
 
         label = self.labels[idx]
 
@@ -264,6 +277,53 @@ def load_datapath_TinyImageNet(dataset_path):
 
     return list(image_paths), list(depth_paths), list(labels)
 
+def getlabels_SUNRGBD(image_paths):
+    le = LabelEncoder()
+    labels = []
+    for image_path in image_paths:
+        session_dir = os.path.dirname(os.path.dirname(image_path))
+        scene_file = os.path.join(session_dir, "scene.txt")
+        with open(scene_file, "r", encoding="utf-8") as f:
+            label = f.read().strip()
+        labels.append(label)
+    encoded_labels = le.fit_transform(labels)
+    label_mapping = {index: label for index, label in enumerate(le.classes_)}
+    return encoded_labels, label_mapping
+
+
+def load_datapath_SUNRGBD(dataset_path, random_seed=42):
+    image_paths = []
+    depth_paths = []
+    labels = []
+
+    for root, dirs, files in os.walk(dataset_path):
+        if "scene.txt" not in files:
+            continue
+        img_dir = os.path.join(root, "image")
+        depth_dir = os.path.join(root, "depth_bfx")
+        if not os.path.isdir(img_dir) or not os.path.isdir(depth_dir):
+            continue
+
+        rgb_files = glob.glob(os.path.join(img_dir, "*.jpg"))
+        depth_files = glob.glob(os.path.join(depth_dir, "*.png"))
+        if not rgb_files or not depth_files:
+            continue
+
+        with open(os.path.join(root, "scene.txt"), "r", encoding="utf-8") as f:
+            label = f.read().strip()
+
+        image_paths.append(rgb_files[0])
+        depth_paths.append(depth_files[0])
+        labels.append(label)
+
+    paired_data = list(zip(image_paths, depth_paths, labels))
+    random.seed(random_seed)
+    random.shuffle(paired_data)
+    image_paths, depth_paths, labels = zip(*paired_data)
+
+    return list(image_paths), list(depth_paths), list(labels)
+
+
 def get_dataloader(image_paths, depth_paths, batch_size, transform, dataset_type=0, split_ratio=(0.8, 0.1, 0.1)):
     from sklearn.model_selection import train_test_split
 
@@ -279,15 +339,18 @@ def get_dataloader(image_paths, depth_paths, batch_size, transform, dataset_type
         getlabels = getlabels_NYU
     elif dataset_type==2:
         getlabels = getlabels_TinyImageNet
+    elif dataset_type==3:
+        getlabels = getlabels_SUNRGBD
 
     train_labels, label_mapping_train = getlabels(image_train)
     valid_labels, _ = getlabels(image_valid)
     test_labels, label_mapping_test = getlabels(image_test)
 
     # データセット作成
-    train_dataset = ImageDepthDataset(image_train, depth_train, train_labels, transform=transform)
-    valid_dataset = ImageDepthDataset(image_valid, depth_valid, valid_labels, transform=transform)
-    test_dataset = ImageDepthDataset(image_test, depth_test, test_labels, transform=transform)
+    depth_bitshift = (dataset_type == 3)
+    train_dataset = ImageDepthDataset(image_train, depth_train, train_labels, transform=transform, depth_bitshift_decode=depth_bitshift)
+    valid_dataset = ImageDepthDataset(image_valid, depth_valid, valid_labels, transform=transform, depth_bitshift_decode=depth_bitshift)
+    test_dataset = ImageDepthDataset(image_test, depth_test, test_labels, transform=transform, depth_bitshift_decode=depth_bitshift)
 
     # DataLoader 作成
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)

@@ -17,7 +17,7 @@ from scipy.stats import spearmanr
 from utils import save_experiment, save_checkpoint
 from vit import ViTForClassfication, EarlyFusion, LateFusion, get_list_shape
 from torchvision import datasets, transforms
-from data import load_datapath_NYU, load_datapath_WRGBD, load_datapath_TinyImageNet, get_dataloader
+from data import load_datapath_NYU, load_datapath_WRGBD, load_datapath_TinyImageNet, load_datapath_SUNRGBD, get_dataloader
 
 from torch.utils.data import DataLoader
 import cv2 
@@ -665,11 +665,13 @@ def parse_args():
     parser.add_argument("--beta", type=float, default=0.5)
     parser.add_argument("--topk", type=float, default=0.1)
     parser.add_argument("--dataset_type", type=int, default=1)
+    parser.add_argument("--dataset_path", type=str, default=None, help="Absolute path to dataset (overrides --dataset)")
 
     args = parser.parse_args()
     if args.device is None:
         args.device = "cuda" if torch.cuda.is_available() else "cpu"
-    args.dataset_path = f"../data/{args.dataset}/"
+    if args.dataset_path is None:
+        args.dataset_path = f"../data/{args.dataset}/"
     return args
 
 
@@ -700,6 +702,8 @@ def main():
         load_datapath = load_datapath_NYU
     elif dataset_type==2:
         load_datapath = load_datapath_TinyImageNet
+    elif dataset_type==3:
+        load_datapath = load_datapath_SUNRGBD
 
     image_paths, depth_paths, labels =load_datapath(args.dataset_path)
 
