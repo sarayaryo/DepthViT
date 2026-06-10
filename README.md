@@ -17,31 +17,35 @@ cd ViT_scratch
 
 ### train.py
 
-| Argument | Type | Default | Description |
-|:---|:---:|:---:|:---|
-| `--exp_name` | str | `vit-with-10-epochs` | 実験名（ログ・モデル保存先のフォルダ名） |
-| `--method` | int | `0` | モデル: `0`=ViT (RGB only), `1`=Early-Fusion, `2`=Late-Fusion |
-| `--dataset_type` | int | `1` | データセット: `0`=W-RGBD, `1`=NYUv2, `2`=TinyImageNet, `3`=SUN RGB-D |
-| `--dataset` | str | `rod_sample` | `../data/` 配下のデータセットフォルダ名 |
-| `--dataset_path` | str | `None` | データセットの絶対パス（指定時は `--dataset` を上書き） |
-| `--batch_size` | int | `4` | バッチサイズ |
-| `--epochs` | int | `3` | エポック数 |
-| `--lr` | float | `1e-4` | 学習率 |
-| `--alpha` | float | `0.5` | Share-Fusion の alpha |
-| `--beta` | float | `0.5` | Share-Fusion の beta（MI loss 重み） |
-| `--topk` | float | `0.1` | Attention map の precision@k |
-| `--max_data_size` | int | `100000` | データ件数の上限 |
-| `--save_model_every` | int | `10` | N エポックごとにモデル保存 |
-| `--weight_decay` | float | `0.02` | Optimizer の weight decay |
-| `--device` | str | `cuda` | `cuda` or `cpu` |
+
+| Argument             | Type  | Default              | Description                                                    |
+| -------------------- | ----- | -------------------- | -------------------------------------------------------------- |
+| `--exp_name`         | str   | `vit-with-10-epochs` | 実験名（ログ・モデル保存先のフォルダ名）                                           |
+| `--method`           | int   | `0`                  | モデル: `0`=ViT (RGB only), `1`=Early-Fusion, `2`=Late-Fusion     |
+| `--dataset_type`     | int   | `1`                  | データセット: `0`=W-RGBD, `1`=NYUv2, `2`=TinyImageNet, `3`=SUN RGB-D |
+| `--dataset`          | str   | `rod_sample`         | `../data/` 配下のデータセットフォルダ名                                      |
+| `--dataset_path`     | str   | `None`               | データセットの絶対パス（指定時は `--dataset` を上書き）                             |
+| `--batch_size`       | int   | `4`                  | バッチサイズ                                                         |
+| `--epochs`           | int   | `3`                  | エポック数                                                          |
+| `--lr`               | float | `1e-4`               | 学習率                                                            |
+| `--alpha`            | float | `0.5`                | Share-Fusion の alpha                                           |
+| `--beta`             | float | `0.5`                | Share-Fusion の beta（MI loss 重み）                                |
+| `--topk`             | float | `0.1`                | Attention map の precision@k                                    |
+| `--max_data_size`    | int   | `100000`             | データ件数の上限                                                       |
+| `--save_model_every` | int   | `10`                 | N エポックごとにモデル保存                                                 |
+| `--weight_decay`     | float | `0.02`               | Optimizer の weight decay                                       |
+| `--device`           | str   | `cuda`               | `cuda` or `cpu`                                                |
+
 
 ### config (train.py 内)
 
-| Key | Description |
-|:---|:---|
-| `use_method1` | `True`: Share-Fusion / Late-Fusion, `False`: 無効 |
-| `use_method3` | `True`: Agreement-Refined Fusion |
-| `learnable_alpha_beta` | `True`: alpha/beta を学習可能パラメータにする |
+
+| Key                    | Description                                     |
+| ---------------------- | ----------------------------------------------- |
+| `use_method1`          | `True`: Share-Fusion / Late-Fusion, `False`: 無効 |
+| `use_method3`          | `True`: Agreement-Refined Fusion                |
+| `learnable_alpha_beta` | `True`: alpha/beta を学習可能パラメータにする                |
+
 
 ---
 
@@ -56,25 +60,21 @@ python train.py --method 2 --dataset rod_sample --batch_size 4 --epochs 3 --max_
 ### W-RGBD (dataset_type=0)
 
 ```bash
-python train.py --method 2 --dataset_type 0 --exp_name WRGBD_sharefusion \
-  --alpha 0.5 --beta 0.5 \
-  --dataset rgbd-dataset-10k --batch_size 16 --epochs 30 --lr 1e-3
+python train.py --method 2 --dataset_type 0 --exp_name WRGBD_sharefusion --alpha 0.5 --beta 0.5 --dataset rgbd-dataset-10k --batch_size 16 --epochs 30 --lr 1e-3 --max_data_size 20000000
 ```
 
 ### NYUv2 (dataset_type=1)
 
 Late-Fusion (alpha=0, beta=0):
+
 ```bash
-python train.py --method 2 --dataset_type 1 --exp_name NYU_latefusion_lr1e-3 \
-  --alpha 0.0 --beta 0.0 \
-  --dataset nyu_data/nyu2 --batch_size 16 --epochs 30 --lr 1e-3
+python train.py --method 2 --dataset_type 1 --exp_name NYU_latefusion_lr1e-3 --alpha 0.0 --beta 0.0 --dataset nyu_data/nyu2 --batch_size 16 --epochs 30 --lr 1e-3 --max_data_size 20000000
 ```
 
 Share-Fusion (alpha=0.5, beta=0.5):
+
 ```bash
-python train.py --method 2 --dataset_type 1 --exp_name NYU_sharefusion_a0.5_b0.5_lr1e-3 \
-  --alpha 0.5 --beta 0.5 \
-  --dataset nyu_data/nyu2 --batch_size 16 --epochs 30 --lr 1e-3
+python train.py --method 2 --dataset_type 1 --exp_name NYU_sharefusion_a0.5_b0.5_lr1e-3 --alpha 0.5 --beta 0.5 --dataset nyu_data/nyu2 --batch_size 16 --epochs 30 --lr 1e-3 --max_data_size 20000000
 ```
 
 Share-Fusion (learnable alpha/beta): config 内で `"learnable_alpha_beta": True` に設定。
@@ -84,9 +84,7 @@ AR-Fusion: config 内で `"use_method3": True` に設定。
 ### TinyImageNet (dataset_type=2)
 
 ```bash
-python train.py --method 2 --dataset_type 2 --exp_name TinyImageNet_sharefusion \
-  --alpha 0.5 --beta 0.5 \
-  --dataset rgbd_tinyimagenet --batch_size 16 --epochs 30 --lr 1e-3
+python train.py --method 2 --dataset_type 2 --exp_name TinyImageNet_sharefusion --alpha 0.5 --beta 0.5 --dataset rgbd_tinyimagenet --batch_size 16 --epochs 30 --lr 1e-3 --max_data_size 20000000
 ```
 
 ### SUN RGB-D (dataset_type=3)
@@ -94,38 +92,33 @@ python train.py --method 2 --dataset_type 2 --exp_name TinyImageNet_sharefusion 
 SUN RGB-D は `../data/` 配下にないため、`--dataset_path` で絶対パスを指定する。
 
 Late-Fusion:
+
 ```bash
-python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_latefusion_lr1e-3 \
-  --alpha 0.0 --beta 0.0 \
-  --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3
+python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_latefusion_lr1e-3 --alpha 0.0 --beta 0.0 --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3 --max_data_size 20000000
 ```
 
 Share-Fusion (alpha=0.5, beta=0.5):
+
 ```bash
-python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_sharefusion_a0.5_b0.5_lr1e-3 \
-  --alpha 0.5 --beta 0.5 \
-  --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3
+python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_sharefusion_a0.5_b0.5_lr1e-3 --alpha 0.5 --beta 0.5 --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3 --max_data_size 20000000
 ```
 
 Share-Fusion (alpha=0.0, beta=0.5):
+
 ```bash
-python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_sharefusion_a0.0_b0.5_lr1e-3 \
-  --alpha 0.0 --beta 0.5 \
-  --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3
+python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_sharefusion_a0.0_b0.5_lr1e-3 --alpha 0.0 --beta 0.5 --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3 --max_data_size 20000000
 ```
 
 Share-Fusion (alpha=0.5, beta=0.0):
+
 ```bash
-python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_sharefusion_a0.5_b0.0_lr1e-3 \
-  --alpha 0.5 --beta 0.0 \
-  --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3
+python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_sharefusion_a0.5_b0.0_lr1e-3 --alpha 0.5 --beta 0.0 --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3 --max_data_size 20000000
 ```
 
 Share-Fusion (alpha=0.25, beta=0.25):
+
 ```bash
-python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_sharefusion_a0.25_b0.25_lr1e-3 \
-  --alpha 0.25 --beta 0.25 \
-  --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3
+python train.py --method 2 --dataset_type 3 --exp_name SUNRGBD_sharefusion_a0.25_b0.25_lr1e-3 --alpha 0.25 --beta 0.25 --dataset_path "S:\SUNRGBD\SUNRGBD" --batch_size 16 --epochs 30 --lr 1e-3 --max_data_size 20000000
 ```
 
 ---
@@ -148,6 +141,7 @@ python test_for_inferencelog.py --max_samples 200 --group default
 出力先: `experiments/<exp_name>/inference.log`
 
 記録内容:
+
 - 実験メタ情報（名前、lr、checkpoint、デバイス、サンプル数）
 - 推論前後の CPU/GPU メモリ
 - 100 バッチごとのメモリスナップショットと経過時間
@@ -158,12 +152,14 @@ python test_for_inferencelog.py --max_samples 200 --group default
 
 ## Datasets
 
-| dataset_type | Dataset | Path | Image Count | Categories |
-|:---:|:---|:---|---:|---:|
-| 0 | W-RGBD | `../data/rgbd-dataset-10k/` | ~10,000 | 51 |
-| 1 | NYUv2 | `../data/nyu_data/nyu2/` | ~75,000 | 27 |
-| 2 | TinyImageNet | `../data/rgbd_tinyimagenet/` | - | - |
-| 3 | SUN RGB-D | `S:\SUNRGBD\SUNRGBD\` | 10,335 | 45 |
+
+| dataset_type | Dataset      | Path                         | Image Count | Categories |
+| ------------ | ------------ | ---------------------------- | ----------- | ---------- |
+| 0            | W-RGBD       | `../data/rgbd-dataset-10k/`  | ~10,000     | 51         |
+| 1            | NYUv2        | `../data/nyu_data/nyu2/`     | ~75,000     | 27         |
+| 2            | TinyImageNet | `../data/rgbd_tinyimagenet/` | -           | -          |
+| 3            | SUN RGB-D    | `S:\SUNRGBD\SUNRGBD\`        | 10,335      | 45         |
+
 
 SUN RGB-D の depth 画像はビットシフトエンコード（16bit PNG）されており、データローダー内で自動的にデコードされる。詳細は `data/data_shape.md` を参照。
 
@@ -190,3 +186,4 @@ DepthViT/
       NYU_sharefusion_*/
       ...
 ```
+

@@ -484,6 +484,7 @@ class Trainer:
 
         ## ---- sample
         save_path = "../ViT_scratch/sample/"
+        os.makedirs(save_path, exist_ok=True)
         image_size = self.model.config["image_size"]
         patch_size = self.model.config["patch_size"]
         num_patch = image_size/patch_size
