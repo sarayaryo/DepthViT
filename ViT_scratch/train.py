@@ -185,7 +185,7 @@ config = {
     "use_faster_attention": True,
     "use_method1": True,  ## share-fusion(late-fusion)
     "use_method3": False, ## agreement-refined
-    "learnable_alpha_beta": True,
+    "learnable_alpha_beta": False,
 }
 # These are not hard constraints, but are used to prevent misconfigurations
 assert config["hidden_size"] % config["num_attention_heads"] == 0
@@ -667,6 +667,7 @@ def parse_args():
     parser.add_argument("--topk", type=float, default=0.1)
     parser.add_argument("--dataset_type", type=int, default=1)
     parser.add_argument("--dataset_path", type=str, default=None, help="Absolute path to dataset (overrides --dataset)")
+    parser.add_argument("--learnable_alpha_beta", action="store_true", help="Make alpha/beta learnable (default: fixed)")
 
     args = parser.parse_args()
     if args.device is None:
@@ -737,6 +738,7 @@ def main():
     config["alpha"] = args.alpha
     config["beta"] = args.beta
     config["precision_k"] = args.topk
+    config["learnable_alpha_beta"] = args.learnable_alpha_beta
     model = model_class(config)
 
     # print("After model init:")
