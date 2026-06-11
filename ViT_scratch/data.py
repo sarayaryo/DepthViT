@@ -111,74 +111,33 @@ class ImageDepthDataset(Dataset):
 
 
 def getlabels_WRGBD(image_files):
-    le = LabelEncoder()
-    global label_mapping
+    """W-RGBD: ファイル名の先頭 ('apple_1_1_1_crop' → 'apple') をラベルとして返す"""
     labels = []
     for image_file in image_files:
-        # ファイル名の拡張子を除く部分を取得 (例: 'apple_1_1_1_crop')
         filename = os.path.splitext(os.path.basename(image_file))[0]
-        
-        # クラスラベルを抽出 ('apple_1' の部分)
-        classlabel = filename.split("_")[
-            0
-        ]  # 'apple_1' の 'apple' 部分だけを取り出す
-        # classlabel = '_'.join(filename.split('_')[:2])
+        classlabel = filename.split("_")[0]
         labels.append(classlabel)
-        # 取得したクラスラベルとファイル名の確認 (必要に応じて処理を追加)
-        # print(f"File: {image_file}, ClassLabel: {classlabel}")
-    encoded_labels = le.fit_transform(labels)
-    label_mapping = {index: label for index, label in enumerate(le.classes_)}
-
-    return encoded_labels, label_mapping
+    return labels
 
 def getlabels_NYU(folder_paths):
-    le = LabelEncoder()
-    labels = []  # 空のリストを作成
+    """NYUv2: 親フォルダ名の先頭 ('classroom_0001' → 'classroom') をラベルとして返す"""
+    labels = []
     for folder in folder_paths:
-        # print(f"folder:{folder}")
-        # フォルダのパスから最後の部分（フォルダ名）を取得
         dir_path = os.path.dirname(folder)
         folder_name = os.path.basename(dir_path)
-        # print(f"last:{folder_name}")
-        # フォルダ名を"_"で区切り、最初の要素をラベルとして取り出す
         label = folder_name.split("_")[0]
-        # print(f"label:{label}")
-        
-        # ラベルをリストに追加
         labels.append(label)
-
-    # ラベルを数値にエンコード
-    encoded_labels = le.fit_transform(labels)
-
-    # インデックスとラベルのマッピングを作成（必要であれば返すなどして使える）
-    label_mapping = {index: label for index, label in enumerate(le.classes_)}
-
-    return encoded_labels, label_mapping
+    return labels
 
 def getlabels_TinyImageNet(folder_paths):
-    le = LabelEncoder()
-    labels = []  # 空のリストを作成
+    """TinyImageNet: 親フォルダ名の先頭をラベルとして返す"""
+    labels = []
     for folder in folder_paths:
-        # print(f"folder:{folder}")
-        # print(aaa)
-        # フォルダのパスから最後の部分（フォルダ名）を取得
         dir_path = os.path.dirname(folder)
         folder_name = os.path.basename(dir_path)
-        # print(f"last:{folder_name}")
-        # フォルダ名を"_"で区切り、最初の要素をラベルとして取り出す
         label = folder_name.split("_")[0]
-        # print(f"label:{label}")
-        
-        # ラベルをリストに追加
         labels.append(label)
-
-    # ラベルを数値にエンコード
-    encoded_labels = le.fit_transform(labels)
-
-    # インデックスとラベルのマッピングを作成（必要であれば返すなどして使える）
-    label_mapping = {index: label for index, label in enumerate(le.classes_)}
-
-    return encoded_labels, label_mapping
+    return labels
 
 
 
@@ -278,7 +237,7 @@ def load_datapath_TinyImageNet(dataset_path):
     return list(image_paths), list(depth_paths), list(labels)
 
 def getlabels_SUNRGBD(image_paths):
-    le = LabelEncoder()
+    """SUN RGB-D: 2階層上の scene.txt からラベルを読み取って返す"""
     labels = []
     for image_path in image_paths:
         session_dir = os.path.dirname(os.path.dirname(image_path))
@@ -286,9 +245,7 @@ def getlabels_SUNRGBD(image_paths):
         with open(scene_file, "r", encoding="utf-8") as f:
             label = f.read().strip()
         labels.append(label)
-    encoded_labels = le.fit_transform(labels)
-    label_mapping = {index: label for index, label in enumerate(le.classes_)}
-    return encoded_labels, label_mapping
+    return labels
 
 
 def load_datapath_SUNRGBD(dataset_path, random_seed=42):
@@ -327,12 +284,7 @@ def load_datapath_SUNRGBD(dataset_path, random_seed=42):
 def get_dataloader(image_paths, depth_paths, batch_size, transform, dataset_type=0, split_ratio=(0.8, 0.1, 0.1)):
     from sklearn.model_selection import train_test_split
 
-    # 訓練・検証・テストデータに分割
-    train_ratio, valid_ratio, test_ratio = split_ratio
-    image_train, image_temp, depth_train, depth_temp = train_test_split(image_paths, depth_paths, test_size=(valid_ratio + test_ratio), random_state=42)
-    image_valid, image_test, depth_valid, depth_test = train_test_split(image_temp, depth_temp, test_size=(test_ratio / (valid_ratio + test_ratio)), random_state=42)
-
-    # ラベル取得
+    # ラベル文字列を取得
     if dataset_type==0:
         getlabels = getlabels_WRGBD
     elif dataset_type==1:
@@ -342,9 +294,24 @@ def get_dataloader(image_paths, depth_paths, batch_size, transform, dataset_type
     elif dataset_type==3:
         getlabels = getlabels_SUNRGBD
 
-    train_labels, label_mapping_train = getlabels(image_train)
-    valid_labels, _ = getlabels(image_valid)
-    test_labels, label_mapping_test = getlabels(image_test)
+    # 分割前の全データでエンコーダを fit し、ラベル番号を全 split で統一する。
+    # split ごとに独立 fit すると、少数クラスが欠落した split で番号がずれるため。
+    raw_labels = getlabels(image_paths)
+    le = LabelEncoder()
+    le.fit(raw_labels)
+    label_mapping = {i: c for i, c in enumerate(le.classes_)}
+
+    # 訓練・検証・テストデータに分割
+    train_ratio, valid_ratio, test_ratio = split_ratio
+    image_train, image_temp, depth_train, depth_temp, labels_train, labels_temp = train_test_split(
+        image_paths, depth_paths, raw_labels, test_size=(valid_ratio + test_ratio), random_state=42)
+    image_valid, image_test, depth_valid, depth_test, labels_valid, labels_test = train_test_split(
+        image_temp, depth_temp, labels_temp, test_size=(test_ratio / (valid_ratio + test_ratio)), random_state=42)
+
+    # 共通のエンコーダで数値化
+    train_labels = le.transform(labels_train)
+    valid_labels = le.transform(labels_valid)
+    test_labels = le.transform(labels_test)
 
     # データセット作成
     depth_bitshift = (dataset_type == 3)
@@ -357,4 +324,4 @@ def get_dataloader(image_paths, depth_paths, batch_size, transform, dataset_type
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
-    return train_loader, valid_loader, test_loader, len(set(train_labels)), label_mapping_test
+    return train_loader, valid_loader, test_loader, len(le.classes_), label_mapping
