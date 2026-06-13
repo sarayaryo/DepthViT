@@ -668,6 +668,7 @@ def parse_args():
     parser.add_argument("--dataset_type", type=int, default=1)
     parser.add_argument("--dataset_path", type=str, default=None, help="Absolute path to dataset (overrides --dataset)")
     parser.add_argument("--learnable_alpha_beta", action="store_true", help="Make alpha/beta learnable (default: fixed)")
+    parser.add_argument("--use_19", action="store_true", help="SUN RGB-D: use benchmark 19 categories only")
 
     args = parser.parse_args()
     if args.device is None:
@@ -707,7 +708,10 @@ def main():
     elif dataset_type==3:
         load_datapath = load_datapath_SUNRGBD
 
-    image_paths, depth_paths, labels =load_datapath(args.dataset_path)
+    if dataset_type == 3:
+        image_paths, depth_paths, labels = load_datapath(args.dataset_path, use_19=args.use_19)
+    else:
+        image_paths, depth_paths, labels = load_datapath(args.dataset_path)
 
     # デバッグ用出力
     print("After shuffle:")
