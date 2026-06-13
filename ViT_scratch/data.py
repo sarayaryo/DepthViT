@@ -248,7 +248,15 @@ def getlabels_SUNRGBD(image_paths):
     return labels
 
 
-def load_datapath_SUNRGBD(dataset_path, random_seed=42):
+# ベンチマーク標準の19カテゴリ (上位20クラスから "idk" を除外, 計9,504件)
+SUNRGBD_19_CATEGORIES = {
+    "bedroom", "office", "classroom", "furniture_store", "rest_space",
+    "bathroom", "living_room", "kitchen", "dining_area", "library",
+    "corridor", "conference_room", "lab", "discussion_area", "dining_room",
+    "study_space", "computer_room", "lecture_theatre", "home_office",
+}
+
+def load_datapath_SUNRGBD(dataset_path, random_seed=42, use_19=True):
     image_paths = []
     depth_paths = []
     labels = []
@@ -268,6 +276,9 @@ def load_datapath_SUNRGBD(dataset_path, random_seed=42):
 
         with open(os.path.join(root, "scene.txt"), "r", encoding="utf-8") as f:
             label = f.read().strip()
+
+        if use_19 and label not in SUNRGBD_19_CATEGORIES:
+            continue
 
         image_paths.append(rgb_files[0])
         depth_paths.append(depth_files[0])
