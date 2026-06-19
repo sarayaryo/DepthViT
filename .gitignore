@@ -4,8 +4,12 @@ __pycache__/
 data/
 ViT_scratch/data/
 
-# Experiment outputs (models, logs, CSVs)
-ViT_scratch/experiments/
+# Experiment outputs (ignore all, then allow md/log/json)
+ViT_scratch/experiments/**
+!ViT_scratch/experiments/**/
+!ViT_scratch/experiments/**/*.md
+!ViT_scratch/experiments/**/*.log
+!ViT_scratch/experiments/**/*.json
 ViT_scratch/important_data/
 ViT_scratch/vclub_model/
 ViT_scratch/training.log

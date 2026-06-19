@@ -174,10 +174,10 @@ config = {
     "num_hidden_layers": 4,
     "num_attention_heads": 4,
     "intermediate_size": 4 * 48,  # 4 * hidden_size
-    "hidden_dropout_prob": 0.0,
-    "attention_probs_dropout_prob": 0.0,
+    "hidden_dropout_prob": 0.2,
+    "attention_probs_dropout_prob": 0.2,
     "initializer_range": 0.02,
-    "image_size": 32,
+    "image_size": 64,
     "num_classes": 10,  # num_classes of CIFAR10
     "num_channels": 3,
     "num_channels_forDepth": 1,
@@ -388,6 +388,7 @@ class Trainer:
         train_losses, test_losses, valid_losses, accuracies, valid_accuracies = [], [], [], [], []
 
         best_valid_loss = float("inf")
+        best_epoch = None
         # Train the model
         torch.cuda.empty_cache()
         for i in range(epochs):
@@ -416,8 +417,8 @@ class Trainer:
                         patience_counter = 0  # Reset patience counter
                         print(f"Validation loss improved to {valid_loss:.4f}.")
                         logging.info(f"Validation loss improved to {valid_loss:.4f}.")
-                        # Save the best model
-                        save_checkpoint(self.exp_name, self.model, i + 1)
+                        best_epoch = i + 1
+                        save_checkpoint(self.exp_name, self.model, best_epoch)
                     else:
                         patience_counter += 1
                         print(f"No improvement in validation loss for {patience_counter} epochs.")
@@ -449,7 +450,11 @@ class Trainer:
                 save_checkpoint(self.exp_name, self.model, i + 1)
         
         ## --------------test phase-----------------
-        # accuracy, test_loss, attention_data_initial, attention_data_mid, attention_data_final = self.evaluate(testloader, True)
+        if best_epoch is not None:
+            best_path = os.path.join("experiments", self.exp_name, f"model_{best_epoch}.pt")
+            self.model.load_state_dict(torch.load(best_path, map_location=self.device))
+            print(f"Loaded best model from epoch {best_epoch} (valid loss: {best_valid_loss:.4f})")
+            logging.info(f"Loaded best model from epoch {best_epoch} (valid loss: {best_valid_loss:.4f})")
         accuracy, test_loss, attention_data_final, wrong_images, correct_images = self.evaluate(testloader, True)
         if self.method in [1,2]:
             rs, precision_top_k = total_consistency(attention_data_final, self.k)
@@ -669,6 +674,8 @@ def parse_args():
     parser.add_argument("--dataset_path", type=str, default=None, help="Absolute path to dataset (overrides --dataset)")
     parser.add_argument("--learnable_alpha_beta", action="store_true", help="Make alpha/beta learnable (default: fixed)")
     parser.add_argument("--use_19", action="store_true", help="SUN RGB-D: use benchmark 19 categories only")
+    parser.add_argument("--scheduler", type=str, default="none", choices=["none", "cosine", "step"],
+                        help="LR scheduler: none (fixed lr), cosine (CosineAnnealingLR), step (MultiStepLR milestones=[10] gamma=0.1)")
 
     args = parser.parse_args()
     if args.device is None:
@@ -694,7 +701,7 @@ def main():
     method = args.method
 
     transform1 = transforms.Compose(
-        [transforms.Resize((32, 32)), transforms.ToTensor()]
+        [transforms.Resize((config["image_size"], config["image_size"])), transforms.ToTensor()]
     )
     
     dataset_type = args.dataset_type
@@ -753,9 +760,14 @@ def main():
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay = args.weight_decay)
     loss_fn = nn.CrossEntropyLoss()
 
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10], gamma=0.1)
-    trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device, scheduler=scheduler)
-    # trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device)
+    if args.scheduler == "cosine":
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-5)
+        trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device, scheduler=scheduler)
+    elif args.scheduler == "step":
+        scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10], gamma=0.2)
+        trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device, scheduler=scheduler)
+    else:
+        trainer = Trainer(model, optimizer, loss_fn, method, args.exp_name, device=device)
     
     
     log_dir = os.path.join("experiments", args.exp_name)
@@ -768,7 +780,7 @@ def main():
         test_loader,
         valid_loader,
         epochs,
-        patience=3,
+        patience=5,
         save_model_every_n_epochs=save_model_every_n_epochs,
     )
     

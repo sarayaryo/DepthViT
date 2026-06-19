@@ -1,0 +1,159 @@
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 0, Train loss: 1.3182
+INFO:root:epoch:0
+INFO:root:before_valid:  epoch(batch)0:  CPUメモリ使用量: 67.50%, 全メモリ: 15.82 GB, 使用中メモリ: 10.68 GB, 空きメモリ: 5.14 GB
+INFO:root:before_valid:  epoch(batch)0:  GPUメモリ使用量: 20.35 MB / 確保済み: 62.00 MB
+INFO:root:Batch:0
+INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 67.50%, 全メモリ: 15.82 GB, 使用中メモリ: 10.68 GB, 空きメモリ: 5.14 GB
+INFO:root:test:  epoch(batch)0:  GPUメモリ使用量: 20.60 MB / 確保済み: 62.00 MB
+INFO:root:Valid loss: 1.3152, Valid Accuracy: 0.4017
+INFO:root:Validation loss improved to 1.3152.
+INFO:root:after_valid:  epoch(batch)0:  CPUメモリ使用量: 67.60%, 全メモリ: 15.82 GB, 使用中メモリ: 10.70 GB, 空きメモリ: 5.12 GB
+INFO:root:after_valid:  epoch(batch)0:  GPUメモリ使用量: 20.35 MB / 確保済み: 62.00 MB
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 1, Train loss: 0.9935
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 2, Train loss: 0.3523
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 3, Train loss: 0.3919
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 4, Train loss: 0.2700
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 5, Train loss: 0.2483
+INFO:root:epoch:5
+INFO:root:before_valid:  epoch(batch)5:  CPUメモリ使用量: 67.70%, 全メモリ: 15.82 GB, 使用中メモリ: 10.71 GB, 空きメモリ: 5.10 GB
+INFO:root:before_valid:  epoch(batch)5:  GPUメモリ使用量: 20.35 MB / 確保済み: 62.00 MB
+INFO:root:Batch:0
+INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 67.70%, 全メモリ: 15.82 GB, 使用中メモリ: 10.72 GB, 空きメモリ: 5.10 GB
+INFO:root:test:  epoch(batch)0:  GPUメモリ使用量: 20.60 MB / 確保済み: 62.00 MB
+INFO:root:Valid loss: 0.2790, Valid Accuracy: 0.8205
+INFO:root:Validation loss improved to 0.2790.
+INFO:root:after_valid:  epoch(batch)5:  CPUメモリ使用量: 67.70%, 全メモリ: 15.82 GB, 使用中メモリ: 10.71 GB, 空きメモリ: 5.11 GB
+INFO:root:after_valid:  epoch(batch)5:  GPUメモリ使用量: 20.35 MB / 確保済み: 62.00 MB
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 6, Train loss: 0.2237
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 7, Train loss: 0.2729
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 8, Train loss: 0.1868
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 9, Train loss: 0.1320
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 10, Train loss: 0.0629
+INFO:root:epoch:10
+INFO:root:before_valid:  epoch(batch)10:  CPUメモリ使用量: 67.70%, 全メモリ: 15.82 GB, 使用中メモリ: 10.71 GB, 空きメモリ: 5.11 GB
+INFO:root:before_valid:  epoch(batch)10:  GPUメモリ使用量: 20.35 MB / 確保済み: 62.00 MB
+INFO:root:Batch:0
+INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 67.70%, 全メモリ: 15.82 GB, 使用中メモリ: 10.70 GB, 空きメモリ: 5.11 GB
+INFO:root:test:  epoch(batch)0:  GPUメモリ使用量: 20.60 MB / 確保済み: 62.00 MB
+INFO:root:Valid loss: 0.0200, Valid Accuracy: 1.0000
+INFO:root:Validation loss improved to 0.0200.
+INFO:root:after_valid:  epoch(batch)10:  CPUメモリ使用量: 67.70%, 全メモリ: 15.82 GB, 使用中メモリ: 10.71 GB, 空きメモリ: 5.11 GB
+INFO:root:after_valid:  epoch(batch)10:  GPUメモリ使用量: 20.35 MB / 確保済み: 62.00 MB
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 11, Train loss: 0.0170
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 12, Train loss: 0.0175
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:Block 0: alpha=0.5000, beta=0.5000
+INFO:root:Block 1: alpha=0.5000, beta=0.5000
+INFO:root:Block 2: alpha=0.5000, beta=0.5000
+INFO:root:Block 3: alpha=0.5000, beta=0.5000
+INFO:root:train epoch: 0, Train loss: 1.3152
+INFO:root:epoch:0
+INFO:root:before_valid:  epoch(batch)0:  CPUメモリ使用量: 73.30%, 全メモリ: 15.82 GB, 使用中メモリ: 11.59 GB, 空きメモリ: 4.23 GB
+INFO:root:before_valid:  epoch(batch)0:  GPUメモリ使用量: 19.04 MB / 確保済み: 60.00 MB
+INFO:root:Batch:0
+INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 73.20%, 全メモリ: 15.82 GB, 使用中メモリ: 11.59 GB, 空きメモリ: 4.23 GB
+INFO:root:test:  epoch(batch)0:  GPUメモリ使用量: 19.29 MB / 確保済み: 60.00 MB
+INFO:root:Valid loss: 1.3030, Valid Accuracy: 0.4017
+INFO:root:Validation loss improved to 1.3030.
+INFO:root:after_valid:  epoch(batch)0:  CPUメモリ使用量: 73.40%, 全メモリ: 15.82 GB, 使用中メモリ: 11.61 GB, 空きメモリ: 4.21 GB
+INFO:root:after_valid:  epoch(batch)0:  GPUメモリ使用量: 19.04 MB / 確保済み: 60.00 MB
+INFO:root:Block 0: alpha=0.5009, beta=0.5005
+INFO:root:Block 1: alpha=0.5014, beta=0.5010
+INFO:root:Block 2: alpha=0.5014, beta=0.5010
+INFO:root:Block 3: alpha=0.5014, beta=0.5012
+INFO:root:train epoch: 1, Train loss: 1.0819
+INFO:root:Block 0: alpha=0.5012, beta=0.5009
+INFO:root:Block 1: alpha=0.5034, beta=0.5018
+INFO:root:Block 2: alpha=0.5037, beta=0.5019
+INFO:root:Block 3: alpha=0.5036, beta=0.5018
+INFO:root:train epoch: 2, Train loss: 0.8233
+INFO:root:Batch:0
+INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 73.30%, 全メモリ: 15.82 GB, 使用中メモリ: 11.60 GB, 空きメモリ: 4.22 GB
+INFO:root:test:  epoch(batch)0:  GPUメモリ使用量: 19.29 MB / 確保済み: 58.00 MB
+INFO:root:Test loss: 0.7376, Accuracy: 0.6581, Spearman score: 0.0902, Precision top10.0% score: 0.1126
+INFO:root:amount of pair:7488
+INFO:root:Block 0: alpha=0.0067, beta=0.0067
+INFO:root:Block 1: alpha=0.0067, beta=0.0067
+INFO:root:Block 2: alpha=0.0067, beta=0.0067
+INFO:root:Block 3: alpha=0.0067, beta=0.0067
+INFO:root:train epoch: 0, Train loss: 1.3171
+INFO:root:epoch:0
+INFO:root:before_valid:  epoch(batch)0:  CPUメモリ使用量: 72.60%, 全メモリ: 15.82 GB, 使用中メモリ: 11.49 GB, 空きメモリ: 4.33 GB
+INFO:root:before_valid:  epoch(batch)0:  GPUメモリ使用量: 19.04 MB / 確保済み: 60.00 MB
+INFO:root:Batch:0
+INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 72.70%, 全メモリ: 15.82 GB, 使用中メモリ: 11.49 GB, 空きメモリ: 4.32 GB
+INFO:root:test:  epoch(batch)0:  GPUメモリ使用量: 19.29 MB / 確保済み: 60.00 MB
+INFO:root:Valid loss: 1.3193, Valid Accuracy: 0.4017
+INFO:root:Validation loss improved to 1.3193.
+INFO:root:after_valid:  epoch(batch)0:  CPUメモリ使用量: 72.80%, 全メモリ: 15.82 GB, 使用中メモリ: 11.51 GB, 空きメモリ: 4.31 GB
+INFO:root:after_valid:  epoch(batch)0:  GPUメモリ使用量: 19.04 MB / 確保済み: 60.00 MB
+INFO:root:Block 0: alpha=0.0067, beta=0.0067
+INFO:root:Block 1: alpha=0.0067, beta=0.0067
+INFO:root:Block 2: alpha=0.0067, beta=0.0067
+INFO:root:Block 3: alpha=0.0067, beta=0.0067
+INFO:root:train epoch: 1, Train loss: 1.1308
+INFO:root:Block 0: alpha=0.0067, beta=0.0067
+INFO:root:Block 1: alpha=0.0068, beta=0.0068
+INFO:root:Block 2: alpha=0.0068, beta=0.0068
+INFO:root:Block 3: alpha=0.0068, beta=0.0068
+INFO:root:train epoch: 2, Train loss: 0.6976
+INFO:root:Batch:0
+INFO:root:test:  epoch(batch)0:  CPUメモリ使用量: 72.70%, 全メモリ: 15.82 GB, 使用中メモリ: 11.49 GB, 空きメモリ: 4.32 GB
+INFO:root:test:  epoch(batch)0:  GPUメモリ使用量: 19.29 MB / 確保済み: 58.00 MB
+INFO:root:Test loss: 0.5077, Accuracy: 0.8205, Spearman score: 0.1804, Precision top10.0% score: 0.1312
+INFO:root:amount of pair:7488

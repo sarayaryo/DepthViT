@@ -1,0 +1,21 @@
+{
+    "0": "bathroom",
+    "1": "bedroom",
+    "2": "classroom",
+    "3": "computer_room",
+    "4": "conference_room",
+    "5": "corridor",
+    "6": "dining_area",
+    "7": "dining_room",
+    "8": "discussion_area",
+    "9": "furniture_store",
+    "10": "home_office",
+    "11": "kitchen",
+    "12": "lab",
+    "13": "lecture_theatre",
+    "14": "library",
+    "15": "living_room",
+    "16": "office",
+    "17": "rest_space",
+    "18": "study_space"
+}

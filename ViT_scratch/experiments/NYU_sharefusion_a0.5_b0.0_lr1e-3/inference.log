@@ -1,0 +1,33 @@
+Experiment       : NYU_sharefusion_a0.5_b0.0_lr1e-3
+LR schedule      : default (lr=0.001)
+Checkpoint       : model_final.pt
+Learnable α/β    : False
+Device           : cuda
+Batch size       : 16
+Seed             : 42
+Test samples     : 5069
+---
+before_inference: CPU 94.4%  |  Used 14.93 GB / Total 15.82 GB  |  Avail 0.89 GB
+before_inference: GPU allocated 12.12 MB  |  reserved 24.00 MB
+batch 0/317: CPU 94.4%  |  Used 14.93 GB / Total 15.82 GB  |  Avail 0.89 GB
+batch 0/317: GPU allocated 21.01 MB  |  reserved 48.00 MB
+  elapsed 0.06s  |  this batch 9.7ms
+batch 100/317: CPU 91.2%  |  Used 14.42 GB / Total 15.82 GB  |  Avail 1.39 GB
+batch 100/317: GPU allocated 59.10 MB  |  reserved 88.00 MB
+  elapsed 12.22s  |  this batch 18.5ms
+batch 200/317: CPU 92.9%  |  Used 14.69 GB / Total 15.82 GB  |  Avail 1.13 GB
+batch 200/317: GPU allocated 97.18 MB  |  reserved 128.00 MB
+  elapsed 24.68s  |  this batch 17.1ms
+batch 300/317: CPU 94.5%  |  Used 14.94 GB / Total 15.82 GB  |  Avail 0.87 GB
+batch 300/317: GPU allocated 135.27 MB  |  reserved 168.00 MB
+  elapsed 37.27s  |  this batch 17.1ms
+after_inference: CPU 94.7%  |  Used 14.97 GB / Total 15.82 GB  |  Avail 0.85 GB
+after_inference: GPU allocated 132.78 MB  |  reserved 154.00 MB
+--- Results ---
+Total time       : 39.3451 s
+Per-sample time  : 7.7619 ms
+Per-batch time   : 124.1171 ms
+Throughput       : 128.83 samples/s
+Accuracy         : 0.9949
+Average loss     : 0.0228
+CMI              : 25.4489
